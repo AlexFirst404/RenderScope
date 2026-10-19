@@ -1,9 +1,14 @@
 """Assemble actual smoke-client screenshot frames; never generate profiler data or UI."""
 from pathlib import Path
+import argparse
 from PIL import Image
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--loader', choices=('forge', 'neoforge'), default='forge')
+args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
-gallery = root / "distribution" / "gallery"
+distribution = root / "distribution" / "forge" if args.loader == 'forge' else root / "distribution"
+gallery = distribution / "gallery"
 paths = sorted(gallery.glob("heatmap-frame-*.png"))
 if len(paths) < 2:
     raise SystemExit("Run runSmokeClient first to record real gameplay frames.")

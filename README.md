@@ -1,19 +1,26 @@
 # RenderScope
 
-![RenderScope](distribution/brand/renderscope-cover-1600x900.png)
+![RenderScope](distribution/forge/brand/renderscope-cover-1600x900.png)
 
 **Найдите конкретную сущность или блок-сущность, на рендер которой уходит время.**
 
-RenderScope — клиентский профилировщик для **Minecraft Java 1.20.1 / NeoForge 47.1.106**. Он связывает измеренные вызовы рендереров с модом, типом объекта и отдельным экземпляром в мире. Из списка можно перейти к координатам, включить подсветку и отслеживать выбранный объект.
+RenderScope — клиентский профилировщик для **Minecraft Java 1.20.1** с отдельными сборками для **Forge 47.4.10** и **NeoForge 47.1.106**. Он связывает измеренные вызовы рендереров с модом, типом объекта и отдельным экземпляром в мире. Из списка можно перейти к координатам, включить подсветку и отслеживать выбранный объект.
 
 Мод собирает настоящие измерения во время игры. Устанавливать его на сервер не нужно: интерфейс, сбор данных и подсветка работают на клиенте, без собственных сетевых пакетов.
 
 ## Установка и первый запуск
 
-1. Установите NeoForge **47.1.106 для Minecraft 1.20.1** и запускайте профиль на **Java 21**.
-2. Поместите `renderscope-neoforge-0.1.0+mc1.20.1.jar` в папку `mods` вашего игрового профиля. Нужен основной JAR без суффиксов `-slim` и `-sources`; MixinExtras включён внутрь него.
+1. Установите **Forge 47.4.10** либо **NeoForge 47.1.106** для Minecraft 1.20.1 и запускайте профиль на **Java 21**.
+2. Поместите соответствующий основный JAR из таблицы ниже в папку `mods` игрового профиля. MixinExtras включён внутрь него.
 3. Загрузите мир или подключитесь к серверу и дайте профилировщику несколько секунд собрать данные.
 4. Нажмите **F8** либо откройте **Esc → RenderScope**. Клавишу можно изменить в **Настройки → Управление → RenderScope**.
+
+| Загрузчик профиля | Файл |
+| --- | --- |
+| Forge 47.4.10 | [renderscope-forge-0.1.0+mc1.20.1.jar](distribution/forge/renderscope-forge-0.1.0+mc1.20.1.jar) |
+| NeoForge 47.1.106 | [renderscope-neoforge-0.1.0+mc1.20.1.jar](distribution/renderscope-neoforge-0.1.0+mc1.20.1.jar) |
+
+В один игровой профиль устанавливайте **только один** RenderScope JAR для его загрузчика. Файлы `-slim` и `-sources` не являются самостоятельным дистрибутивом. Исходная NeoForge-сборка сохранена отдельно от Forge-порта.
 
 Интерфейс RenderScope не приостанавливает игровой мир. В одиночной игре возвращение в обычное меню паузы снова включает его стандартное поведение.
 
@@ -43,15 +50,19 @@ RenderScope — клиентский профилировщик для **Minecra
 
 ## В игре
 
-Скриншоты получены из настоящего локального мира с vanilla-объектами. Значения относятся к этой сцене и оборудованию; это не обещание определённой производительности других модов.
+Галерея Forge-сборки: локальная сцена с vanilla-объектами. Значения относятся к этой сцене и оборудованию; это не обещание определённой производительности других модов.
 
-![Живая сводка RenderScope](distribution/gallery/01-overview.png)
+Оба варианта прошли отдельные сборки на JDK 21, по 17 unit/privacy-тестов и запуск настоящего клиента в среде разработки с проверкой загрузчика, renderer calls, capture и экспорта. Результаты: [Forge 47.4.10](distribution/forge/verification.json) и [NeoForge 47.1.106](distribution/verification.json).
 
-![Подробности объекта и измеренные экземпляры](distribution/gallery/04-object-detail.png)
+![Живая сводка RenderScope на Forge](distribution/forge/gallery/01-overview.png)
 
-![Теплокарта и инспектор: реальные кадры Minecraft](distribution/gallery/heatmap-demo.gif)
+![Подробности объекта и измеренные экземпляры на Forge](distribution/forge/gallery/04-object-detail.png)
 
-![Сводка завершённой записи](distribution/gallery/06-capture.png)
+![Теплокарта и инспектор на Forge](distribution/forge/gallery/heatmap-demo.gif)
+
+![Сводка завершённой записи на Forge](distribution/forge/gallery/06-capture.png)
+
+Отдельно сохранены [скриншот NeoForge](distribution/gallery/01-overview.png), [его анимация](distribution/gallery/heatmap-demo.gif) и [результаты проверки](distribution/verification.json).
 
 ## Как читать измерения
 
@@ -65,7 +76,7 @@ MVP измеряет мировые **EntityRenderer** и **BlockEntityRenderer*
 
 Нажмите **Start Capture**, воспроизведите проблемную сцену, завершите запись и выберите **Export JSON**. Файлы сохраняются в `<minecraft>/renderscope-reports/renderscope-YYYY-MM-DD_HH-mm-ss-SSS.json`.
 
-В отчёт входят версии Minecraft/NeoForge/RenderScope, названия и версии установленных модов, сводка производительности и метрики модов, рендереров, объектов и кадров. Экспорт выполняется локально; мод не отправляет отчёты автоматически.
+В отчёт входят версии Minecraft, фактического загрузчика Forge или NeoForge и RenderScope, названия и версии установленных модов, сводка производительности и метрики модов, рендереров, объектов и кадров. Экспорт выполняется локально; мод не отправляет отчёты автоматически.
 
 Имена игроков, адреса и названия серверов, имена миров, чат, UUID и абсолютные пути не включаются. Координаты и измерение также исключены по умолчанию; включить их можно только через **Settings → Reports → Include world positions**.
 
@@ -73,10 +84,11 @@ MVP измеряет мировые **EntityRenderer** и **BlockEntityRenderer*
 
 ## Сборка из исходников
 
-Нужен установленный **JDK 21**. Обёртка Gradle **8.8** включена в проект. В PowerShell из корня репозитория удобнее использовать скрипт, который выбирает JDK 21 и копирует основной готовый JAR в `distribution/`:
+Нужен установленный **JDK 21**. Обёртка Gradle **8.8** включена в проект. По умолчанию собирается **Forge**. В PowerShell из корня репозитория скрипт выбирает JDK 21, собирает выбранный загрузчик и копирует основной готовый JAR в его каталог:
 
 ```powershell
-.\scripts\build.ps1
+.\scripts\build.ps1 -Loader forge
+.\scripts\build.ps1 -Loader neoforge
 ```
 
 Скрипт ищет Java 21 через `JAVA_HOME`, в стандартной папке `C:\Program Files\Java\jdk-21` и в локальной `.tools/`. Если JDK установлен в другом месте, задайте `JAVA_HOME`. При ручной сборке также выберите именно Java 21: версия `java` в системном PATH может отличаться.
@@ -85,30 +97,51 @@ MVP измеряет мировые **EntityRenderer** и **BlockEntityRenderer*
 # Замените путь на каталог установленного JDK 21.
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
 & "$env:JAVA_HOME\bin\java.exe" -version
-.\gradlew.bat test build
+.\gradlew.bat -Ploader=forge test build
+.\gradlew.bat -Ploader=neoforge test build
 ```
 
-Основной дистрибутив: `distribution/renderscope-neoforge-0.1.0+mc1.20.1.jar` после запуска скрипта; результат Gradle также находится в `build/libs/`. Для обычной среды разработки, с тем же `JAVA_HOME`:
+Результаты двух сборок не перезаписывают друг друга:
+
+| Выбор | Результат Gradle | Готовый дистрибутив |
+| --- | --- | --- |
+| `forge` (по умолчанию) | `build/forge/libs/` | `distribution/forge/` |
+| `neoforge` | `build/neoforge/libs/` | `distribution/` |
+
+Для обычной среды разработки, с тем же `JAVA_HOME`:
 
 ```powershell
-.\gradlew.bat runClient
+.\gradlew.bat -Ploader=forge runClient
+# Для исходной NeoForge-сборки:
+.\gradlew.bat -Ploader=neoforge runClient
 ```
 
 Для воспроизводимой проверки в настоящем Minecraft включён отдельный source-only smoke harness:
 
 ```powershell
-.\gradlew.bat runSmokeClient
+.\scripts\build.ps1 -Loader forge -Smoke
+.\scripts\build.ps1 -Loader neoforge -Smoke
 ```
 
-Он запускает отдельный профиль в `run-smoke/`, создаёт реальную сцену с vanilla-объектами, проверяет измерения и экспорт и снимает игровые скриншоты. Результаты: `distribution/smoke-result.json`, `distribution/smoke-capture-example.json` и `distribution/gallery/`. При успешном завершении в логе появляется `RENDERSCOPE_SMOKE_SUCCESS`, затем тестовый клиент закрывается. Harness находится в source set `smoke` и не входит в основной JAR.
+Скрипт запускает Gradle-задачу `runSmokeClient` выбранного загрузчика. Профили изолированы в `run-smoke-forge/` и `run-smoke-neoforge/`. Harness создаёт реальную сцену с vanilla-объектами, проверяет измерения и экспорт и снимает игровые скриншоты. Forge-результаты сохраняются в `distribution/forge/`, NeoForge-результаты — в `distribution/`: `smoke-result.json`, `smoke-capture-example.json` и `gallery/`. При успешном завершении в логе появляется `RENDERSCOPE_SMOKE_SUCCESS`, затем тестовый клиент закрывается. Harness находится в source set `smoke` и не входит в основной JAR.
 
-Компиляция использует JDK 21 с `--release 17`: старый загрузчик ветки 1.20.1 должен читать совместимый байткод. Это отдельное решение от выбора Java для запуска клиента. Пакеты `net.minecraftforge` и зависимость `net.neoforged:forge` в этой исторической ветке NeoForge используются намеренно.
+Проверка и упаковка материалов также выбирают загрузчик; Python-скрипт упаковки использует Pillow:
 
-Архитектура и точки инструментирования описаны в [ARCHITECTURE.md](docs/ARCHITECTURE.md). Текущий релиз предназначен для **1.20.1**; сборки для 1.21.1, Fabric и отдельного Forge-релиза не заявлены.
+```powershell
+python .\scripts\verify-release.py --loader forge
+python .\scripts\package-release.py --loader forge
+# Для NeoForge используйте --loader neoforge.
+```
+
+Обе сборки используют JDK 21 с `--release 17`: загрузчики ветки 1.20.1 должны читать совместимый байткод. Требование запуска клиента на Java 21 сохраняется. Forge разрешается через `net.minecraftforge:forge`, NeoForge — через исторические координаты `net.neoforged:forge`; пакеты `net.minecraftforge` общие для этих веток 1.20.1.
+
+Архитектура и точки инструментирования описаны в [ARCHITECTURE.md](docs/ARCHITECTURE.md). Текущие Forge/NeoForge-релизы предназначены для **1.20.1**; сборки для 1.21.1 и Fabric не заявлены.
 
 ## Материалы для публикации
 
-Подготовлены [описание для Modrinth](distribution/MODRINTH.md), [описание для CurseForge](distribution/CURSEFORGE.md), [русский текст](distribution/DESCRIPTION_RU.md), [метаданные alpha-релиза](distribution/release.json) и [контрольный список релиза](distribution/RELEASE_CHECKLIST.md). Это локальные материалы для последующей загрузки на площадки.
+Для **Forge** подготовлены [Modrinth](distribution/forge/MODRINTH.md), [CurseForge](distribution/forge/CURSEFORGE.md), [русское описание](distribution/forge/DESCRIPTION_RU.md), [метаданные alpha-релиза](distribution/forge/release.json) и [контрольный список](distribution/forge/RELEASE_CHECKLIST.md).
+
+Материалы исходной **NeoForge**-сборки сохранены: [Modrinth](distribution/MODRINTH.md), [CurseForge](distribution/CURSEFORGE.md), [русское описание](distribution/DESCRIPTION_RU.md), [метаданные](distribution/release.json) и [контрольный список](distribution/RELEASE_CHECKLIST.md). Это локальные материалы для последующей загрузки на площадки; галереи каждого загрузчика получаются его собственным запуском Minecraft.
 
 В `distribution/brand/` находятся исходное лого 24×24 и PNG, увеличенные целочисленным nearest-neighbor масштабированием. Пиксельная сетка сохраняется без размытия. Квадратные иконки 512×512 и 1024×1024 используют поля в цвет фона исходника и целочисленный масштаб рисунка.
 

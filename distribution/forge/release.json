@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "publicationStatus": "prepared_locally",
+  "project": {
+    "name": "RenderScope",
+    "slug": "renderscope",
+    "modId": "renderscope",
+    "summary": "Find the exact entities and block entities behind expensive renderer calls.",
+    "summaryRu": "Найдите конкретные сущности и блок-сущности с дорогими вызовами рендера.",
+    "license": "All Rights Reserved",
+    "clientSide": "required",
+    "serverSide": "unsupported",
+    "keywords": [
+      "profiler",
+      "performance diagnostics",
+      "rendering",
+      "client utility",
+      "entities",
+      "block entities",
+      "heatmap"
+    ]
+  },
+  "release": {
+    "version": "0.1.0",
+    "versionNumber": "0.1.0+mc1.20.1",
+    "name": "RenderScope 0.1.0 for Minecraft 1.20.1 (Forge)",
+    "type": "alpha",
+    "gameVersions": [
+      "1.20.1"
+    ],
+    "loaders": [
+      "forge"
+    ],
+    "targetLoaderVersion": "47.4.10",
+    "javaRuntime": 21,
+    "javaBytecodeRelease": 17,
+    "artifact": "renderscope-forge-0.1.0+mc1.20.1.jar",
+    "gradleArtifact": "../../build/forge/libs/renderscope-forge-0.1.0+mc1.20.1.jar",
+    "bundledDependencies": [
+      {
+        "name": "MixinExtras",
+        "version": "0.4.1"
+      }
+    ]
+  },
+  "materials": {
+    "installationGuide": "INSTALL.md",
+    "modrinthDescription": "MODRINTH.md",
+    "curseforgeDescription": "CURSEFORGE.md",
+    "russianDescription": "DESCRIPTION_RU.md",
+    "releaseChecklist": "RELEASE_CHECKLIST.md",
+    "icon512": "brand/renderscope-icon-512.png",
+    "icon1024": "brand/renderscope-icon-1024.png",
+    "originalLogo": "brand/renderscope-original.png",
+    "cover": "brand/renderscope-cover-1600x900.png",
+    "heatmapAnimation": "gallery/heatmap-demo.gif",
+    "galleryDirectory": "gallery"
+  },
+  "measurementScope": {
+    "timing": "CPU-side renderer wall time, not GPU execution time",
+    "categories": [
+      "entities",
+      "block entities"
+    ],
+    "geometry": "Observed standard BufferBuilder vertices and estimated vertex data in Full mode",
+    "defaultRollingWindowSeconds": 5,
+    "captureDurationsSeconds": [
+      5,
+      10,
+      30
+    ],
+    "manualCapture": true,
+    "positionsInReportsByDefault": false,
+    "automaticReportUpload": false
+  },
+  "notes": [
+    "This file is local release preparation metadata, not a platform API submission or proof of publication.",
+    "Keywords are descriptive suggestions; map them to the actual categories offered by each publishing platform.",
+    "Use the primary bundled JAR, not the slim or sources JAR.",
+    "No server installation is required.",
+    "This Forge artifact is separate from the preserved NeoForge 47.1.106 build. Install only one RenderScope artifact in each matching loader profile."
+  ]
+}

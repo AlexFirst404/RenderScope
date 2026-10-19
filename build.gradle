@@ -6,8 +6,17 @@ plugins {
 }
 
 group = 'dev.renderscope'
+def targetLoader = providers.gradleProperty('loader').orElse('forge').get()
+if (!(targetLoader in ['forge', 'neoforge'])) {
+    throw new GradleException("Unsupported loader '${targetLoader}'. Use -Ploader=forge or -Ploader=neoforge.")
+}
+def targetLoaderName = targetLoader == 'forge' ? 'Forge' : 'NeoForge'
+def targetLoaderVersion = targetLoader == 'forge' ? forge_version : neoforge_version
+def targetLoaderGroup = targetLoader == 'forge' ? 'net.minecraftforge' : 'net.neoforged'
+def targetDistribution = targetLoader == 'forge' ? file('distribution/forge') : file('distribution')
+layout.buildDirectory = file("build/${targetLoader}")
 version = "${mod_version}+mc${minecraft_version}"
-base { archivesName = 'renderscope-neoforge' }
+base { archivesName = "renderscope-${targetLoader}" }
 
 // Build and run with JDK 21; the legacy 1.20.1 loader scans Java 17 bytecode.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -23,20 +32,22 @@ minecraft {
     copyIdeResources = true
     runs {
         client {
-            workingDirectory project.file('run')
+            workingDirectory project.file("run-${targetLoader}")
             property 'forge.logging.console.level', 'info'
             property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'mixin.env.refMapRemappingFile', layout.buildDirectory.file('createSrgToMcp/output.srg').get().asFile.absolutePath
+            property 'renderscope.expectedLoader', targetLoaderName
+            property 'renderscope.expectedLoaderVersion', targetLoaderVersion
             arg '-mixin.config=renderscope.mixins.json'
             mods { renderscope { source sourceSets.main } }
         }
         smokeClient {
             parent minecraft.runs.client
-            workingDirectory project.file('run-smoke')
+            workingDirectory project.file("run-smoke-${targetLoader}")
             property 'forge.logging.console.level', 'info'
             property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'renderscope.smoke.output', file('distribution').absolutePath
+            property 'mixin.env.refMapRemappingFile', layout.buildDirectory.file('createSrgToMcp/output.srg').get().asFile.absolutePath
+            property 'renderscope.smoke.output', targetDistribution.absolutePath
             arg '-mixin.config=renderscope.mixins.json'
             args '--width', '1280', '--height', '720', '--username', 'RenderScopeQA'
             mods {
@@ -56,7 +67,7 @@ repositories {
 }
 jarJar.enable()
 dependencies {
-    minecraft "net.neoforged:forge:${minecraft_version}-${neoforge_version}"
+    minecraft "${targetLoaderGroup}:forge:${minecraft_version}-${targetLoaderVersion}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     implementation(annotationProcessor('io.github.llamalad7:mixinextras-common:0.4.1'))
     runtimeOnly 'io.github.llamalad7:mixinextras-forge:0.4.1'
@@ -77,14 +88,18 @@ tasks.withType(JavaCompile).configureEach {
 }
 tasks.named('test') { useJUnitPlatform() }
 tasks.named('processResources') {
-    inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') { expand version: project.version }
+    def metadata = [version: project.version, loader_name: targetLoaderName,
+                    loader_version: targetLoaderVersion, loader_version_range: "[${targetLoaderVersion},48)"]
+    inputs.properties metadata
+    filesMatching('META-INF/mods.toml') { expand metadata }
 }
 tasks.named('jar') {
     archiveClassifier = 'slim'
     manifest.attributes('MixinConfigs': 'renderscope.mixins.json',
             'Implementation-Version': project.version,
-            'Implementation-Title': 'RenderScope')
+            'Implementation-Title': 'RenderScope',
+            'RenderScope-Loader': targetLoader,
+            'RenderScope-Loader-Version': targetLoaderVersion)
     finalizedBy 'reobfJar'
 }
 tasks.named('jarJar') {

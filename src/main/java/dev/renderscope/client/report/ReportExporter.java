@@ -1,10 +1,10 @@
 package dev.renderscope.client.report;
 
 import com.google.gson.*;
+import dev.renderscope.client.LoaderInfo;
 import dev.renderscope.core.*;
 import net.minecraft.SharedConstants;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.versions.forge.ForgeVersion;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -23,8 +23,9 @@ public final class ReportExporter {
                              boolean cpuTiming) throws IOException {
         JsonObject root = toJson(capture, positions, mode, cpuTiming);
         root.addProperty("minecraftVersion", SharedConstants.getCurrentVersion().getName());
-        root.addProperty("loader", "NeoForge");
-        root.addProperty("loaderVersion", ForgeVersion.getVersion());
+        LoaderInfo loader = LoaderInfo.current();
+        root.addProperty("loader", loader.name());
+        root.addProperty("loaderVersion", loader.version());
         root.addProperty("renderscopeVersion", ModList.get().getModContainerById("renderscope")
                 .map(mod -> mod.getModInfo().getVersion().toString()).orElse("unknown"));
         JsonArray mods = new JsonArray();

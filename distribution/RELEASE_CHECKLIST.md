@@ -21,8 +21,8 @@
 
 ## Сборка и содержимое
 
-- [x] На JDK 21 выполнена `gradlew.bat test build`; пройдены 17 unit-тестов.
-- [x] Собран **основной** `build/libs/renderscope-neoforge-0.1.0+mc1.20.1.jar`.
+- [x] На JDK 21 выполнена `gradlew.bat -Ploader=neoforge test build`; пройдены 17 unit-тестов после добавления Forge-цели.
+- [x] Собран **основной** `build/neoforge/libs/renderscope-neoforge-0.1.0+mc1.20.1.jar`; готовый NeoForge-дистрибутив сохраняется в `distribution/`.
 - [x] Основной JAR отличается от `-slim` и `-sources` и содержит MixinExtras runtime.
 - [x] Проверены `mods.toml`, refmap, MixinConfigs и вложенные библиотеки.
 - [x] В release JAR нет тестового smoke-мода, сгенерированного мира, отчётов и `.tools`.
@@ -42,7 +42,7 @@
 - [ ] Heatmap корректно применяет категории, дистанцию, порог, лимит и переключатели подписей/глубины.
 - [x] Inspector показывает измеренные данные chest под прицелом в игровом smoke run.
 - [x] Timeline показывает реальные кадры; выбранный кадр и его фактическая атрибуция проверены в игровом smoke run.
-- [x] В Minecraft завершена 5-секундная запись и выполнен Export JSON.
+- [x] В Minecraft на NeoForge завершена 5-секундная запись (592 кадра) и выполнен Export JSON; runtime loader/version подтверждены как NeoForge 47.1.106.
 - [x] Unit-тесты проверяют ручную остановку и автоматическое завершение 5-секундной записи.
 - [ ] В установленном профиле проверены UI-записи на 10/30 секунд и ручной режим.
 - [x] Timing Only покрыт unit-тестом; Full в Minecraft даёт наблюдаемые вершины стандартного BufferBuilder.

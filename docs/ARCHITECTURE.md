@@ -1,8 +1,15 @@
 # Архитектура RenderScope 0.1.0
 
-Релиз рассчитан на Minecraft **1.20.1** и NeoForge **47.1.106**. Упоминания API 1.21.1 в исходном задании не меняют целевую версию: точки вызовов, сигнатуры GUI и события проверяются для 1.20.1.
+Релиз рассчитан на Minecraft **1.20.1** и имеет две отдельные цели сборки: **Forge 47.4.10** и исходную **NeoForge 47.1.106**. Выбор по умолчанию — `forge`; `-Ploader=neoforge` сохраняет исходный вариант. Упоминания API 1.21.1 в первоначальном задании не меняют целевую версию: точки вызовов, сигнатуры GUI и события проверяются для 1.20.1.
 
-Для этой исторической ветки загрузчика корректны Maven-координаты [`net.neoforged:forge:1.20.1-47.1.106`](https://maven.neoforged.net/releases/net/neoforged/forge/1.20.1-47.1.106/), пакеты `net.minecraftforge` и ID зависимости `forge` в metadata. Актуальная архитектура другого поколения NeoForge не подставляется вместо них. Справочные материалы для общих API этого поколения: [официальная документация Forge 1.20.1](https://docs.minecraftforge.net/en/1.20.1/) и [Screens / GuiGraphics 1.20.1](https://docs.minecraftforge.net/en/1.20.1/gui/screens/). Итоговые сигнатуры сверяются с реально разрешёнными артефактами сборки.
+| Выбор | Зависимость Minecraft/loader | Каталог сборки | Дистрибутив |
+| --- | --- | --- | --- |
+| `forge` | `net.minecraftforge:forge:1.20.1-47.4.10` | `build/forge/` | `distribution/forge/renderscope-forge-0.1.0+mc1.20.1.jar` |
+| `neoforge` | `net.neoforged:forge:1.20.1-47.1.106` | `build/neoforge/` | `distribution/renderscope-neoforge-0.1.0+mc1.20.1.jar` |
+
+Forge 47.4.10 выбран из категории **Recommended** на [официальной странице Forge для 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html), проверенной 20 октября 2026 года. NeoForge остаётся на [исходном артефакте 47.1.106](https://maven.neoforged.net/releases/net/neoforged/forge/1.20.1-47.1.106/). Раздельные build/output каталоги изолируют классы, refmap, ресурсы, тестовые результаты и reobfuscation двух загрузчиков.
+
+Пакеты `net.minecraftforge` и ID зависимости `forge` корректны для обеих этих веток 1.20.1. Общий адаптер Minecraft использует их существующие совместимые точки API; код профилировщика и UI не дублируется. Справочные материалы: [официальная документация Forge 1.20.1](https://docs.minecraftforge.net/en/1.20.1/) и [Screens / GuiGraphics 1.20.1](https://docs.minecraftforge.net/en/1.20.1/gui/screens/). Итоговые сигнатуры сверяются с фактически разрешёнными артефактами каждой цели.
 
 ## Разделение слоёв
 
@@ -26,12 +33,13 @@ flowchart LR
 | `dev.renderscope.mixin` | Инструментирование точных Minecraft-вызовов, для которых обычного события недостаточно |
 | `dev.renderscope.client.RenderHooks` | Преобразование игровых объектов в value records, границы кадра и renderer scope |
 | `ClientRuntime` | Регистрация событий, key mapping, применение настроек и выполнение действий UI |
+| `LoaderInfo` | Фактическое имя и версия загруженного Forge/NeoForge для логов, smoke-проверки и JSON |
 | `ModOwnership` | Разрешение имени мода и отдельного владельца класса рендерера |
 | `client.ui` | Native Minecraft Screen, таблицы, поиск, сортировка, подробности и управление |
 | `client.world` | Подсветка, отслеживание, теплокарта и HUD инспектора |
 | `client.report` | Экспорт по явному списку разрешённых полей |
 
-В `core` нет импортов Minecraft или NeoForge. Будущий адаптер Fabric может создавать те же `SampleContext`, вызывать границы кадра/вызова и читать те же snapshots. Это граница переносимости, а не заявление о наличии готовой Fabric-сборки.
+В `core` нет импортов Minecraft, Forge или NeoForge. Будущий адаптер Fabric может создавать те же `SampleContext`, вызывать границы кадра/вызова и читать те же snapshots. Это граница переносимости, а не заявление о наличии готовой Fabric-сборки.
 
 ## Точные точки измерения
 
@@ -71,8 +79,12 @@ F8 регистрируется обычным `KeyMapping` через `Register
 
 ## Отчёты, зависимости, сборка
 
-`ReportExporter` вручную выбирает поля JSON. Он не сериализует сырые ключи экземпляров и игровые объекты. Dimension и position добавляются только при явном opt-in; имя игрока, сервер, мир, чат, UUID и абсолютные пути не запрашиваются для отчёта. Файл записывается локально, автоматической отправки нет.
+`ReportExporter` вручную выбирает поля JSON. Имя и версия загрузчика берутся из runtime `LoaderInfo`, поэтому Forge-capture содержит Forge и его действительную версию, а NeoForge-capture — NeoForge. Экспортёр не сериализует сырые ключи экземпляров и игровые объекты. Dimension и position добавляются только при явном opt-in; имя игрока, сервер, мир, чат, UUID и абсолютные пути не запрашиваются для отчёта. Файл записывается локально, автоматической отправки нет.
 
-Gradle 8.8 и JDK 21 создают Java 17 bytecode для загрузчика 1.20.1. MixinExtras включён в основной JAR через Jar-in-Jar; `-slim` не является самостоятельным дистрибутивом. Код тестового smoke-сценария и материалы публикации не должны попадать в release JAR.
+Gradle 8.8 и JDK 21 создают Java 17 bytecode для загрузчиков 1.20.1; требование Java 21 для запуска профиля сохраняется. MixinExtras включён в основной JAR через Jar-in-Jar; `-slim` не является самостоятельным дистрибутивом. В одном клиентском профиле используется только один RenderScope JAR, соответствующий его загрузчику.
+
+`scripts/build.ps1 -Loader forge|neoforge` передаёт Gradle `-Ploader=<цель>`, выбирает JDK 21 и копирует готовый JAR в нужный дистрибутив. Необязательный `-Smoke` запускает настоящий тестовый клиент. Source set `smoke` не входит в release JAR. Рабочие профили `run-smoke-forge/` и `run-smoke-neoforge/` раздельны; каждый запуск сохраняет собственные отчёт, capture и gallery в каталоге своего дистрибутива. Наличие NeoForge-галереи не считается доказательством проверки Forge.
+
+`scripts/verify-release.py --loader forge|neoforge` проверяет соответствующие JAR, `build/<loader>/test-results/test` и настоящий loader/version в JSON capture. `scripts/package-release.py --loader forge|neoforge` упаковывает соответствующие артефакты и фактические медиа. Утилиты по умолчанию выбирают Forge. Forge-пакет: `distribution/forge/renderscope-forge-0.1.0-publication.zip`; исходный NeoForge-пакет сохраняется как `distribution/renderscope-0.1.0-publication.zip`.
 
 GPU queries, VRAM/texture-memory accounting, профилирование terrain, particles, item/GUI renderers и отдельные shader phases не включены в этот релиз. Ядро и типизированный `ObjectKind` оставляют отдельную точку для расширения категорий.

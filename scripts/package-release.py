@@ -1,4 +1,5 @@
 """Package the verified local release and actual publication media."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -6,11 +7,25 @@ import re
 import zipfile
 from PIL import Image
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--loader", choices=("forge", "neoforge"), default="forge")
+args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
-distribution = root / "distribution"
+loader = args.loader
+loader_name, loader_version = {"forge": ("Forge", "47.4.10"), "neoforge": ("NeoForge", "47.1.106")}[loader]
+distribution = root / "distribution" / "forge" if loader == "forge" else root / "distribution"
 verification = json.loads((distribution / "verification.json").read_text(encoding="utf-8"))
+artifact_pattern = rf"renderscope-{loader}-(.+)\+mc1\.20\.1\.jar"
+artifact_match = re.fullmatch(artifact_pattern, verification["artifact"])
+assert artifact_match, f"Verification does not describe a bundled {loader_name} artifact"
+assert verification.get("loader", "NeoForge" if loader == "neoforge" else "") == loader_name
+assert verification.get("loaderVersion", verification.get(f"{loader}Version")) == loader_version
 artifact = distribution / verification["artifact"]
 assert hashlib.sha256(artifact.read_bytes()).hexdigest() == verification["sha256"]
+release = json.loads((distribution / "release.json").read_text(encoding="utf-8"))["release"]
+assert release["loaders"] == [loader], "Publication metadata targets a different loader"
+assert release["targetLoaderVersion"] == loader_version
+assert release["artifact"] == artifact.name
 
 brand = distribution / "brand"
 with Image.open(brand / "renderscope-original.png") as image:
@@ -48,8 +63,13 @@ for markdown in [root / "README.md", *root.glob("docs/*.md"), *distribution.glob
     "padding": "Opaque, matching the original corner color",
 }, indent=2) + "\n", encoding="utf-8")
 
-destination = distribution / "renderscope-0.1.0-publication.zip"
-files = [path for path in distribution.rglob("*") if path.is_file() and path.suffix.lower() != ".zip"]
+version = artifact_match.group(1)
+package_name = f"renderscope-forge-{version}-publication.zip" if loader == "forge" else f"renderscope-{version}-publication.zip"
+destination = distribution / package_name
+files = [path for path in distribution.rglob("*") if path.is_file() and path.suffix.lower() != ".zip"
+         and path.relative_to(distribution).parts[0] not in ("forge", "neoforge")]
+for path in files:
+    assert path.suffix.lower() != ".jar" or path == artifact, f"Unexpected other artifact in {loader_name} materials: {path.name}"
 with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
     for path in sorted(files):
         archive.write(path, path.relative_to(distribution).as_posix())
@@ -57,5 +77,6 @@ with zipfile.ZipFile(destination) as archive:
     assert archive.testzip() is None
     assert archive.read(artifact.name) == artifact.read_bytes()
     assert "gallery/heatmap-demo.gif" in archive.namelist()
+    assert not any(name.startswith(("forge/", "neoforge/")) for name in archive.namelist()), "Mixed platform materials"
 print(f"{destination.name}: {len(files)} files, {destination.stat().st_size:,} bytes")
 print("Verified original RGBA pixels, padded icons, GIF frames, links and archived jar.")

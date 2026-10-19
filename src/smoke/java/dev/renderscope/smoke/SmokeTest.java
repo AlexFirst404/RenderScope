@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.renderscope.client.ClientRuntime;
+import dev.renderscope.client.LoaderInfo;
 import dev.renderscope.client.ProfilerSettings;
 import dev.renderscope.client.ui.RenderScopeScreen;
 import dev.renderscope.core.CaptureReport;
@@ -79,6 +80,7 @@ public final class SmokeTest {
     private static boolean finished;
     private static Path output;
     private static Path gallery;
+    private static LoaderInfo activeLoader;
     private static String stageName = "startup";
 
     public SmokeTest() {
@@ -113,6 +115,21 @@ public final class SmokeTest {
             switch (stage) {
                 case 0 -> {
                     if (mc.getOverlay() != null || mc.screen == null) return;
+                    activeLoader = LoaderInfo.current();
+                    require(activeLoader.name().equals("Forge") || activeLoader.name().equals("NeoForge"),
+                            "Unrecognized runtime loader: " + activeLoader);
+                    String expectedLoader = System.getProperty("renderscope.expectedLoader", activeLoader.name());
+                    String expectedVersion = System.getProperty("renderscope.expectedLoaderVersion", activeLoader.version());
+                    require(activeLoader.name().equalsIgnoreCase(expectedLoader),
+                            "Expected loader " + expectedLoader + " but running " + activeLoader.name());
+                    require(activeLoader.version().equals(expectedVersion),
+                            "Expected loader version " + expectedVersion + " but running " + activeLoader.version());
+                    RESULTS.addProperty("loader", activeLoader.name());
+                    RESULTS.addProperty("loaderVersion", activeLoader.version());
+                    RESULTS.addProperty("runtimeLoaderVerified", true);
+                    RESULTS.addProperty("source", "Real Minecraft 1.20.1 client and integrated server on "
+                            + activeLoader.name() + " " + activeLoader.version() + "; development-only harness");
+                    LOGGER.info("Verified actual runtime loader {} {}", activeLoader.name(), activeLoader.version());
                     mc.options.onboardAccessibility = false;
                     mc.options.tutorialStep = TutorialSteps.NONE;
                     mc.getTutorial().setStep(TutorialSteps.NONE);
@@ -201,6 +218,11 @@ public final class SmokeTest {
                                 .max(Comparator.comparing(path -> path.getFileName().toString())).orElseThrow();
                     }
                     JsonObject exported = JsonParser.parseString(Files.readString(latest, StandardCharsets.UTF_8)).getAsJsonObject();
+                    require(exported.get("loader").getAsString().equals(activeLoader.name()),
+                            "Export reports the wrong loader: " + exported.get("loader"));
+                    require(exported.get("loaderVersion").getAsString().equals(activeLoader.version()),
+                            "Export reports the wrong loader version: " + exported.get("loaderVersion"));
+                    RESULTS.addProperty("reportLoaderMetadataVerified", true);
                     require(!exported.get("positionsIncluded").getAsBoolean(), "Export positions unexpectedly enabled");
                     checkPrivateKeys(exported);
                     Files.copy(latest, output.resolve("smoke-capture-example.json"), StandardCopyOption.REPLACE_EXISTING);
@@ -448,7 +470,8 @@ public final class SmokeTest {
     private static void constructScene(MinecraftServer server) {
         require(server.getWorldData().getLevelName().equals(WORLD), "Refusing to modify an unexpected world");
         List<String> commands = List.of(
-                "gamerule doMobSpawning false", "gamerule doDaylightCycle false", "gamerule doWeatherCycle false",
+                "gamerule doMobSpawning false", "gamerule doMobLoot false", "gamerule doEntityDrops false",
+                "gamerule doDaylightCycle false", "gamerule doWeatherCycle false",
                 "gamerule sendCommandFeedback false", "time set day", "weather clear",
                 "kill @e[type=!minecraft:player]", "fill -12 63 -12 12 63 12 minecraft:smooth_stone",
                 "fill -12 64 -12 12 78 12 minecraft:air",
