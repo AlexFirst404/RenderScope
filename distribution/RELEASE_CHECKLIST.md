@@ -1,6 +1,6 @@
 # RenderScope 0.2.0 — NeoForge / Minecraft 1.20.1
 
-Локальный релиз **0.2.0**. Историческая Private Alpha **0.1.0** остаётся в Modrinth; 0.2.0 туда не загружалась. CurseForge — неодобренный авторский черновик без JAR. Старые JAR сохранены, но не включаются в пакет новой версии.
+Версия **NeoForge 0.2.0** доступна в публичном [GitHub-репозитории](https://github.com/AlexFirst404/RenderScope); NeoForge-файл в Modrinth/CurseForge не загружен. Отдельный [Forge 0.2.0 в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) остаётся Private Alpha. Историческая Private Alpha **0.1.0** сохранена отдельно. CurseForge — авторский проект New без JAR; Forge installed-сцена не считается проверкой NeoForge.
 
 ## Цель и артефакт
 
@@ -58,8 +58,8 @@
 - [x] [LICENSE](LICENSE) и [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) соответствуют корневым текстам; MixinExtras сохраняет свою MIT-лицензию.
 - [x] Release-скрипты требуют точный LicenseRef в metadata и побайтное совпадение лицензии/уведомлений в основном JAR и ZIP.
 - [x] После смены лицензии подтверждены текущий JAR и точные вложенные юридические тексты; новый Forge installed-run и сохранённые baseline-результаты описаны с их фактической областью.
-- [x] Финальный ZIP после смены лицензии проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
-- [ ] Для [GitHub-репозитория](https://github.com/AlexFirst404/RenderScope) проверена видимость Public и отправлены актуальные исходники.
+- [x] Финальный ZIP после обновления статусов площадок проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
+- [x] Для [GitHub-репозитория](https://github.com/AlexFirst404/RenderScope) проверена видимость Public через API и анонимный браузер; актуальные исходники и материалы отправлены исходным коммитом `1f3e988`.
 
 SHA-256 текста LICENSE: `cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a93437798900d1a94b6`. Полные legal-хеши и побайтные проверки сохранены в [verification.json](verification.json).
 
@@ -69,7 +69,8 @@ SHA-256 текста LICENSE: `cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a934
 
 - [x] Историческая Modrinth [Alpha 0.1.0](https://modrinth.com/mod/renderscope/version/YzYFQvOb) сохранена Private; её прежний JAR/hash не заменён версией 0.2.0.
 - [x] Иконки в Modrinth/CurseForge исправлены с полным исходным рисунком; доказательства находятся в `distribution/platforms/` репозитория.
-- [x] CurseForge проект 1756581 остаётся неодобренным авторским черновиком без JAR, без отправки файла на модерацию.
-- [ ] Отдельно разрешены и выполнены публикация/загрузка новой 0.2.0 версии на площадки.
+- [x] Forge [Private Alpha 0.2.0 в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) создана отдельной версией; повторно скачанный JAR — 371 686 байт, SHA-256 `1de007b2ae41e514cb19f358e7a7923910f30b2b9dff9f04e3797521a4264b0a`, точно совпадает с installed-артефактом. Проект Private, review не запрашивался.
+- [x] CurseForge проект 1756581 остаётся неодобренным авторским New без JAR; сохранены полный текст Custom-лицензии, Public GitHub source URL, EN/RU-описания с тремя игровыми изображениями и пять новых gallery media.
+- [x] Сохранено ограничение пользователя: файлы CurseForge не отправляются на модерацию при неподтверждённой приватности; публичная публикация Modrinth/CurseForge не выполнялась.
 
-Авторитетный снимок кабинетов: `distribution/platforms/publication-status.json`. Наличие локального ZIP/JAR и успешных тестов не означает загрузку новой версии на платформу.
+Авторитетный снимок кабинетов: `distribution/platforms/publication-status.json`. Публичный GitHub, Private Modrinth-версия и авторский черновик CurseForge имеют разные состояния доступа; проверенные статусы записаны отдельно.

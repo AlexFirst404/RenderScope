@@ -29,9 +29,9 @@ MixinExtras включён в основной JAR. Файлы `-slim`, `-source
 - [verification.json](verification.json) — текущий SHA-256 JAR и точная область подтверждённых проверок.
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — список проведённых и оставшихся проверок.
 
-0.2.0 на Modrinth/CurseForge не загружалась. Историческая Private-версия Modrinth 0.1.0 сохранена отдельно; CurseForge остаётся авторским черновиком без JAR. Локальные файлы и ZIP не означают публикацию.
+Forge **0.2.0** загружен как [Private Alpha в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu); скачанный из интерфейса версии JAR имеет тот же SHA-256, что и проверенный установленным клиентом артефакт. Проект остаётся **Private**, отправка на review и публичная публикация Modrinth не выполнялись. Историческая Private-версия 0.1.0 сохранена отдельно. CurseForge остаётся авторским проектом **New без JAR**: сохранены Custom-лицензия, ссылка на публичные исходники, EN/RU-описание и пять новых gallery media; загрузка файла не выполнялась, поскольку приватность после неё не гарантирована.
 
-Исходники: [AlexFirst404/RenderScope](https://github.com/AlexFirst404/RenderScope). Собственная **source-available** лицензия разрешает изучение, изменения и включение в бесплатные проекты и модпаки с сохранением лицензии и уведомлений. Продажа, платный доступ и включение в платные проекты, подписки или модпаки требуют предварительного письменного разрешения правообладателя. Публиковать личные изменения не требуется. Это не MIT и не OSI-approved open source; полный английский текст [LICENSE](LICENSE) определяет условия.
+Публичные исходники: [AlexFirst404/RenderScope](https://github.com/AlexFirst404/RenderScope). Собственная **source-available** лицензия разрешает изучение, изменения и включение в бесплатные проекты и модпаки с сохранением лицензии и уведомлений. Продажа, платный доступ и включение в платные проекты, подписки или модпаки требуют предварительного письменного разрешения правообладателя. Публиковать личные изменения не требуется. Это не MIT и не OSI-approved open source; полный английский текст [LICENSE](LICENSE) определяет условия.
 
 ## English
 
@@ -40,3 +40,5 @@ Use **Minecraft 1.20.1**, **Forge 47.4.10** and **Java 21**. Put `renderscope-fo
 Renderer and supported Flywheel visual CPU work is measured per instance. Full mode adds observed geometry and asynchronous shared Flywheel batch GPU diagnostics; no per-object GPU time or instanced vertex allocation is invented. JSON exports include CPU sources/shared phases, with positions off by default. See `verification.json` for the exact tested artifact and scope.
 
 RenderScope uses the custom **RenderScope Source-Available License 1.0**. Modification and inclusion in freely available projects/modpacks are allowed subject to its notices and conditions. Selling it, charging for access, or including it in paid projects/modpacks requires prior written permission. See [LICENSE](LICENSE); third-party components retain their own licenses.
+
+The [GitHub repository](https://github.com/AlexFirst404/RenderScope) is Public. Forge 0.2.0 is also saved as a [private Modrinth Alpha](https://modrinth.com/mod/renderscope/version/vHpqVjbu), with its downloaded JAR hash verified; NeoForge 0.2.0 is available through GitHub only. CurseForge remains a new author-only draft without a JAR. These states do not constitute a public Modrinth/CurseForge release.
