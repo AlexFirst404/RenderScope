@@ -1,6 +1,6 @@
 # RenderScope 0.2.0 — Forge / Minecraft 1.20.1
 
-Версия **0.2.0** доступна в публичном [GitHub-репозитории](https://github.com/AlexFirst404/RenderScope) и как [Private Forge Alpha в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu); скачанный Modrinth JAR совпал с проверенным артефактом. Историческая Private Alpha **0.1.0** сохранена отдельно. CurseForge — авторский проект New без JAR; публичная публикация мод-площадок не выполнялась.
+Версия **Forge 0.2.0** доступна в публичном [GitHub-репозитории](https://github.com/AlexFirst404/RenderScope) и загружена как Alpha в [Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) и [CurseForge](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271697). Оба проекта отправлены на модерацию и имеют статус **Under Review / «На рассмотрении»**. Скачанные JAR совпали с проверенным артефактом. Публичность после одобрения разрешена; одобрение пока не подтверждено.
 
 ## Цель и артефакт
 
@@ -67,19 +67,21 @@ Development-результат `compatibility/compat-result.json` и его се
 - [x] [LICENSE](LICENSE) и [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) соответствуют корневым текстам; MixinExtras сохраняет свою MIT-лицензию.
 - [x] Release-скрипты требуют точный LicenseRef в metadata и побайтное совпадение лицензии/уведомлений в основном JAR и ZIP.
 - [x] После смены лицензии подтверждены текущий JAR и точные вложенные юридические тексты; новый Forge installed-run и сохранённые baseline-результаты описаны с их фактической областью.
-- [x] Финальный ZIP после обновления статусов площадок проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
+- [x] Финальный ZIP после отправки площадок на модерацию проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
 - [x] Для [GitHub-репозитория](https://github.com/AlexFirst404/RenderScope) проверена видимость Public через API и анонимный браузер; актуальные исходники и материалы отправлены исходным коммитом `1f3e988`.
 
 SHA-256 текста LICENSE: `cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a93437798900d1a94b6`. Полные legal-хеши и побайтные проверки сохранены в [verification.json](verification.json).
 
-Условия RenderScope не обозначаются как MIT или OSI-approved open source. Исторический Private JAR 0.1.0 не перепаковывался.
+Условия RenderScope не обозначаются как MIT или OSI-approved open source. Исторический JAR 0.1.0 не перепаковывался; прежняя Private-видимость сохранена как датированный снимок, а не обещание будущей приватности проекта.
 
-## История площадок
+## Состояние площадок и история
 
-- [x] Историческая Modrinth [Alpha 0.1.0](https://modrinth.com/mod/renderscope/version/YzYFQvOb) сохранена Private; её прежний JAR/hash не заменён версией 0.2.0.
+- [x] Историческая Modrinth [Alpha 0.1.0](https://modrinth.com/mod/renderscope/version/YzYFQvOb) и её прежний JAR/hash не заменены версией 0.2.0; прежние Private-снимки сохранены в metadata history.
 - [x] Иконки в Modrinth/CurseForge исправлены с полным исходным рисунком; доказательства находятся в `distribution/platforms/` репозитория.
-- [x] Forge [Private Alpha 0.2.0 в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) создана отдельной версией; повторно скачанный JAR — 371 686 байт, SHA-256 `1de007b2ae41e514cb19f358e7a7923910f30b2b9dff9f04e3797521a4264b0a`, точно совпадает с installed-артефактом. Проект Private, review не запрашивался.
-- [x] CurseForge проект 1756581 остаётся неодобренным авторским New без JAR; сохранены полный текст Custom-лицензии, Public GitHub source URL, EN/RU-описания с тремя игровыми изображениями и пять новых gallery media.
-- [x] Сохранено ограничение пользователя: файлы CurseForge не отправляются на модерацию при неподтверждённой приватности; публичная публикация Modrinth/CurseForge не выполнялась.
+- [x] Forge [Alpha 0.2.0 в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) и [Alpha 0.2.0 в CurseForge](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271697) загружены; оба повторно скачанных JAR — 371 686 байт, SHA-256 `1de007b2ae41e514cb19f358e7a7923910f30b2b9dff9f04e3797521a4264b0a`, точно совпадают с installed-артефактом.
+- [x] Modrinth submission подтверждён сообщением «Your project has been submitted for review!» и статусом «На рассмотрении»; proof `modrinth-moderation-020.png`.
+- [x] CurseForge проект 1756581, файл 9271697 имеет статус **Under Review**; сохранены Forge/client/Java21/Minecraft1.20.1/Alpha, EN/RU changelog и автоматическая публикация после approval. Proof `curseforge-moderation-020.png`, remote hash — `curseforge-020-verification.json`.
+- [x] Новое разрешение пользователя на публичность и отправку обоих проектов выполнено; прежнее удержание CF JAR по условию приватности перенесено в историю.
+- [ ] Модераторы одобрили проекты и подтверждена состоявшаяся публичная публикация. На текущий момент approval не заявляется.
 
-Авторитетный снимок кабинетов: `distribution/platforms/publication-status.json`. Публичный GitHub, Private Modrinth-версия и авторский черновик CurseForge имеют разные состояния доступа; проверенные статусы записаны отдельно.
+Авторитетный снимок кабинетов: `distribution/platforms/publication-status.json`. Публичный GitHub и заявки на модерацию Modrinth/CurseForge — разные состояния. Действующие статусы Under Review и предыдущие приватные snapshots записаны отдельно; загрузка и submission не означают approval.
