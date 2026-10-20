@@ -1,6 +1,6 @@
 # RenderScope 0.2.0 — NeoForge / Minecraft 1.20.1
 
-Версия **NeoForge 0.2.0** доступна в публичном [GitHub-репозитории](https://github.com/AlexFirst404/RenderScope); NeoForge-файл в Modrinth/CurseForge не загружен. Отдельный Forge 0.2.0 загружен в [Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) и [CurseForge](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271697) и отправлен на модерацию: оба **Under Review**, approval ещё не подтверждено. Forge installed-сцена не считается проверкой NeoForge.
+Версия **NeoForge 0.2.0** доступна в публичном [GitHub-репозитории](https://github.com/AlexFirst404/RenderScope) и загружена как [Alpha в CurseForge, файл 9271865](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271865), статус **Under Review**. NeoForge в Modrinth не загружен. Отдельный Forge 0.2.0 находится на модерации в Modrinth и CurseForge; approval ещё не подтверждено. Forge installed-сцена не считается проверкой NeoForge.
 
 ## Цель и артефакт
 
@@ -58,7 +58,7 @@
 - [x] [LICENSE](LICENSE) и [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) соответствуют корневым текстам; MixinExtras сохраняет свою MIT-лицензию.
 - [x] Release-скрипты требуют точный LicenseRef в metadata и побайтное совпадение лицензии/уведомлений в основном JAR и ZIP.
 - [x] После смены лицензии подтверждены текущий JAR и точные вложенные юридические тексты; новый Forge installed-run и сохранённые baseline-результаты описаны с их фактической областью.
-- [x] Финальный ZIP после отправки площадок на модерацию проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
+- [x] Финальный ZIP после добавления отдельного NeoForge CF-файла проверен повторно: основной JAR и LICENSE/notices совпадают побайтно, исторические/test JAR и raw presentation PNG исключены.
 - [x] Для [GitHub-репозитория](https://github.com/AlexFirst404/RenderScope) проверена видимость Public через API и анонимный браузер; актуальные исходники и материалы отправлены исходным коммитом `1f3e988`.
 
 SHA-256 текста LICENSE: `cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a93437798900d1a94b6`. Полные legal-хеши и побайтные проверки сохранены в [verification.json](verification.json).
@@ -72,6 +72,8 @@ SHA-256 текста LICENSE: `cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a934
 - [x] Forge [Alpha 0.2.0 в Modrinth](https://modrinth.com/mod/renderscope/version/vHpqVjbu) и [Alpha 0.2.0 в CurseForge](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271697) загружены; оба повторно скачанных JAR — 371 686 байт, SHA-256 `1de007b2ae41e514cb19f358e7a7923910f30b2b9dff9f04e3797521a4264b0a`, точно совпадают с installed-артефактом.
 - [x] Modrinth submission подтверждён сообщением «Your project has been submitted for review!» и статусом «На рассмотрении»; proof `modrinth-moderation-020.png`.
 - [x] CurseForge проект 1756581, файл 9271697 имеет статус **Under Review**; сохранены Forge/client/Java21/Minecraft1.20.1/Alpha, EN/RU changelog и автоматическая публикация после approval. Proof `curseforge-moderation-020.png`, remote hash — `curseforge-020-verification.json`.
+- [x] Отдельная [NeoForge Alpha 0.2.0 в CurseForge, файл 9271865](https://www.curseforge.com/minecraft/mc-mods/renderscope/files/9271865) имеет **Under Review**. Повторно скачанный JAR — 371 691 байт, SHA-256 `2fd7f289ffd302991e7216d59e37fd24a50d409a6d986108a9f1a96a5eafeb50`, совпадает с локальным NeoForge-артефактом; proof `curseforge-neoforge-020-verification.json`. NeoForge в Modrinth не загружен.
+- [x] У CF-файлов Forge 9271697 и NeoForge 9271865 повторно прочитаны **Client** на уровне файла, только соответствующий loader, Java 21, Minecraft 1.20.1, Alpha и автоматическая публикация после approval. Proofs: `curseforge-forge-client-020.png`, `curseforge-neoforge-client-020.png`, `curseforge-loaders-moderation-020.png`; изменение отдельной project-level environment-настройки не заявляется.
 - [x] Новое разрешение пользователя на публичность и отправку обоих проектов выполнено; прежнее удержание CF JAR по условию приватности перенесено в историю.
 - [ ] Модераторы одобрили проекты и подтверждена состоявшаяся публичная публикация. На текущий момент approval не заявляется.
 
