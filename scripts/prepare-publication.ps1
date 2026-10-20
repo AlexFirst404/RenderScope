@@ -28,7 +28,11 @@ try {
     $panel = New-Brush '#222936'
     $graphics.FillRectangle($red,0,0,1600,6)
     $logo = [System.Drawing.Bitmap]::FromFile((Join-Path $distribution 'brand/renderscope-logo-192x192.png'))
-    try { $graphics.DrawImageUnscaled($logo,52,30) } finally { $logo.Dispose() }
+    try {
+        if ($logo.Width -ne 192 -or $logo.Height -ne 192) { throw 'Publication logo must be the exact 8x original, without added canvas.' }
+        # Paste the full-bounds integer upscale directly; no logo frame or fill.
+        $graphics.DrawImageUnscaled($logo,52,30)
+    } finally { $logo.Dispose() }
     $graphics.DrawString('RenderScope',(New-TextFont 76 $true),$white,264,66)
     $graphics.DrawString("MINECRAFT 1.20.1  /  $loaderLabel  /  CLIENT SIDE",(New-TextFont 23),$muted,270,158)
     $graphics.DrawString("Find the render cost.`nDown to the object.",(New-TextFont 43 $true),$white,(New-Object System.Drawing.RectangleF 64,300,485,150))

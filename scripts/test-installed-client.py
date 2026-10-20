@@ -23,6 +23,8 @@ import uuid
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
+PROPERTIES = dict(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\S+)\s*$", (ROOT / "gradle.properties").read_text(), re.MULTILINE))
+MOD_VERSION = PROPERTIES["mod_version"]
 MC = "1.20.1"
 FORGE = "47.4.10"
 PROFILE_ID = f"{MC}-forge-{FORGE}"
@@ -30,7 +32,7 @@ INSTALLER_NAME = f"forge-{MC}-{FORGE}-installer.jar"
 INSTALLER_SHA1 = "66bfea9963bfa60d88bab6b2750e74a958392715"
 INSTALLER_URL = f"https://maven.minecraftforge.net/net/minecraftforge/forge/{MC}-{FORGE}/{INSTALLER_NAME}"
 MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
-USER_AGENT = "RenderScope local installed-client compatibility check/0.1.0"
+USER_AGENT = "RenderScope local installed-client compatibility check/" + MOD_VERSION
 MODS = (
     ("create-1.20.1-6.0.8.jar", "8amzvn9x", "LNytGWDc", "b13d912b9247a38d66d11598c121442585a1c1e9"),
     ("Mekanism-1.20.1-10.4.16.80.jar", "uxe1WQp4", "Ce6I4WUE", "b7f12ae710888b01746507a0aa8cb375f5897158"),
@@ -312,16 +314,16 @@ def stage_mods(game: Path, renderscope: Path, harness: Path | None) -> list[dict
             if 'modId="renderscope_compat"' not in metadata:
                 raise RuntimeError("Expected the separate renderscope_compat test harness")
         files.append(harness)
+    expected = {file.name for file in files}
+    extra = [file.name for file in mods.glob("*.jar") if file.name not in expected]
+    if extra:
+        raise RuntimeError("Extra JARs in isolated profile; move previous RenderScope primary/harness JARs to .tools/installed-forge-compat/previous-mods manually, and resolve unknown mods explicitly: " + ", ".join(extra))
     installed = []
     for file in files:
         destination = mods / file.name
         if file.resolve() != destination.resolve():
             shutil.copy2(file, destination)
         installed.append({"file": file.name, "sha256": digest(destination, "sha256")})
-    expected = {file.name for file in files}
-    extra = [file.name for file in mods.glob("*.jar") if file.name not in expected]
-    if extra:
-        raise RuntimeError("Unexpected extra mods in the isolated profile; move them out explicitly: " + ", ".join(extra))
     return installed
 
 
@@ -363,7 +365,7 @@ def main() -> None:
     parser.add_argument("--launch", action="store_true", help="Explicitly launch after preparing; default only prepares")
     parser.add_argument("--java", help="JDK 21 java executable or JDK directory")
     parser.add_argument("--harness", type=Path, help="Separate reobfuscated renderscope_compat JAR")
-    parser.add_argument("--renderscope", type=Path, default=ROOT / "build/forge/libs/renderscope-forge-0.1.0+mc1.20.1.jar")
+    parser.add_argument("--renderscope", type=Path, default=ROOT / "build/forge/libs" / f"renderscope-forge-{MOD_VERSION}+mc{MC}.jar")
     parser.add_argument("--install-dir", type=Path, default=ROOT / ".tools/installed-forge-compat")
     parser.add_argument("--game-dir", type=Path, default=ROOT / "run-compat-installed")
     parser.add_argument("--output", type=Path, default=ROOT / "distribution/forge/compatibility-installed")
@@ -388,7 +390,7 @@ def main() -> None:
     username = "RenderScopeQA"
     offline_uuid = uuid.UUID(bytes=hashlib.md5(("OfflinePlayer:" + username).encode()).digest(), version=3).hex
     replacements = {"natives_directory": natives.as_posix(), "launcher_name": "RenderScopeInstalledQA",
-                    "launcher_version": "0.1.0", "classpath": os.pathsep.join(file.as_posix() for file in classpath),
+                    "launcher_version": MOD_VERSION, "classpath": os.pathsep.join(file.as_posix() for file in classpath),
                     "library_directory": (install / "libraries").as_posix(), "classpath_separator": os.pathsep,
                     "version_name": PROFILE_ID, "version_type": "release", "auth_player_name": username,
                     "game_directory": game.as_posix(), "assets_root": assets.as_posix(),

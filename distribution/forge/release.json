@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publicationStatus": "private_modrinth_alpha_version_uploaded_curseforge_author_draft",
+  "publicationStatus": "local_0.2.0_verified_historical_private_modrinth_0.1.0_preserved",
   "project": {
     "name": "RenderScope",
     "slug": "renderscope",
@@ -21,9 +21,9 @@
     ]
   },
   "release": {
-    "version": "0.1.0",
-    "versionNumber": "0.1.0+mc1.20.1",
-    "name": "RenderScope 0.1.0 for Minecraft 1.20.1 (Forge)",
+    "version": "0.2.0",
+    "versionNumber": "0.2.0+mc1.20.1",
+    "name": "RenderScope 0.2.0 for Minecraft 1.20.1 (Forge)",
     "type": "alpha",
     "gameVersions": [
       "1.20.1"
@@ -34,8 +34,8 @@
     "targetLoaderVersion": "47.4.10",
     "javaRuntime": 21,
     "javaBytecodeRelease": 17,
-    "artifact": "renderscope-forge-0.1.0+mc1.20.1.jar",
-    "gradleArtifact": "../../build/forge/libs/renderscope-forge-0.1.0+mc1.20.1.jar",
+    "artifact": "renderscope-forge-0.2.0+mc1.20.1.jar",
+    "gradleArtifact": "../../build/forge/libs/renderscope-forge-0.2.0+mc1.20.1.jar",
     "bundledDependencies": [
       {
         "name": "MixinExtras",
@@ -49,15 +49,15 @@
     "curseforgeDescription": "CURSEFORGE.md",
     "russianDescription": "DESCRIPTION_RU.md",
     "releaseChecklist": "RELEASE_CHECKLIST.md",
-    "icon512": "brand/renderscope-icon-512.png",
-    "icon1024": "brand/renderscope-icon-1024.png",
+    "icon768": "brand/renderscope-icon-768.png",
+    "icon1536": "brand/renderscope-icon-1536.png",
     "originalLogo": "brand/renderscope-original.png",
     "cover": "brand/renderscope-cover-1600x900.png",
     "heatmapAnimation": "gallery/heatmap-demo.gif",
     "galleryDirectory": "gallery"
   },
   "measurementScope": {
-    "timing": "Exclusive CPU-side renderer wall time, including attributed Mekanism deferred callbacks; not GPU execution time",
+    "timing": "Exclusive CPU-side renderer/deferred/visual task wall intervals; parallel task sums can exceed elapsed frame time. Shared batch CPU is separate.",
     "categories": [
       "entities",
       "block entities"
@@ -74,15 +74,36 @@
     "automaticReportUpload": false,
     "optionalMekanismDeferredRendererCallbacks": true,
     "mekanismDeferredTargetArtifact": "Mekanism-1.20.1-10.4.16.80.jar",
-    "flywheelInstancedPerObjectAttribution": false,
-    "createContraptionVirtualBlockEntityInstances": false
+    "createContraptionVirtualBlockEntityInstances": false,
+    "flywheelVisualCpuPerObjectAttribution": true,
+    "flywheelTargetVersion": "1.0.5",
+    "visualCpuSources": [
+      "FLYWHEEL_VISUAL_CREATE",
+      "FLYWHEEL_VISUAL_FRAME",
+      "FLYWHEEL_VISUAL_TICK",
+      "FLYWHEEL_VISUAL_UPDATE",
+      "FLYWHEEL_VISUAL_LIGHT"
+    ],
+    "flywheelSharedCpuPhase": "flywheel:batch_submit",
+    "cpuSourcesAndSharedPhasesExported": true,
+    "flywheelSharedGpu": {
+      "mode": "Full only",
+      "method": "asynchronous OpenGL timestamp query pairs",
+      "maximumPendingBatches": 64,
+      "rollingWindowSeconds": 5,
+      "sampledFrames": "completed sampled Flywheel frames; partial/dropped frames excluded",
+      "perInstanceAttribution": false,
+      "exportedInCapture": false
+    },
+    "flywheelInstancedGeometryPerInstance": false
   },
   "notes": [
     "This file is local release preparation metadata, not a platform API submission or proof of publication.",
     "Keywords are descriptive suggestions; map them to the actual categories offered by each publishing platform.",
     "Use the primary bundled JAR, not the slim or sources JAR.",
     "No server installation is required.",
-    "This Forge artifact is separate from the preserved NeoForge 47.1.106 build. Install only one RenderScope artifact in each matching loader profile."
+    "This Forge artifact is separate from the preserved NeoForge 47.1.106 build. Install only one RenderScope artifact in each matching loader profile.",
+    "Local0.2.0 has not been uploaded to Modrinth or CurseForge; platformDrafts describes the preserved historical private0.1.0 artifact."
   ],
   "platformDrafts": {
     "curseforge": {
@@ -158,7 +179,8 @@
     }
   },
   "compatibilityValidation": {
-    "status": "development_and_installed_production_passed_for_selected_scene",
+    "status": "installed_production_and_vanilla_baseline_passed_for_current_0.2.0_artifact",
+    "renderscopeVersion": "0.2.0+mc1.20.1",
     "loader": "Forge",
     "loaderVersion": "47.4.10",
     "minecraftVersion": "1.20.1",
@@ -184,48 +206,25 @@
         "version": "10.4.16.80"
       }
     ],
-    "unitAndPrivacyTests": {
-      "tests": 22,
-      "failures": 0,
-      "errors": 0
-    },
-    "developmentClient": "passed",
+    "developmentClient": "not run for0.2.0;0.1.0 evidence is historical",
     "installedProductionClient": "passed",
     "scenarios": [
-      "real filled Create and Mekanism fluid tanks",
-      "real powered Create kinetics with the active Flywheel backend",
-      "charged Mekanism energy cube with queued/rendered/attributed deferred callbacks",
-      "Timing Only without geometry counters",
-      "temporary Flywheel-off fallback geometry and backend restoration",
-      "object selection, world highlights, capture and private export"
+      "real rotating motor/shaft/cogwheel and animated mechanical press with Flywheel instancing enabled",
+      "per-instance visual UPDATE/TICK/FRAME CPU sources in Full and Timing Only",
+      "separate shared batch CPU phase and asynchronous Full GPU timestamp queries",
+      "filled fluid tanks and charged energy cube deferred callbacks",
+      "separate instance selections, heatmap, remove/recreate/disconnect cleanup",
+      "actual capture CPU sources/shared phases and default export privacy"
     ],
     "knownLimitations": [
-      "Flywheel visual/instanced/batched work outside dispatcher calls is not attributed per object or reported as GPU time.",
-      "Virtual child block entities inside Create contraptions are not separately attributed or highlighted at world block positions.",
-      "Passing a selected scene is not a general shader/renderer compatibility matrix."
+      "Shared batch GPU time and instanced geometry are not divided among individual objects.",
+      "Virtual child block entities inside Create contraptions are not separately attributed at world block positions.",
+      "This pinned scene is not a general shader/renderer compatibility matrix."
     ],
-    "developmentEvidence": {
-      "result": "compatibility/compat-result.json",
-      "capture": "compatibility/compat-capture-example.json",
-      "completedAt": "2026-10-20T20:13:22.565733800Z",
-      "defaultFlywheelBackend": "flywheel:indirect",
-      "fallbackFlywheelBackend": "flywheel:off",
-      "observedCreateShaftRpm": 32.0,
-      "fallbackKineticVerticesPerFrame": 216.0,
-      "fullDeferred": {
-        "queued": 673,
-        "rendered": 673,
-        "measured": 673
-      },
-      "timingOnlyDeferred": {
-        "queued": 506,
-        "rendered": 506,
-        "measured": 506
-      },
-      "captureFrames": 594,
-      "captureDurationSeconds": 5.0049888,
-      "screenshots": 7,
-      "exportMetadataAndPrivacy": true
+    "unitAndPrivacyTests": {
+      "tests": 36,
+      "failures": 0,
+      "errors": 0
     },
     "installedEvidence": {
       "result": "compatibility-installed/compat-result.json",
@@ -233,31 +232,150 @@
       "launcher": "compatibility-installed/installed-launch.json",
       "verification": "compatibility-installed/installed-verification.json",
       "environment": "installed-production",
-      "developmentClasspath": false,
-      "primaryJarSha256": "42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309",
-      "compatibilityResultSha256": "ad98bf54d4d19c0094eb1ba45ad2508306a494a8333c1cf7dc8bd6ae8438c75d",
-      "completedAt": "2026-10-20T20:18:16.860913Z",
-      "verifiedAt": "2026-10-20T20:18:24.070426+00:00",
+      "primaryJarSha256": "687e6a56328baaa981da80d5e5413020bfcca03e37ece5f81e08f4c74198457a",
+      "compatibilityResultSha256": "5e605e0e384fd4315c84fa434c7d5b627e758a3dd0d4d4866afe4a3d25a13752",
+      "completedAt": "2026-10-20T20:49:18.002353600Z",
+      "verifiedAt": "2026-10-20T20:49:18.646674+00:00",
+      "stagedArtifacts": [
+        {
+          "file": "renderscope-forge-0.2.0+mc1.20.1.jar",
+          "sha256": "687e6a56328baaa981da80d5e5413020bfcca03e37ece5f81e08f4c74198457a"
+        },
+        {
+          "file": "create-1.20.1-6.0.8.jar",
+          "sha256": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0"
+        },
+        {
+          "file": "Mekanism-1.20.1-10.4.16.80.jar",
+          "sha256": "3b0d191fa4a45e662f9725991d76a30192f30186abb2ba694b873b5f7b9358d2"
+        },
+        {
+          "file": "renderscope-forge-0.2.0+mc1.20.1-compat-harness.jar",
+          "sha256": "1823d24f7506dee5f20c7254d7c89b05d0fe46b0aeca97a7d98d9e4c7b37306c"
+        }
+      ],
       "defaultFlywheelBackend": "flywheel:indirect",
       "fallbackFlywheelBackend": "flywheel:off",
-      "fullDeferred": {
-        "queued": 649,
-        "rendered": 649,
-        "measured": 649
+      "fullDeferredCalls": 653,
+      "timingOnlyDeferredCalls": 503,
+      "visualFrameCalls": 734,
+      "visualTickCalls": 499,
+      "visualUpdateCalls": 31,
+      "fullSharedGpu": {
+        "status": "available",
+        "sampledFrames": 593,
+        "averageMs": 0.9536629747048904,
+        "peakMs": 2.862656,
+        "completedBatches": 729,
+        "pendingBatches": 1,
+        "droppedBatches": 0
       },
-      "timingOnlyDeferred": {
-        "queued": 504,
-        "rendered": 504,
-        "measured": 504
+      "timingOnlySharedGpu": {
+        "status": "disabled",
+        "sampledFrames": 0,
+        "averageMs": 0.0,
+        "peakMs": 0.0,
+        "completedBatches": 0,
+        "pendingBatches": 0,
+        "droppedBatches": 0
       },
-      "createSelectedInstanceBoxAndLabel": true,
-      "mekanismSelectedInstanceBoxAndLabel": true,
-      "combinedHeatmapBoxes": 5,
-      "captureFrames": 594,
-      "captureDurationSeconds": 5.0036182,
-      "screenshots": 7,
+      "sharedCpuPhase": {
+        "id": "flywheel:batch_submit",
+        "stats": {
+          "averageMs": 0.15763544303797467,
+          "p95Ms": 0.2234,
+          "peakMs": 0.2952,
+          "cpuMs": 0.06592827004219409,
+          "callsPerFrame": 1.0,
+          "calls": 237,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 0,
+          "renderTypes": [],
+          "sources": {
+            "FLYWHEEL_BATCH_SUBMIT": {
+              "averageMs": 0.15763544303797467,
+              "cpuMs": 0.06592827004219409,
+              "callsPerFrame": 1.0,
+              "calls": 237,
+              "failures": 0
+            }
+          }
+        }
+      },
+      "combinedHeatmapBoxes": 10,
+      "captureFrames": 592,
+      "captureDurationSeconds": 5.0057879,
+      "screenshots": [
+        "01-create-mekanism-mods.png",
+        "02-create-fluid-tank-detail.png",
+        "03-mekanism-fluid-tank-detail.png",
+        "04-create-selected-instance.png",
+        "05-mekanism-selected-instance.png",
+        "08-create-instanced-shaft-detail.png",
+        "09-create-instanced-shaft-selected.png",
+        "10-create-instanced-motor-selected.png",
+        "11-create-instanced-press-selected.png",
+        "06-create-mekanism-heatmap.png",
+        "07-compatibility-capture.png"
+      ],
+      "removeRecreateDisconnectCleanup": true,
       "exportMetadataAndPrivacy": true
     },
-    "baselineWithoutMekanism": "Forge vanilla smoke passed with 22 unit/privacy tests"
+    "baselineWithoutOptionalMods": {
+      "status": "passed",
+      "tests": 36,
+      "frames": 593,
+      "durationSeconds": 5.003781501,
+      "completedAt": "2026-10-20T20:50:33.028882800Z",
+      "artifact": "renderscope-forge-0.2.0+mc1.20.1.jar",
+      "sha256": "687e6a56328baaa981da80d5e5413020bfcca03e37ece5f81e08f4c74198457a"
+    }
+  },
+  "currentReleaseUploadedToPlatforms": false,
+  "compatibilityValidationHistory": [
+    {
+      "renderscopeVersion": "0.1.0",
+      "status": "development_and_installed_production_passed_for_selected_scene",
+      "unitAndPrivacyTests": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0
+      },
+      "developmentEvidence": {
+        "result": "compatibility/compat-result.json",
+        "capture": "compatibility/compat-capture-example.json",
+        "completedAt": "2026-10-20T20:13:22.565733800Z",
+        "defaultFlywheelBackend": "flywheel:indirect",
+        "fallbackFlywheelBackend": "flywheel:off",
+        "observedCreateShaftRpm": 32.0,
+        "fallbackKineticVerticesPerFrame": 216.0,
+        "fullDeferred": {
+          "queued": 673,
+          "rendered": 673,
+          "measured": 673
+        },
+        "timingOnlyDeferred": {
+          "queued": 506,
+          "rendered": 506,
+          "measured": 506
+        },
+        "captureFrames": 594,
+        "captureDurationSeconds": 5.0049888,
+        "screenshots": 7,
+        "exportMetadataAndPrivacy": true
+      },
+      "installedPrimaryJarSha256": "42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309",
+      "installedEvidenceArchive": "renderscope-forge-0.1.0-publication.zip"
+    }
+  ],
+  "verification": {
+    "record": "verification.json",
+    "artifact": "renderscope-forge-0.2.0+mc1.20.1.jar",
+    "sha256": "687e6a56328baaa981da80d5e5413020bfcca03e37ece5f81e08f4c74198457a",
+    "tests": 36,
+    "testFailures": 0,
+    "testErrors": 0
   }
 }

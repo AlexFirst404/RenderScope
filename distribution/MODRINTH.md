@@ -1,4 +1,4 @@
-# RenderScope
+# RenderScope 0.2.0
 
 ![RenderScope](brand/renderscope-cover-1600x900.png)
 
@@ -39,9 +39,11 @@ These screenshots were captured from an actual local world with vanilla objects.
 
 ## What the numbers mean
 
-The primary timer measures **CPU-side elapsed time around individual world renderer calls**. It does not measure GPU execution time. This release profiles **EntityRenderer and BlockEntityRenderer**, rather than every part of Minecraft rendering: terrain, particles, GUI and standalone shader passes are outside its mod-attribution scope.
+The primary timer measures **CPU-side elapsed time around individual renderer calls and supported visual tasks**. Parallel visual tasks contribute their actual execution intervals; their sum can exceed elapsed frame time. This CPU timer is separate from GPU execution measurements. This release profiles **EntityRenderer, BlockEntityRenderer and supported Flywheel visual CPU callbacks**, rather than every part of Minecraft rendering: terrain, particles, GUI and standalone shader passes are outside its mod-attribution scope.
 
 **Timing Only** is the default. **Full** additionally observes standard BufferBuilder vertices and BufferSource RenderType requests. Alternative render pipelines can bypass these counters. “Estimated vertex data” is an estimate of observed geometry, not GPU uploads or VRAM.
+
+**Optional Flywheel 1.0.5 support** associates visual creation/frame/tick/update/light CPU tasks with real instances. Shared batch submission is a separate CPU phase. In Full, asynchronous OpenGL timestamp queries provide a live shared-batch GPU view on supported contexts; Timing Only disables them. CPU sources and phases are exported, while GPU diagnostics remain live only. Per-object instanced vertices/GPU time and virtual contraption block entity positions are not inferred. The pinned Create/Mekanism compatibility scene is validated on the separate Forge build.
 
 Mod totals use registry ownership; renderer class ownership is shown separately. Changes injected into another mod's class cannot be precisely attributed to individual mixin authors.
 

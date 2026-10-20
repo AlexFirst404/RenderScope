@@ -8,13 +8,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.renderscope.client.ClientRuntime;
 import dev.renderscope.client.LoaderInfo;
+import dev.renderscope.client.FlywheelGpuTimers;
 import dev.renderscope.client.ProfilerSettings;
 import dev.renderscope.client.RenderHooks;
+import dev.renderscope.client.integration.FlywheelHooks;
 import dev.renderscope.client.ui.RenderScopeScreen;
 import dev.renderscope.core.AggregateMetric;
 import dev.renderscope.core.CaptureReport;
 import dev.renderscope.core.InstanceKey;
 import dev.renderscope.core.InstanceMetric;
+import dev.renderscope.core.MeasurementSource;
 import dev.renderscope.core.ObjectKind;
 import dev.renderscope.core.ProfilerSnapshot;
 import dev.renderscope.core.Statistics;
@@ -81,6 +84,10 @@ public final class CompatTest {
     private static final List<String> MODS = List.of("create", "mekanism");
     private static final BlockPos MOTOR = new BlockPos(-8, 64, -3);
     private static final BlockPos SHAFT = new BlockPos(-7, 64, -3);
+    private static final BlockPos COGWHEEL = new BlockPos(-5, 64, -3);
+    private static final BlockPos PRESS_MOTOR = new BlockPos(-8, 66, 4);
+    private static final BlockPos PRESS = new BlockPos(-7, 66, 4);
+    private static final Map<String, BlockPos> MECHANISMS = Map.of("motor", MOTOR, "shaft", SHAFT, "cogwheel", COGWHEEL, "press", PRESS);
     private static final BlockPos ENERGY_CUBE = new BlockPos(4, 64, -3);
     private static final Map<String, BlockPos> TARGETS = Map.of("create", new BlockPos(-4, 64, 1), "mekanism", new BlockPos(4, 64, 1));
     private static final List<BlockPos> TANKS = List.of(TARGETS.get("create"), new BlockPos(-2, 64, 1), TARGETS.get("mekanism"), new BlockPos(6, 64, 1));
@@ -94,6 +101,12 @@ public final class CompatTest {
     private static volatile boolean sceneReady;
     private static volatile int animationUpdates;
     private static volatile float serverShaftRpm;
+    private static volatile boolean shaftRemoved;
+    private static volatile boolean shaftRestored;
+    private static float lastClientPressOffset = Float.NaN;
+    private static int pressHeadOffsetChanges;
+    private static int shaftSpeedChanges;
+    private static float lastClientShaftSpeed;
     private static Phase phase = Phase.BOOT;
     private static int ticks;
     private static int since;
@@ -106,11 +119,15 @@ public final class CompatTest {
     private static long deferredBeforeTiming;
     private static long queuedBeforeTiming;
     private static long renderedBeforeTiming;
+    private static long visualFrameBeforeTiming;
+    private static long visualTickBeforeTiming;
 
     private enum Phase {
         BOOT, WORLD, DEFAULT_FULL, DEFAULT_TIMING, FALLBACK_FULL, RESTORE_FULL, CAPTURE,
         MODS_SCREEN, CREATE_LIST, CREATE_DETAIL, MEKANISM_LIST, MEKANISM_DETAIL,
-        CREATE_SELECTION, MEKANISM_SELECTION, HEATMAP, CAPTURE_SCREEN, FINISH
+        CREATE_SELECTION, MEKANISM_SELECTION, SHAFT_LIST, SHAFT_DETAIL, SHAFT_SELECTION,
+        MOTOR_SELECTION, PRESS_SELECTION, HEATMAP, CAPTURE_SCREEN,
+        REMOVE_SHAFT, RESTORE_SHAFT, SESSION_CLEANUP, FINISH
     }
 
     public CompatTest() {
@@ -139,6 +156,7 @@ public final class CompatTest {
             require(System.nanoTime() - STARTED < 600_000_000_000L, "Timed out during " + phase);
             ClientRuntime runtime = ClientRuntime.current();
             if (runtime == null) return;
+            if (sceneReady && mc.level != null && !shaftRemoved) observeClientMotion(mc);
             if (sceneReady && age() >= 20 && ticks % 20 == 0 && mc.getSingleplayerServer() != null) {
                 MinecraftServer server = mc.getSingleplayerServer();
                 boolean high = (ticks / 20) % 2 == 0;
@@ -182,6 +200,7 @@ public final class CompatTest {
                     mc.options.bobView().set(false); mc.options.gamma().set(1.0); mc.options.hideGui = false;
                     mc.resizeDisplay();
                     runtime.settings().profiling = true;
+                    runtime.settings().cpuTiming = true;
                     runtime.settings().sampleWindowSeconds = 2;
                     runtime.settings().mode = ProfilerSettings.MeasurementMode.FULL;
                     runtime.settings().heatmap = false; runtime.settings().inspect = false;
@@ -218,6 +237,25 @@ public final class CompatTest {
                     RESULT.addProperty("observedCreateShaftRpm", serverShaftRpm);
                     RESULT.addProperty("realFluidAnimationUpdates", animationUpdates);
                     RESULT.add("defaultFull", checkMeasurements(snapshot, true));
+                    RESULT.add("defaultInstancedVisualsFull", checkVisualMeasurements(snapshot, true));
+                    checkSharedFlywheelPhases(snapshot);
+                    FlywheelGpuTimers.Snapshot gpu = FlywheelGpuTimers.snapshot();
+                    require(gpu.available() && gpu.sampledFrames() > 0 && gpu.completedBatches() > 0 && gpu.averageMs() > 0,
+                            "Full mode has no completed real asynchronous Flywheel GPU timer queries: " + gpu.status());
+                    require(gpu.pendingBatches() <= 64, "Asynchronous GPU query ring exceeded its bound");
+                    RESULT.add("defaultFlywheelGpuFull", GSON.toJsonTree(gpu));
+                    RESULT.addProperty("defaultFlywheelVisualFrameCalls", FlywheelHooks.measuredFrameCalls());
+                    RESULT.addProperty("defaultFlywheelVisualTickCalls", FlywheelHooks.measuredTickCalls());
+                    RESULT.addProperty("defaultFlywheelVisualUpdateCalls", FlywheelHooks.measuredUpdateCalls());
+                    RESULT.addProperty("defaultFlywheelTrackedVisuals", FlywheelHooks.trackedVisuals());
+                    RESULT.addProperty("defaultFlywheelSharedBatchCalls", FlywheelHooks.sharedBatchCalls());
+                    require(FlywheelHooks.measuredFrameCalls() > 0 && FlywheelHooks.measuredTickCalls() > 0,
+                            "Actual Flywheel visual frame/tick callbacks were not measured");
+                    visualFrameBeforeTiming = FlywheelHooks.measuredFrameCalls();
+                    visualTickBeforeTiming = FlywheelHooks.measuredTickCalls();
+                    require(pressHeadOffsetChanges >= 3 && shaftSpeedChanges >= 2, "Native Create mechanism animations did not update on the client");
+                    RESULT.addProperty("realPressHeadOffsetChanges", pressHeadOffsetChanges);
+                    RESULT.addProperty("realShaftSpeedChanges", shaftSpeedChanges);
                     require(RenderHooks.measuredDeferredCalls() > 0, "No actual Mekanism deferred renderer callbacks were measured");
                     require(RenderHooks.queuedDeferredCalls() > 0 && RenderHooks.renderedDeferredCalls() > 0,
                             "Charged Mekanism cube did not traverse its actual deferred queue");
@@ -236,7 +274,18 @@ public final class CompatTest {
                 }
                 case DEFAULT_TIMING -> {
                     if (age() < 85) return;
-                    RESULT.add("defaultTimingOnly", checkMeasurements(runtime.profiler().snapshot(), false));
+                    ProfilerSnapshot snapshot = runtime.profiler().snapshot();
+                    RESULT.add("defaultTimingOnly", checkMeasurements(snapshot, false));
+                    RESULT.add("defaultInstancedVisualsTimingOnly", checkVisualMeasurements(snapshot, false));
+                    checkSharedFlywheelPhases(snapshot);
+                    FlywheelGpuTimers.Snapshot gpu = FlywheelGpuTimers.snapshot();
+                    require(gpu.status().equals("disabled") && gpu.completedBatches() == 0 && gpu.pendingBatches() == 0,
+                            "Timing Only retained GPU query work");
+                    RESULT.add("defaultFlywheelGpuTimingOnly", GSON.toJsonTree(gpu));
+                    require(FlywheelHooks.measuredFrameCalls() > visualFrameBeforeTiming && FlywheelHooks.measuredTickCalls() > visualTickBeforeTiming,
+                            "Timing Only stopped actual Flywheel visual frame/tick CPU measurements");
+                    RESULT.addProperty("timingOnlyFlywheelVisualFrameCalls", FlywheelHooks.measuredFrameCalls() - visualFrameBeforeTiming);
+                    RESULT.addProperty("timingOnlyFlywheelVisualTickCalls", FlywheelHooks.measuredTickCalls() - visualTickBeforeTiming);
                     require(RenderHooks.measuredDeferredCalls() > deferredBeforeTiming, "Timing Only stopped measuring Mekanism deferred callbacks");
                     require(RenderHooks.queuedDeferredCalls() > queuedBeforeTiming && RenderHooks.renderedDeferredCalls() > renderedBeforeTiming,
                             "Mekanism deferred queue stopped in Timing Only");
@@ -264,6 +313,7 @@ public final class CompatTest {
                     if (age() < 85) return;
                     require(flywheelOn(), "Default Flywheel backend was not restored");
                     checkMeasurements(runtime.profiler().snapshot(), true);
+                    checkVisualMeasurements(runtime.profiler().snapshot(), true);
                     runtime.startCapture(5);
                     advance(Phase.CAPTURE);
                 }
@@ -311,30 +361,95 @@ public final class CompatTest {
                 case MEKANISM_SELECTION -> {
                     if (age() < 35) return;
                     checkSelection(runtime, "mekanism");
-                    image("05-mekanism-selected-instance.png", () -> {
-                        runtime.overlay().clear(); runtime.settings().heatmap = true;
-                        runtime.settings().heatmapEntities = true; runtime.settings().heatmapBlockEntities = true;
-                        runtime.saveSettings(); mc.setScreen(null);
-                        MinecraftServer server = mc.getSingleplayerServer();
-                        server.execute(() -> command(server, "tp @a 0.5 64 15 180 9"));
-                    });
+                    image("05-mekanism-selected-instance.png", () -> openObject("shaft"));
+                    advance(Phase.SHAFT_LIST);
+                }
+                case SHAFT_LIST -> {
+                    if (age() < 16) return;
+                    require(mc.screen.mouseClicked(30, 119, 0), "Create shaft object row did not open");
+                    advance(Phase.SHAFT_DETAIL);
+                }
+                case SHAFT_DETAIL -> {
+                    if (age() < 18) return;
+                    image("08-create-instanced-shaft-detail.png", () -> selectMechanism("shaft"));
+                    advance(Phase.SHAFT_SELECTION);
+                }
+                case SHAFT_SELECTION -> {
+                    if (age() < 35) return;
+                    checkSelection(runtime, "createShaft");
+                    image("09-create-instanced-shaft-selected.png", () -> selectMechanism("motor"));
+                    advance(Phase.MOTOR_SELECTION);
+                }
+                case MOTOR_SELECTION -> {
+                    if (age() < 35) return;
+                    checkSelection(runtime, "createMotor");
+                    image("10-create-instanced-motor-selected.png", () -> selectMechanism("press"));
+                    advance(Phase.PRESS_SELECTION);
+                }
+                case PRESS_SELECTION -> {
+                    if (age() < 35) return;
+                    checkSelection(runtime, "createPress");
+                    image("11-create-instanced-press-selected.png", () -> enableHeatmap(mc, runtime));
                     advance(Phase.HEATMAP);
                 }
                 case HEATMAP -> {
                     if (age() < 35) return;
-                    require(runtime.overlay().renderedWorldBoxes() >= 2 && runtime.overlay().renderedWorldLabels() > 0, "Combined world heatmap did not render");
+                    require(runtime.overlay().renderedWorldBoxes() >= 8 && runtime.overlay().renderedWorldLabels() > 0, "Combined world heatmap did not include instanced mechanisms");
+                    JsonObject included = new JsonObject();
+                    for (var mechanism : MECHANISMS.entrySet()) {
+                        InstanceKey key = fixtureInstanceAt(runtime.profiler().snapshot(), "create", mechanism.getValue()).context().key();
+                        require(runtime.overlay().renderedWorldBox(key), "Heatmap omitted instanced Create " + mechanism.getKey());
+                        included.addProperty(mechanism.getKey(), true);
+                    }
+                    RESULT.add("instancedMechanismsInHeatmap", included);
                     RESULT.addProperty("combinedHeatmapBoxes", runtime.overlay().renderedWorldBoxes());
                     image("06-create-mekanism-heatmap.png", () -> { runtime.open(null); clickTab("capture"); });
                     advance(Phase.CAPTURE_SCREEN);
                 }
                 case CAPTURE_SCREEN -> {
                     if (age() < 20) return;
-                    image("07-compatibility-capture.png", null);
+                    image("07-compatibility-capture.png", () -> {
+                        selectMechanism("shaft");
+                        MinecraftServer server = mc.getSingleplayerServer();
+                        server.execute(() -> { command(server, "setblock -7 64 -3 minecraft:air"); shaftRemoved = true; });
+                    });
+                    advance(Phase.REMOVE_SHAFT);
+                }
+                case REMOVE_SHAFT -> {
+                    if (!shaftRemoved || age() < 100) return;
+                    require(mc.level.getBlockEntity(SHAFT) == null, "Removed shaft still exists on client");
+                    require(runtime.profiler().snapshot().instances().stream().noneMatch(value -> value.context().key().equals(selected)), "Deleted Flywheel visual retained stale instance measurements");
+                    require(!runtime.overlay().renderedWorldBox(selected) && !runtime.overlay().renderedWorldLabel(selected), "Deleted shaft retained a stale world overlay");
+                    RESULT.addProperty("removedVisualExpiredAndOverlayCleared", true);
+                    MinecraftServer server = mc.getSingleplayerServer();
+                    server.execute(() -> { command(server, "setblock -7 64 -3 create:shaft[axis=x]"); shaftRemoved = false; shaftRestored = true; });
+                    advance(Phase.RESTORE_SHAFT);
+                }
+                case RESTORE_SHAFT -> {
+                    if (!shaftRestored || age() < 80) return;
+                    InstanceMetric shaft = fixtureInstanceAt(runtime.profiler().snapshot(), "create", SHAFT);
+                    require(shaft.stats().calls() > 0 && shaft.stats().averageMs() > 0, "Recreated shaft has no new real visual measurements");
+                    require(runtime.overlay().renderedWorldBox(shaft.context().key()), "Recreated selected shaft did not regain its world box");
+                    RESULT.addProperty("recreatedVisualMeasured", true);
+                    sceneReady = false;
+                    advance(Phase.SESSION_CLEANUP);
+                    // Match vanilla PauseScreen: close the connection before clearLevel waits
+                    // for the integrated server's shutdown; clearLevel alone never requests it.
+                    mc.level.disconnect();
+                    mc.clearLevel(new TitleScreen());
+                }
+                case SESSION_CLEANUP -> {
+                    if (age() < 12) return;
+                    require(mc.level == null && runtime.profiler().snapshot().instances().isEmpty(), "World session retained profiler instances after disconnect");
+                    require(!runtime.isHighlighted(selected) && !runtime.isTracked(selected), "World session retained selection after disconnect");
+                    require(runtime.overlay().renderedWorldBoxes() == 0 && runtime.overlay().renderedWorldLabels() == 0, "Disconnected world retained overlay submissions");
+                    require(FlywheelHooks.trackedVisuals() == 0, "Disconnected world retained Flywheel visual associations");
+                    RESULT.addProperty("worldSessionMeasurementsAndSelectionCleared", true);
                     advance(Phase.FINISH);
                 }
                 case FINISH -> {
                     if (age() < 25 || !IMAGE_QUEUE.isEmpty() || IMAGE_WRITES.get() != 0) return;
-                    require(IMAGES.size() == 7, "Missing compatibility screenshots");
+                    require(IMAGES.size() == 11, "Missing compatibility screenshots");
                     RESULT.add("screenshots", IMAGES); RESULT.addProperty("success", true);
                     RESULT.addProperty("completedAt", Instant.now().toString()); writeResult();
                     LOGGER.info("RENDERSCOPE_COMPAT_SUCCESS: Create and Mekanism real timing, geometry, Flywheel default/fallback, selected instances and private capture verified");
@@ -346,7 +461,7 @@ public final class CompatTest {
 
     private static void constructScene(MinecraftServer server) throws Exception {
         require(server.getWorldData().getLevelName().equals(WORLD), "Refusing to modify an unrelated world");
-        for (String block : List.of("create:creative_motor", "create:shaft", "create:cogwheel", "create:fluid_tank", "mekanism:basic_fluid_tank", "mekanism:advanced_fluid_tank", "mekanism:basic_energy_cube")) {
+        for (String block : List.of("create:creative_motor", "create:shaft", "create:cogwheel", "create:mechanical_press", "create:fluid_tank", "mekanism:basic_fluid_tank", "mekanism:advanced_fluid_tank", "mekanism:basic_energy_cube")) {
             require(BuiltInRegistries.BLOCK.containsKey(new ResourceLocation(block)), "Required fixture block is absent: " + block);
         }
         for (String text : List.of("gamerule doMobSpawning false", "gamerule doMobLoot false", "gamerule doEntityDrops false", "gamerule doTileDrops false",
@@ -354,29 +469,37 @@ public final class CompatTest {
                 "kill @e[type=!minecraft:player]", "fill -16 63 -12 16 63 18 minecraft:smooth_stone", "fill -16 64 -12 16 78 18 minecraft:air",
                 "setblock -8 64 -3 create:creative_motor[facing=east]", "setblock -7 64 -3 create:shaft[axis=x]", "setblock -6 64 -3 create:shaft[axis=x]",
                 "setblock -5 64 -3 create:cogwheel[axis=x]", "setblock -4 64 1 create:fluid_tank", "setblock -2 64 1 create:fluid_tank",
+                "setblock -8 66 4 create:creative_motor[facing=east]", "setblock -7 66 4 create:mechanical_press[facing=east]",
                 "setblock 4 64 1 mekanism:basic_fluid_tank", "setblock 6 64 1 mekanism:advanced_fluid_tank",
                 "setblock 4 64 -3 mekanism:basic_energy_cube",
                 "gamemode creative @a", "tp @a 0.5 64 15 180 9", "effect give @a minecraft:night_vision infinite 0 true")) command(server, text);
         ServerLevel level = server.overworld();
-        BlockEntity motor = level.getBlockEntity(MOTOR);
-        require(motor != null, "Create motor was not placed");
-        Object generatedSpeed = motor.getClass().getField("generatedSpeed").get(motor);
-        generatedSpeed.getClass().getMethod("setValue", int.class).invoke(generatedSpeed, 32);
-        motor.getClass().getMethod("updateGeneratedRotation").invoke(motor);
+        setMotorSpeed(level, MOTOR, 32);
+        setMotorSpeed(level, PRESS_MOTOR, 32);
         for (String mod : MODS) {
             BlockEntity tank = level.getBlockEntity(TARGETS.get(mod));
             require(tank != null, "No real tank block entity for " + mod);
             FIXTURE_TYPES.put(mod, BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(tank.getType()).toString());
         }
-        BlockEntity shaft = level.getBlockEntity(SHAFT);
-        require(shaft != null, "Create shaft was not placed");
-        FIXTURE_TYPES.put("shaft", BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(shaft.getType()).toString());
+        for (var mechanism : MECHANISMS.entrySet()) {
+            BlockEntity tile = level.getBlockEntity(mechanism.getValue());
+            require(tile != null, "Create " + mechanism.getKey() + " was not placed");
+            FIXTURE_TYPES.put(mechanism.getKey(), BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(tile.getType()).toString());
+        }
         // Create calculates tank-controller connectivity during its first native server tick.
         // The normal animation task fills capabilities after that initialization has completed.
     }
 
     private static void animateScene(MinecraftServer server, boolean high) throws Exception {
         ServerLevel level = server.overworld();
+        setMotorSpeed(level, MOTOR, high ? 64 : 32);
+        BlockEntity press = level.getBlockEntity(PRESS);
+        require(press != null, "Create press fixture disappeared");
+        Object behaviour = press.getClass().getMethod("getPressingBehaviour").invoke(press);
+        if (!behaviour.getClass().getField("running").getBoolean(behaviour)) {
+            Class<?> mode = Class.forName("com.simibubi.create.content.kinetics.press.PressingBehaviour$Mode");
+            behaviour.getClass().getMethod("start", mode).invoke(behaviour, mode.getField("WORLD").get(null));
+        }
         for (BlockPos pos : TANKS) {
             BlockEntity tank = level.getBlockEntity(pos);
             require(tank != null, "Fixture tank disappeared");
@@ -410,7 +533,7 @@ public final class CompatTest {
             }
         }
         BlockEntity shaft = level.getBlockEntity(SHAFT);
-        serverShaftRpm = ((Number) shaft.getClass().getMethod("getSpeed").invoke(shaft)).floatValue();
+        serverShaftRpm = shaft == null ? 0 : ((Number) shaft.getClass().getMethod("getSpeed").invoke(shaft)).floatValue();
         BlockEntity cube = level.getBlockEntity(ENERGY_CUBE);
         require(cube != null, "Mekanism energy cube fixture disappeared");
         Object energyContainer = cube.getClass().getMethod("getEnergyContainer").invoke(cube);
@@ -419,6 +542,27 @@ public final class CompatTest {
         energyContainer.getClass().getMethod("setEnergy", Class.forName("mekanism.api.math.FloatingLong")).invoke(energyContainer, charge);
         cube.getClass().getMethod("sendUpdatePacket").invoke(cube);
         animationUpdates++;
+    }
+
+    private static void setMotorSpeed(ServerLevel level, BlockPos pos, int rpm) throws Exception {
+        BlockEntity motor = level.getBlockEntity(pos);
+        require(motor != null, "Create motor was not placed at " + pos);
+        Object generatedSpeed = motor.getClass().getField("generatedSpeed").get(motor);
+        generatedSpeed.getClass().getMethod("setValue", int.class).invoke(generatedSpeed, rpm);
+        motor.getClass().getMethod("updateGeneratedRotation").invoke(motor);
+        motor.getClass().getMethod("sendData").invoke(motor);
+    }
+
+    private static void observeClientMotion(Minecraft mc) throws Exception {
+        float rpm = clientShaftSpeed(mc);
+        if (rpm != 0 && lastClientShaftSpeed != 0 && rpm != lastClientShaftSpeed) shaftSpeedChanges++;
+        lastClientShaftSpeed = rpm;
+        BlockEntity press = mc.level.getBlockEntity(PRESS);
+        if (press == null) return;
+        Object behaviour = press.getClass().getMethod("getPressingBehaviour").invoke(press);
+        float offset = ((Number) behaviour.getClass().getMethod("getRenderedHeadOffset", float.class).invoke(behaviour, mc.getFrameTime())).floatValue();
+        if (Float.isFinite(lastClientPressOffset) && Math.abs(offset - lastClientPressOffset) > 0.0001F) pressHeadOffsetChanges++;
+        lastClientPressOffset = offset;
     }
 
     private static float clientShaftSpeed(Minecraft mc) throws Exception {
@@ -457,6 +601,55 @@ public final class CompatTest {
         return result;
     }
 
+    private static JsonObject checkVisualMeasurements(ProfilerSnapshot snapshot, boolean full) throws Exception {
+        require(flywheelOn(), "Instanced visual measurements must run with the real Flywheel backend enabled");
+        JsonObject result = new JsonObject();
+        for (var entry : MECHANISMS.entrySet()) {
+            InstanceMetric instance = fixtureInstanceAt(snapshot, "create", entry.getValue());
+            require(instance.context().registryId().equals(FIXTURE_TYPES.get(entry.getKey())), "Wrong registry type at instanced " + entry.getKey());
+            require(instance.context().registryOwner().equals("create") && instance.context().rendererOwner().equals("create"),
+                    "Wrong registry/visual implementation owner for " + entry.getKey());
+            Statistics stats = instance.stats();
+            MeasurementSource expectedSource = switch (entry.getKey()) {
+                case "press" -> MeasurementSource.FLYWHEEL_VISUAL_FRAME;
+                case "motor" -> MeasurementSource.FLYWHEEL_VISUAL_UPDATE;
+                default -> MeasurementSource.FLYWHEEL_VISUAL_TICK;
+            };
+            var source = stats.sources().get(expectedSource);
+            require(source != null && source.calls() > 0 && source.averageMs() > 0 && source.failures() == 0,
+                    "No positive real visual " + expectedSource + " CPU timing for " + entry.getKey());
+            String expectedVisual = switch (entry.getKey()) {
+                case "press" -> "PressVisual";
+                case "motor" -> "OrientedRotatingVisual";
+                default -> "SingleAxisRotatingVisual";
+            };
+            AggregateMetric visual = snapshot.renderers().stream().filter(value -> value.rendererClass().contains(expectedVisual)
+                    && value.rendererOwner().equals("create") && value.stats().sources().containsKey(expectedSource))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("No actual visual implementation aggregate for " + entry.getKey()));
+            require(stats.verticesPerFrame() == 0 && stats.estimatedBytesPerFrame() == 0,
+                    "Instanced visual CPU callbacks must not invent emitted vertices or GPU transfer bytes for " + entry.getKey());
+            if (!full) require(stats.renderTypes().isEmpty(), "Timing Only retained visual geometry metadata");
+            JsonObject row = new JsonObject();
+            row.addProperty("type", instance.context().registryId());
+            row.addProperty("registryOwner", instance.context().registryOwner());
+            row.addProperty("visualClass", visual.rendererClass());
+            row.addProperty("visualOwner", visual.rendererOwner());
+            row.addProperty("x", entry.getValue().getX()); row.addProperty("y", entry.getValue().getY()); row.addProperty("z", entry.getValue().getZ());
+            row.addProperty("geometryCoverage", "Per-visual CPU callbacks; instanced GPU geometry is shared and not attributed per object");
+            row.add("statistics", GSON.toJsonTree(stats));
+            result.add(entry.getKey(), row);
+        }
+        return result;
+    }
+
+    private static void checkSharedFlywheelPhases(ProfilerSnapshot snapshot) {
+        var phase = snapshot.phases().stream().filter(value -> value.stats().sources().containsKey(MeasurementSource.FLYWHEEL_BATCH_SUBMIT))
+                .findFirst().orElseThrow(() -> new IllegalStateException("No shared Flywheel batch CPU phase"));
+        var source = phase.stats().sources().get(MeasurementSource.FLYWHEEL_BATCH_SUBMIT);
+        require(source.calls() > 0 && source.averageMs() > 0 && source.failures() == 0, "Shared Flywheel batch CPU phase has no real successful submissions");
+        RESULT.add("flywheelSharedCpuPhase", GSON.toJsonTree(phase));
+    }
+
     private static InstanceMetric fixtureInstance(ProfilerSnapshot snapshot, String mod) {
         return fixtureInstanceAt(snapshot, mod, TARGETS.get(mod));
     }
@@ -469,19 +662,37 @@ public final class CompatTest {
     }
 
     private static void selectFixture(String mod) {
+        selectInstance(mod, TARGETS.get(mod));
+    }
+
+    private static void selectMechanism(String mechanism) {
+        selectInstance("create", MECHANISMS.get(mechanism));
+    }
+
+    private static void selectInstance(String mod, BlockPos pos) {
         Minecraft mc = Minecraft.getInstance(); ClientRuntime runtime = ClientRuntime.current();
         runtime.overlay().clear(); runtime.settings().heatmap = false; runtime.settings().inspect = false; runtime.saveSettings();
-        selected = fixtureInstance(runtime.profiler().snapshot(), mod).context().key();
+        selected = fixtureInstanceAt(runtime.profiler().snapshot(), mod, pos).context().key();
         runtime.toggleHighlight(selected); runtime.toggleTrack(selected); mc.setScreen(null);
-        BlockPos pos = TARGETS.get(mod); MinecraftServer server = mc.getSingleplayerServer();
-        server.execute(() -> command(server, String.format(Locale.ROOT, "tp @a %.1f %d %.1f 180 12", pos.getX() + 0.5, pos.getY(), pos.getZ() + 6.5)));
+        MinecraftServer server = mc.getSingleplayerServer();
+        int pitch = 12 - (pos.getY() - 64) * 10;
+        server.execute(() -> command(server, String.format(Locale.ROOT, "tp @a %.1f 64 %.1f 180 %d", pos.getX() + 0.5, pos.getZ() + 6.5, pitch)));
     }
 
     private static void checkSelection(ClientRuntime runtime, String mod) {
         require(runtime.isHighlighted(selected) && runtime.isTracked(selected), "Selection state was lost for " + mod);
         require(runtime.overlay().renderedWorldBoxes() == 1 && runtime.overlay().renderedWorldLabels() == 1,
                 "Single selected " + mod + " fixture did not submit exactly its own box and label");
+        require(runtime.overlay().renderedWorldBox(selected) && runtime.overlay().renderedWorldLabel(selected), "Submitted overlay belongs to a different selected key");
         RESULT.addProperty(mod + "SelectedInstanceBoxAndLabel", true);
+    }
+
+    private static void enableHeatmap(Minecraft mc, ClientRuntime runtime) {
+        runtime.overlay().clear(); runtime.settings().heatmap = true;
+        runtime.settings().heatmapEntities = true; runtime.settings().heatmapBlockEntities = true;
+        runtime.saveSettings(); mc.setScreen(null);
+        MinecraftServer server = mc.getSingleplayerServer();
+        server.execute(() -> command(server, "tp @a 0.5 64 15 180 9"));
     }
 
     @SuppressWarnings("unchecked")

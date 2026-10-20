@@ -1,4 +1,4 @@
-# RenderScope
+# RenderScope 0.2.0
 
 ![RenderScope](brand/renderscope-cover-1600x900.png)
 
@@ -39,23 +39,29 @@ These screenshots were captured from an actual local world with vanilla objects.
 
 ## What the numbers mean
 
-The primary timer measures **CPU-side elapsed time around individual world renderer calls**. It does not measure GPU execution time. This release profiles **EntityRenderer and BlockEntityRenderer**, rather than every part of Minecraft rendering: terrain, particles, GUI and standalone shader passes are outside its mod-attribution scope.
+The primary timer measures **CPU-side elapsed time around individual renderer calls and supported visual tasks**. Parallel visual tasks contribute their actual execution intervals; their sum can exceed elapsed frame time. This CPU timer is separate from GPU execution measurements. This release profiles **EntityRenderer, BlockEntityRenderer and supported Flywheel visual CPU callbacks**, rather than every part of Minecraft rendering: terrain, particles, GUI and standalone shader passes are outside its mod-attribution scope.
 
 **Timing Only** is the default. **Full** additionally observes standard BufferBuilder vertices and BufferSource RenderType requests. Alternative render pipelines can bypass these counters. “Estimated vertex data” is an estimate of observed geometry, not GPU uploads or VRAM.
 
 An optional **Mekanism 10.4.16.80** integration measures real deferred translucent callbacks and attributes their CPU time and observed geometry to the world instance that queued them. Timing Only keeps these timing measurements. Mekanism is not required to use RenderScope.
 
-**Create / Flywheel coverage is partial.** Flywheel visuals, instanced geometry and batched rendering can bypass ordinary renderer calls and the vertex counters. Their cost is not distributed across individual objects. Virtual block entities inside moving contraptions are not profiled or highlighted separately; an outer contraption entity can still be measured through the normal entity dispatcher. RenderScope does not change the Flywheel backend automatically.
+**New in 0.2.0: Flywheel 1.0.5 visual CPU profiling.** Visual creation, frame, tick, update and light work is associated with real world instances, including Create mechanisms using the active instancing backend. Source breakdowns distinguish ordinary renderer calls from visual CPU tasks; instance highlights and heatmaps use the same measured world objects. Shared batch submission has a separate CPU phase.
 
-A real scene passed in both the development client and an **installed Forge production profile** with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 1.20.1-10.4.16.80**: filled tanks, charged-energy-cube deferred callbacks, Full/Timing Only, selected instances, capture/export and a separate Flywheel-off fallback. The installed launcher and measured JAR hash were verified. This covers the selected scene, without claiming complete per-object coverage of instanced rendering.
+In **Full**, asynchronous OpenGL timestamp queries also measure shared Flywheel batch GPU intervals when supported. The live GPU view uses completed sampled Flywheel frames from approximately five seconds; results are collected later without blocking after each object. **Timing Only** disables GPU queries. CPU sources and shared phases are exported; the live GPU diagnostic is not a GPU capture. Instanced vertices and GPU time are not divided among individual objects. Virtual block entities inside contraptions remain outside separate world-position attribution, and RenderScope does not force a different backend.
+
+The **0.2.0 installed production Forge scenario passed** with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80** with rotating motor/shaft/cogwheel and an animated press. It verified actual per-instance visual CPU sources with instancing enabled, shared CPU/GPU diagnostics, Full/Timing Only, individual selections, heatmap, private capture, visual removal/recreation and world-disconnect cleanup. This is a pinned scene, not a general rendering compatibility matrix.
 
 ![Create and Mekanism in the installed Forge production profile](compatibility-installed/01-create-mekanism-mods.png)
+
+![Flywheel visual CPU sources for a real mechanism](compatibility-installed/08-create-instanced-shaft-detail.png)
+
+![A rotating shaft selected with instancing enabled](compatibility-installed/09-create-instanced-shaft-selected.png)
 
 Mod totals use registry ownership; renderer class ownership is shown separately. Changes injected into another mod's class cannot be precisely attributed to individual mixin authors.
 
 ## Install
 
-Use **Minecraft 1.20.1, Forge 47.4.10 and Java 21**. Place `renderscope-forge-0.1.0+mc1.20.1.jar` in your Forge client profile's `mods` folder. Required MixinExtras runtime support is bundled. NeoForge has a separate build; install only one RenderScope JAR matching your profile's loader.
+Use **Minecraft 1.20.1, Forge 47.4.10 and Java 21**. Place `renderscope-forge-0.2.0+mc1.20.1.jar` in your Forge client profile's `mods` folder. Required MixinExtras runtime support is bundled. NeoForge has a separate build; install only one RenderScope JAR matching your profile's loader.
 
 **No server installation is required.** RenderScope sends no custom profiling packets and can be used while playing on a server without RenderScope. It does not optimize or modify the selected world objects.
 

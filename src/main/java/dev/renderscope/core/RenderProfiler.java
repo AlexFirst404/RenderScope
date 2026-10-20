@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -26,6 +27,7 @@ public final class RenderProfiler {
     private static final long TIMELINE_INTERVAL = 100_000_000L;
     private static final long TIMELINE_WINDOW = 30 * NS_PER_SECOND;
     private static final int MAX_FRAME_INSTANCES = 4096;
+    private static final int MAX_FRAME_RENDERER_INSTANCE_LINKS = 16384;
     private static final int MAX_ROLLING_FRAMES = 8192;
     private static final int MAX_ROLLING_SAMPLES = 262144;
     private static final int MAX_CAPTURE_KEYS = 4096;
@@ -99,8 +101,58 @@ public final class RenderProfiler {
     /** Returns null when profiling is disabled or no frame is active. */
     public synchronized CallToken beginCall(SampleContext context) {
         if (!enabled || current == null) return null;
-        return new CallToken(this, generation, current.id, context, nanoClock.getAsLong(),
+        return new CallToken(this, generation, current.id, context, MeasurementSource.RENDERER, null, nanoClock.getAsLong(),
             cpuTimingEnabled ? cpuClock.getAsLong() : -1, Thread.currentThread().getId());
+    }
+
+    /** Capture at scheduling time, not when a worker eventually starts its task. */
+    public synchronized FrameHandle currentFrame() {
+        return enabled && current != null ? new FrameHandle(this, generation, current.id) : null;
+    }
+
+    public synchronized CallToken beginCall(SampleContext context, MeasurementSource source, FrameHandle frame) {
+        if (!accepts(frame)) {
+            if (enabled && frame != null && frame.owner == this && frame.generation == generation) droppedMeasurements++;
+            return null;
+        }
+        return new CallToken(this, generation, current.id, java.util.Objects.requireNonNull(context),
+            java.util.Objects.requireNonNull(source), null, nanoClock.getAsLong(),
+            cpuTimingEnabled ? cpuClock.getAsLong() : -1, Thread.currentThread().getId());
+    }
+
+    private boolean accepts(FrameHandle frame) {
+        return enabled && frame != null && frame.owner == this && frame.generation == generation
+            && current != null && frame.frame == current.id;
+    }
+
+    public synchronized PhaseToken beginPhase(String id, MeasurementSource source) {
+        if (!enabled || current == null) return null;
+        if (id == null || id.isBlank() || id.length() > 128) throw new IllegalArgumentException("Invalid phase ID");
+        return new PhaseToken(new CallToken(this, generation, current.id, null,
+            java.util.Objects.requireNonNull(source), id, nanoClock.getAsLong(),
+            cpuTimingEnabled ? cpuClock.getAsLong() : -1, Thread.currentThread().getId()));
+    }
+
+    public void endPhase(PhaseToken phase, boolean failure) {
+        if (phase != null) endCall(phase.token, 0, 0, Set.of(), failure);
+    }
+
+    /** Exclude a synchronous continuation executed by a task but owned by another plan. */
+    public synchronized ExcludedInterval beginExcludedInterval(CallToken call) {
+        if (call == null || call.owner != this || call.finished || call.threadId != Thread.currentThread().getId()) return null;
+        return new ExcludedInterval(call, nanoClock.getAsLong(), call.cpuStarted >= 0 ? cpuClock.getAsLong() : -1);
+    }
+
+    public synchronized void endExcludedInterval(ExcludedInterval interval) {
+        if (interval == null || interval.finished || interval.call.owner != this) return;
+        interval.finished = true;
+        CallToken call = interval.call;
+        if (call.finished || call.threadId != Thread.currentThread().getId()) return;
+        call.excludedWall = saturatedAdd(call.excludedWall, Math.max(0, nanoClock.getAsLong() - interval.started));
+        if (interval.cpuStarted >= 0) {
+            long end = cpuClock.getAsLong();
+            if (end >= interval.cpuStarted) call.excludedCpu = saturatedAdd(call.excludedCpu, end - interval.cpuStarted);
+        }
     }
 
     /** An adapter intercepted real work but could not retain an unambiguous bounded association. */
@@ -113,7 +165,11 @@ public final class RenderProfiler {
                                      Set<String> renderTypes, boolean failure) {
         if (token == null || token.owner != this || token.finished) return;
         token.finished = true;
-        if (token.generation != generation || current == null || token.frame != current.id) return;
+        if (token.generation != generation || current == null || token.frame != current.id
+            || token.threadId != Thread.currentThread().getId()) {
+            if (token.generation == generation) droppedMeasurements++;
+            return;
+        }
         token.rawWall = Math.max(0, nanoClock.getAsLong() - token.started);
         token.rawCpu = 0;
         if (token.cpuStarted >= 0 && token.threadId == Thread.currentThread().getId()) {
@@ -123,6 +179,12 @@ public final class RenderProfiler {
         token.validMeasurement = true;
         long elapsed = Math.max(0, token.rawWall - token.excludedWall);
         long cpu = Math.max(0, token.rawCpu - token.excludedCpu);
+        if (token.phaseId != null) {
+            if (!current.phases.containsKey(token.phaseId) && current.phases.size() >= 64) { droppedMeasurements++; return; }
+            CallSample phase = current.phases.computeIfAbsent(token.phaseId, ignored -> new CallSample(null));
+            phase.observe(token, elapsed, cpu, 0, 0, Set.of(), failure);
+            return;
+        }
         current.calls++;
         current.wall += elapsed;
         current.cpu += cpu;
@@ -139,15 +201,24 @@ public final class RenderProfiler {
             sample = new CallSample(token.context);
             current.instances.put(token.context.key(), sample);
         }
-        sample.context = token.context;
-        sample.wall += elapsed;
-        sample.cpu += cpu;
-        sample.calls++;
-        if (failure) sample.failures++;
-        sample.vertices += Math.max(0, vertices);
-        sample.bytes += Math.max(0, estimatedBytes);
+        sample.observe(token, elapsed, cpu, vertices, estimatedBytes, renderTypes, failure);
         sample.lastSeen = nanoClock.getAsLong();
-        sample.addTypes(renderTypes);
+        // One instance can have both a classic BER and a visual: preserve each implementation.
+        CallSample renderer = current.renderers.get(token.context.rendererClass());
+        if (renderer == null && current.renderers.size() < MAX_FRAME_INSTANCES) {
+            renderer = new CallSample(token.context);
+            current.renderers.put(token.context.rendererClass(), renderer);
+        }
+        if (renderer != null) {
+            renderer.observe(token, elapsed, cpu, vertices, estimatedBytes, renderTypes, failure);
+            renderer.lastSeen = sample.lastSeen;
+            if (!renderer.seenInstances.contains(token.context.key())) {
+                if (current.rendererInstanceLinks < MAX_FRAME_RENDERER_INSTANCE_LINKS) {
+                    renderer.seenInstances.add(token.context.key());
+                    current.rendererInstanceLinks++;
+                } else droppedMeasurements++;
+            }
+        } else droppedMeasurements++;
     }
 
     /**
@@ -259,7 +330,7 @@ public final class RenderProfiler {
             : new CaptureStatus(true, seconds(now - capture.started), capture.durationSeconds);
         cached = new ProfilerSnapshot(enabled, sampleWindowSeconds, aggregate.performance(),
             aggregate.mods(), aggregate.renderers(), aggregate.objects(), aggregate.instances(),
-            new ArrayList<>(timeline), status, droppedMeasurements + aggregate.dropped);
+            new ArrayList<>(timeline), status, droppedMeasurements + aggregate.dropped, aggregate.phases());
         cachedAt = now;
         return cached;
     }
@@ -287,7 +358,7 @@ public final class RenderProfiler {
         Aggregation a = completed.aggregate;
         lastCapture = new CaptureReport(completed.epochMillis, seconds(now - completed.started),
             a.frames, a.performance(), a.mods(), a.renderers(), a.objects(), a.instances(),
-            completed.timeline, droppedMeasurements - completed.initialDropped + a.dropped);
+            completed.timeline, droppedMeasurements - completed.initialDropped + a.dropped, a.phases());
         cached = null;
     }
 
@@ -311,6 +382,8 @@ public final class RenderProfiler {
         private final long generation;
         private final long frame;
         private final SampleContext context;
+        private final MeasurementSource source;
+        private final String phaseId;
         private final long started;
         private final long cpuStarted;
         private final long threadId;
@@ -322,15 +395,44 @@ public final class RenderProfiler {
         private long excludedWall;
         private long excludedCpu;
 
+        public boolean recorded() { return validMeasurement; }
+
         private CallToken(RenderProfiler owner, long generation, long frame, SampleContext context,
+                          MeasurementSource source, String phaseId,
                           long started, long cpuStarted, long threadId) {
             this.owner = owner;
             this.generation = generation;
             this.frame = frame;
-            this.context = java.util.Objects.requireNonNull(context, "context");
+            this.context = context;
+            this.source = source;
+            this.phaseId = phaseId;
             this.started = started;
             this.cpuStarted = cpuStarted;
             this.threadId = threadId;
+        }
+    }
+
+    /** Opaque value carrying a session/frame identity, never a world or renderer reference. */
+    public static final class FrameHandle {
+        private final RenderProfiler owner;
+        private final long generation, frame;
+        private FrameHandle(RenderProfiler owner, long generation, long frame) {
+            this.owner = owner; this.generation = generation; this.frame = frame;
+        }
+        public long id() { return frame; }
+    }
+
+    public static final class PhaseToken {
+        private final CallToken token;
+        private PhaseToken(CallToken token) { this.token = token; }
+    }
+
+    public static final class ExcludedInterval {
+        private final CallToken call;
+        private final long started, cpuStarted;
+        private boolean finished;
+        private ExcludedInterval(CallToken call, long started, long cpuStarted) {
+            this.call = call; this.started = started; this.cpuStarted = cpuStarted;
         }
     }
 
@@ -341,6 +443,7 @@ public final class RenderProfiler {
         final Map<String, CallSample> mods = new HashMap<>();
         final Map<String, CallSample> renderers = new HashMap<>();
         final Map<String, CallSample> objects = new HashMap<>();
+        final Map<String, CallSample> phases = new HashMap<>();
         long ended;
         long duration;
         long wall;
@@ -351,18 +454,18 @@ public final class RenderProfiler {
         long vertices;
         long bytes;
         boolean spike;
+        int rendererInstanceLinks;
 
         Frame(long id, long started) { this.id = id; this.started = started; }
 
         void prepareGroups() {
             for (CallSample sample : instances.values()) {
                 merge(mods, sample.context.registryOwner(), sample);
-                merge(renderers, sample.context.rendererClass(), sample);
                 merge(objects, sample.objectKey, sample);
             }
         }
 
-        int retainedSize() { return instances.size() + mods.size() + renderers.size() + objects.size(); }
+        int retainedSize() { return instances.size() + mods.size() + renderers.size() + objects.size() + phases.size() + rendererInstanceLinks; }
 
         private static void merge(Map<String, CallSample> map, String id, CallSample sample) {
             map.computeIfAbsent(id, ignored -> new CallSample(sample.context)).merge(sample);
@@ -380,10 +483,24 @@ public final class RenderProfiler {
         long lastSeen;
         final String objectKey;
         Set<String> renderTypes;
+        final Set<InstanceKey> seenInstances = new HashSet<>();
+        final EnumMap<MeasurementSource, SourceTotals> sources = new EnumMap<>(MeasurementSource.class);
 
         CallSample(SampleContext context) {
             this.context = context;
-            objectKey = context.key().kind().name() + ":" + context.registryId();
+            objectKey = context == null ? "" : context.key().kind().name() + ":" + context.registryId();
+        }
+
+        void observe(CallToken token, long elapsed, long cpuTime, long vertexCount, long byteCount,
+                     Set<String> types, boolean failure) {
+            context = token.context;
+            wall += elapsed; cpu += cpuTime; calls++;
+            if (failure) failures++;
+            vertices += Math.max(0, vertexCount); bytes += Math.max(0, byteCount);
+            addTypes(types);
+            SourceTotals source = sources.computeIfAbsent(token.source, ignored -> new SourceTotals());
+            source.wall += elapsed; source.cpu += cpuTime; source.calls++;
+            if (failure) source.failures++;
         }
 
         void merge(CallSample other) {
@@ -395,6 +512,7 @@ public final class RenderProfiler {
             bytes += other.bytes;
             if (other.lastSeen >= lastSeen) { context = other.context; lastSeen = other.lastSeen; }
             addTypes(other.renderTypes);
+            other.sources.forEach((source, totals) -> sources.computeIfAbsent(source, ignored -> new SourceTotals()).add(totals, 1));
         }
 
         void addTypes(Set<String> types) {
@@ -402,6 +520,15 @@ public final class RenderProfiler {
             if (renderTypes == null) renderTypes = new HashSet<>();
             RenderProfiler.addTypes(renderTypes, types);
         }
+    }
+
+    private static final class SourceTotals {
+        long wall, cpu, calls, failures;
+        void add(SourceTotals value, int sign) {
+            wall += sign * value.wall; cpu += sign * value.cpu;
+            calls += sign * value.calls; failures += sign * value.failures;
+        }
+        SourceMetric metric(double frames) { return new SourceMetric(ms(wall / frames), ms(cpu / frames), calls / frames, calls, failures); }
     }
 
     /** Missing per-frame observations are represented by zeros when statistics are read. */
@@ -413,6 +540,7 @@ public final class RenderProfiler {
         final Map<InstanceKey, Integer> instances = new HashMap<>();
         final Set<String> types = new HashSet<>();
         final Map<String, Integer> typeCounts;
+        final EnumMap<MeasurementSource, SourceTotals> sources = new EnumMap<>(MeasurementSource.class);
         long wall;
         long cpu;
         long calls;
@@ -442,6 +570,7 @@ public final class RenderProfiler {
             else if (sample.renderTypes != null) for (String type : sample.renderTypes) {
                 typeCounts.merge(type, 1, Integer::sum);
             }
+            sample.sources.forEach((source, totals) -> sources.computeIfAbsent(source, ignored -> new SourceTotals()).add(totals, 1));
         }
 
         void remove(CallSample sample) {
@@ -458,6 +587,10 @@ public final class RenderProfiler {
                 if (count == 1) typeCounts.remove(type);
                 else typeCounts.put(type, count - 1);
             }
+            sample.sources.forEach((source, totals) -> {
+                SourceTotals existing = sources.get(source);
+                if (existing != null) { existing.add(totals, -1); if (existing.calls == 0) sources.remove(source); }
+            });
         }
 
         Statistics statistics(int frames) {
@@ -472,7 +605,7 @@ public final class RenderProfiler {
             }
             return new Statistics(ms(wall / divisor), ms(distribution.percentile(0.95, frames)),
                 ms(distribution.isExact() ? distribution.maximum() : peak), ms(cpu / divisor), calls / divisor, calls, failures, vertices / divisor,
-                bytes / divisor, instances.size(), visibleTypes);
+                bytes / divisor, instances.size(), visibleTypes, sourceMetrics(sources, divisor));
         }
     }
 
@@ -482,6 +615,7 @@ public final class RenderProfiler {
         final Map<String, MetricAccumulator> renderers = new HashMap<>();
         final Map<String, MetricAccumulator> objects = new HashMap<>();
         final Map<InstanceKey, MetricAccumulator> instances = new HashMap<>();
+        final Map<String, MetricAccumulator> phases = new HashMap<>();
         final Distribution frameTimes;
         int frames;
         long wall;
@@ -514,6 +648,10 @@ public final class RenderProfiler {
             observe(mods, frame.mods, false);
             observe(renderers, frame.renderers, false);
             observe(objects, frame.objects, true);
+            observe(phases, frame.phases, false);
+            for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) {
+                for (InstanceKey key : entry.getValue().seenInstances) trackInstance(renderers.get(entry.getKey()), key);
+            }
             for (Map.Entry<InstanceKey, CallSample> entry : frame.instances.entrySet()) {
                 InstanceKey key = entry.getKey();
                 CallSample sample = entry.getValue();
@@ -526,7 +664,6 @@ public final class RenderProfiler {
                 if (instance != null) { instance.observe(sample); trackInstance(instance, key); }
                 else dropped++;
                 trackInstance(mods.get(sample.context.registryOwner()), key);
-                trackInstance(renderers.get(sample.context.rendererClass()), key);
                 trackInstance(objects.get(sample.objectKey), key);
             }
         }
@@ -555,13 +692,16 @@ public final class RenderProfiler {
                 CallSample sample = entry.getValue();
                 if (key.kind() == ObjectKind.ENTITY) entityCount--; else blockCount--;
                 untrackInstance(mods.get(sample.context.registryOwner()), key);
-                untrackInstance(renderers.get(sample.context.rendererClass()), key);
                 untrackInstance(objects.get(sample.objectKey), key);
                 removeMetric(instances, key, sample);
             }
             for (Map.Entry<String, CallSample> entry : frame.mods.entrySet()) removeMetric(mods, entry.getKey(), entry.getValue());
             for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) removeMetric(renderers, entry.getKey(), entry.getValue());
+            for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) {
+                for (InstanceKey key : entry.getValue().seenInstances) untrackInstance(renderers.get(entry.getKey()), key);
+            }
             for (Map.Entry<String, CallSample> entry : frame.objects.entrySet()) removeMetric(objects, entry.getKey(), entry.getValue());
+            for (Map.Entry<String, CallSample> entry : frame.phases.entrySet()) removeMetric(phases, entry.getKey(), entry.getValue());
             if (frames == 0) currentFrame = 0;
         }
 
@@ -612,6 +752,10 @@ public final class RenderProfiler {
         List<AggregateMetric> mods() { return aggregates(mods); }
         List<AggregateMetric> renderers() { return aggregates(renderers); }
         List<AggregateMetric> objects() { return aggregates(objects); }
+        List<PhaseMetric> phases() {
+            return phases.values().stream().map(metric -> new PhaseMetric(metric.id, metric.statistics(frames)))
+                .sorted(Comparator.comparingDouble((PhaseMetric m) -> m.stats().averageMs()).reversed()).toList();
+        }
 
         private List<AggregateMetric> aggregates(Map<String, MetricAccumulator> map) {
             List<AggregateMetric> result = new ArrayList<>(map.size());
@@ -772,7 +916,13 @@ public final class RenderProfiler {
 
     private static Statistics singleFrameStats(CallSample sample) {
         return new Statistics(ms(sample.wall), ms(sample.wall), ms(sample.wall), ms(sample.cpu),
-            sample.calls, sample.calls, sample.failures, sample.vertices, sample.bytes, 1, sample.renderTypes);
+            sample.calls, sample.calls, sample.failures, sample.vertices, sample.bytes, 1, sample.renderTypes, sourceMetrics(sample.sources, 1));
+    }
+
+    private static Map<MeasurementSource, SourceMetric> sourceMetrics(Map<MeasurementSource, SourceTotals> sources, double divisor) {
+        EnumMap<MeasurementSource, SourceMetric> result = new EnumMap<>(MeasurementSource.class);
+        sources.forEach((source, value) -> result.put(source, value.metric(divisor)));
+        return result;
     }
 
     private static void addTypes(Set<String> destination, Set<String> source) {

@@ -7,12 +7,21 @@ public record CaptureReport(long startedAtEpochMillis, double durationSeconds, i
                             Performance performance, List<AggregateMetric> mods,
                             List<AggregateMetric> renderers, List<AggregateMetric> objects,
                             List<InstanceMetric> instances, List<FramePoint> timeline,
-                            long droppedMeasurements) {
+                            long droppedMeasurements, List<PhaseMetric> phases) {
     public CaptureReport {
         mods = List.copyOf(mods);
         renderers = List.copyOf(renderers);
         objects = List.copyOf(objects);
         instances = List.copyOf(instances);
         timeline = List.copyOf(timeline);
+        phases = List.copyOf(phases);
+    }
+    public CaptureReport(long startedAtEpochMillis, double durationSeconds, int frames,
+                         Performance performance, List<AggregateMetric> mods,
+                         List<AggregateMetric> renderers, List<AggregateMetric> objects,
+                         List<InstanceMetric> instances, List<FramePoint> timeline,
+                         long droppedMeasurements) {
+        this(startedAtEpochMillis, durationSeconds, frames, performance, mods, renderers,
+            objects, instances, timeline, droppedMeasurements, List.of());
     }
 }

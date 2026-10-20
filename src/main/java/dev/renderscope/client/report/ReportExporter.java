@@ -49,22 +49,31 @@ public final class ReportExporter {
     /** Public for privacy regression tests; positions are included only by this explicit opt-in. */
     public static JsonObject toJson(CaptureReport capture, boolean positions, String mode, boolean cpuTiming) {
         JsonObject root = new JsonObject();
-        root.addProperty("schemaVersion",1);
+        root.addProperty("schemaVersion",2);
         root.addProperty("recordedAt",Instant.ofEpochMilli(capture.startedAtEpochMillis()).toString());
         root.addProperty("durationSeconds",capture.durationSeconds());
         root.addProperty("frames",capture.frames());
         root.addProperty("measurementMode",mode);
         root.addProperty("threadCpuTimingEnabled",cpuTiming);
         root.addProperty("positionsIncluded",positions);
-        root.addProperty("timingMeaning","Measured CPU-side renderer wall time; includes submission and driver waits, not GPU execution time.");
+        root.addProperty("timingMeaning","Measured CPU-side renderer/visual wall time; includes submission and driver waits, not GPU execution time. Parallel visual tasks can overlap; their summed work is not elapsed frame latency.");
         root.addProperty("geometryMeaning","Observed BufferBuilder vertices and estimated vertex data; alternative rendering pipelines may bypass these counters. Not GPU uploads or VRAM.");
-        root.addProperty("coverageMeaning","Measured standard entity/block entity renderer calls and attributed deferred Mekanism renderer calls. Flywheel instanced visual updates/draws and Create contraption virtual worlds are not covered; totals are not the complete cost of a mod.");
+        root.addProperty("coverageMeaning","Standard entity/block entity calls, attributed deferred Mekanism calls and Flywheel visual creation/frame/tick/update/light CPU work for real world instances. Shared Flywheel CPU batch submission is separate in phases. Instanced geometry and contraption virtual-world blocks are not attributed; totals are not the complete cost of a mod.");
+        root.addProperty("gpuMeaning","Full mode can display asynchronous shared Flywheel GPU timestamps in the live UI. Delayed GPU diagnostics are not included in this capture and are never assigned to individual mechanisms.");
         root.addProperty("percentiles","Capture percentiles use bounded histograms; averages include frames with zero calls.");
         root.addProperty("droppedMeasurements",capture.droppedMeasurements());
         root.add("performance",GSON.toJsonTree(capture.performance()));
         root.add("mods",aggregates(capture.mods()));
         root.add("renderers",aggregates(capture.renderers()));
         root.add("objects",aggregates(capture.objects()));
+        JsonArray phases = new JsonArray();
+        for (PhaseMetric phase : capture.phases()) {
+            JsonObject row = new JsonObject();
+            row.addProperty("id", phase.id());
+            row.add("statistics", GSON.toJsonTree(phase.stats()));
+            phases.add(row);
+        }
+        root.add("phases", phases);
         JsonArray instances = new JsonArray();
         for (InstanceMetric metric : capture.instances()) instances.add(instance(metric,positions));
         root.add("instances",instances);

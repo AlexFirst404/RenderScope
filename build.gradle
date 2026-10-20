@@ -74,6 +74,10 @@ minecraft {
 repositories {
     mavenCentral()
     maven {
+        url = 'https://maven.createmod.net'
+        content { includeGroup 'dev.engine-room.flywheel' }
+    }
+    maven {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
@@ -95,6 +99,8 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Optional Flywheel adapters link only when Flywheel is installed; nothing is bundled.
+    compileOnly 'dev.engine-room.flywheel:flywheel-forge-1.20.1:1.0.5'
     compatRuntimeOnly fg.deobf('maven.modrinth:create:8amzvn9x')
     compatRuntimeOnly fg.deobf('maven.modrinth:mekanism:uxe1WQp4')
 }

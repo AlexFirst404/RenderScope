@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import re
 import struct
 from xml.etree import ElementTree
 import zipfile
@@ -29,6 +30,55 @@ def private_capture_fields(value):
     elif isinstance(value, list):
         for child in value:
             private_capture_fields(child)
+
+
+def verify_flywheel_measurements(result):
+    expected = {
+        "motor": ("OrientedRotatingVisual", "FLYWHEEL_VISUAL_UPDATE"),
+        "shaft": ("SingleAxisRotatingVisual", "FLYWHEEL_VISUAL_TICK"),
+        "cogwheel": ("SingleAxisRotatingVisual", "FLYWHEEL_VISUAL_TICK"),
+        "press": ("PressVisual", "FLYWHEEL_VISUAL_FRAME"),
+    }
+    for key in ("defaultInstancedVisualsFull", "defaultInstancedVisualsTimingOnly"):
+        visuals = result[key]
+        assert set(visuals) == set(expected), "Missing default-backend Flywheel mechanism measurements"
+        for mechanism, (visual_class, source_name) in expected.items():
+            row = visuals[mechanism]
+            # BE registry types can be shared by several blocks (for example
+            # shaft and cogwheel are create:simple_kinetic), not block IDs.
+            assert row["type"].startswith("create:") and row["registryOwner"] == row["visualOwner"] == "create"
+            assert row["type"] == result["defaultInstancedVisualsFull"][mechanism]["type"]
+            assert visual_class in row["visualClass"], f"Wrong visual implementation for {mechanism}"
+            statistics = row["statistics"]
+            source = statistics["sources"][source_name]
+            assert source["calls"] > 0 and source["averageMs"] > 0 and source["failures"] == 0, f"No real {source_name} timing for {mechanism}"
+            assert statistics["verticesPerFrame"] == statistics["estimatedBytesPerFrame"] == 0, "Per-visual callbacks must not claim instanced GPU geometry"
+            if key.endswith("TimingOnly"):
+                assert not statistics["renderTypes"], "Timing Only retained visual geometry metadata"
+    for field in ("defaultFlywheelVisualFrameCalls", "defaultFlywheelVisualTickCalls", "defaultFlywheelVisualUpdateCalls",
+                  "defaultFlywheelTrackedVisuals", "defaultFlywheelSharedBatchCalls", "timingOnlyFlywheelVisualFrameCalls", "timingOnlyFlywheelVisualTickCalls"):
+        assert result[field] > 0, f"Missing actual Flywheel callback activity: {field}"
+    assert result["defaultFlywheelTrackedVisuals"] >= 4
+    assert result["realPressHeadOffsetChanges"] >= 3 and result["realShaftSpeedChanges"] >= 2, "Create mechanisms did not actually animate"
+    phase = result["flywheelSharedCpuPhase"]
+    assert phase["id"] == "flywheel:batch_submit"
+    phase_source = phase["stats"]["sources"]["FLYWHEEL_BATCH_SUBMIT"]
+    assert phase_source["calls"] > 0 and phase_source["averageMs"] > 0 and phase_source["failures"] == 0
+    gpu = result["defaultFlywheelGpuFull"]
+    assert gpu["status"] == "available" and gpu["sampledFrames"] > 0 and gpu["completedBatches"] > 0
+    assert 0 < gpu["averageMs"] <= gpu["peakMs"] and 0 <= gpu["pendingBatches"] <= 64 and gpu["droppedBatches"] >= 0
+    timing_gpu = result["defaultFlywheelGpuTimingOnly"]
+    assert timing_gpu["status"] == "disabled" and timing_gpu["completedBatches"] == timing_gpu["pendingBatches"] == 0, "Timing Only must not retain GPU query work"
+    for mechanism in expected:
+        assert result["instancedMechanismsInHeatmap"][mechanism] is True, f"World heatmap omitted {mechanism}"
+    for field in ("createShaftSelectedInstanceBoxAndLabel", "createMotorSelectedInstanceBoxAndLabel", "createPressSelectedInstanceBoxAndLabel",
+                  "removedVisualExpiredAndOverlayCleared", "recreatedVisualMeasured", "worldSessionMeasurementsAndSelectionCleared"):
+        assert result.get(field) is True, f"Flywheel selection/lifecycle check failed: {field}"
+    return {"perInstanceVisualCpuSources": {name: data[1] for name, data in expected.items()},
+            "fullAndTimingOnlyVisualCpuVerified": True, "sharedCpuPhase": phase,
+            "sharedBatchGpuFull": gpu, "timingOnlyGpuDisabled": True,
+            "animatedMechanismsSelectedAndHeatmapped": True, "removeRecreateDisconnectCleanupVerified": True,
+            "geometryScope": "Per-visual CPU callbacks have no per-object instanced vertex/GPU allocation; shared draw GPU time is measured separately."}
 
 
 def verify_installed_compatibility(directory, primary_jar, primary_sha, renderscope_version):
@@ -97,7 +147,8 @@ def verify_installed_compatibility(directory, primary_jar, primary_sha, rendersc
     assert cube["calls"] > 0 and cube["averageMs"] > 0 and cube["verticesPerFrame"] > 0 and cube["renderTypes"]
     for field in ("captureExportMetadataAndPrivacy", "createSelectedInstanceBoxAndLabel", "mekanismSelectedInstanceBoxAndLabel"):
         assert result.get(field) is True, f"Installed compatibility check failed: {field}"
-    assert result["combinedHeatmapBoxes"] >= 2
+    assert result["combinedHeatmapBoxes"] >= 8
+    flywheel = verify_flywheel_measurements(result)
 
     capture_path = directory / "compat-capture-example.json"
     capture = read_json(capture_path)
@@ -109,10 +160,18 @@ def verify_installed_compatibility(directory, primary_jar, primary_sha, rendersc
     for mod in ("create", "mekanism"):
         assert any(row["id"] == mod and row["statistics"]["calls"] > 0 for row in capture["mods"]), f"Installed capture omitted measured {mod} calls"
         assert any(row["id"] == mod and row["version"] == versions[mod] for row in capture["installedMods"]), f"Installed capture omitted {mod} metadata"
+    for mechanism, source_name in flywheel["perInstanceVisualCpuSources"].items():
+        registry = result["defaultInstancedVisualsFull"][mechanism]["type"]
+        rows = [row for row in capture["objects"] if row["id"] == registry]
+        assert rows and rows[0]["statistics"]["sources"][source_name]["calls"] > 0, f"Capture omitted visual source for {registry}"
+    shared = next((row for row in capture["phases"] if row["id"] == "flywheel:batch_submit"), None)
+    assert shared and shared["statistics"]["sources"]["FLYWHEEL_BATCH_SUBMIT"]["calls"] > 0, "Capture omitted shared Flywheel CPU phase"
+    assert shared["statistics"]["averageMs"] > 0 and shared["statistics"]["verticesPerFrame"] == 0
     expected_images = {"01-create-mekanism-mods.png", "02-create-fluid-tank-detail.png", "03-mekanism-fluid-tank-detail.png",
                        "04-create-selected-instance.png", "05-mekanism-selected-instance.png", "06-create-mekanism-heatmap.png",
-                       "07-compatibility-capture.png"}
-    assert len(result["screenshots"]) == 7 and set(result["screenshots"]) == expected_images, "Incomplete installed compatibility screenshot evidence"
+                       "07-compatibility-capture.png", "08-create-instanced-shaft-detail.png", "09-create-instanced-shaft-selected.png",
+                       "10-create-instanced-motor-selected.png", "11-create-instanced-press-selected.png"}
+    assert len(result["screenshots"]) == 11 and set(result["screenshots"]) == expected_images, "Incomplete installed compatibility screenshot evidence"
     screenshots = []
     for name in result["screenshots"]:
         path = directory / name
@@ -130,22 +189,24 @@ def verify_installed_compatibility(directory, primary_jar, primary_sha, rendersc
         "mekanismDeferredFullCalls": result["defaultDeferredRendererCalls"],
         "mekanismDeferredTimingOnlyCalls": result["timingOnlyDeferredRendererCalls"],
         "flywheelDefaultFallbackAndRestoration": "passed by installed harness", "bothSelectedInstanceBoxesAndLabels": True,
+        "flywheelInstancing": flywheel,
         "captureExportMetadataAndPrivacy": True,
-        "scope": "Pinned Create6.0.8 and Mekanism10.4.16.80 fixtures; Flywheel instanced rendering and Create contraption virtual worlds remain outside profiler coverage.",
+        "visualCpuSourcesAndSharedPhasesExported": True, "gpuDiagnosticsScope": "Live shared Flywheel batch diagnostics; not exported as capture or attributed to instances.",
+        "scope": "Pinned Create6.0.8/Flywheel1.0.5 and Mekanism10.4.16.80 fixtures; per-visual CPU callbacks plus shared batch CPU/GPU phases. No per-object GPU attribution or separate Create contraption virtual-world block entity attribution.",
     }
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--loader", choices=("forge", "neoforge"), default="forge")
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
+properties = dict(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\S+)\s*$", (root / "gradle.properties").read_text(), re.MULTILINE))
+current_version = properties["mod_version"] + "+mc" + properties["minecraft_version"]
 loader = args.loader
 loader_name, loader_version = {"forge": ("Forge", "47.4.10"), "neoforge": ("NeoForge", "47.1.106")}[loader]
 build = root / "build" / loader
 distribution = root / "distribution" / "forge" if loader == "forge" else root / "distribution"
-candidates = [p for p in (build / "libs").glob(f"renderscope-{loader}-*.jar")
-              if not p.name.endswith(("-slim.jar", "-sources.jar", "-compat-harness.jar"))]
-assert len(candidates) == 1, f"Expected one bundled {loader_name} release jar in {build / 'libs'}"
-jar = candidates[0]
+jar = build / "libs" / f"renderscope-{loader}-{current_version}.jar"
+assert jar.is_file(), f"Missing current bundled {loader_name} release jar: {jar}"
 with zipfile.ZipFile(jar) as archive:
     names = archive.namelist()
     for required in ("META-INF/mods.toml", "META-INF/MANIFEST.MF", "renderscope.refmap.json",
@@ -193,7 +254,7 @@ for path in (build / "test-results/test").glob("TEST-*.xml"):
     tests += int(suite.attrib["tests"])
     failures += int(suite.attrib["failures"])
     errors += int(suite.attrib["errors"])
-assert tests >= 17 and failures == errors == 0, "Unit/privacy checks did not pass"
+assert tests >= 36 and failures == errors == 0, "Current renderer/visual/scheduling/privacy checks did not pass"
 smoke = json.loads((distribution / "smoke-result.json").read_text(encoding="utf-8"))
 assert smoke["success"], "The real Minecraft smoke test did not pass"
 capture = json.loads((distribution / "smoke-capture-example.json").read_text(encoding="utf-8"))

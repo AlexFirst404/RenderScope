@@ -41,10 +41,12 @@ import org.lwjgl.opengl.GL14;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /** Minecraft adapter for the value-only profiler. All rendering and selection runs on the client thread. */
 public final class WorldOverlay {
@@ -64,6 +66,8 @@ public final class WorldOverlay {
     private String dimension;
     private int renderedWorldBoxes;
     private int renderedWorldLabels;
+    private final Set<InstanceKey> renderedBoxKeys = new HashSet<>();
+    private final Set<InstanceKey> renderedLabelKeys = new HashSet<>();
 
     public WorldOverlay(RenderProfiler profiler, ProfilerSettings settings) {
         this.profiler = profiler;
@@ -109,11 +113,15 @@ public final class WorldOverlay {
         dimension = null;
         renderedWorldBoxes = 0;
         renderedWorldLabels = 0;
+        renderedBoxKeys.clear();
+        renderedLabelKeys.clear();
     }
 
     /** Last world-overlay pass, useful for integration diagnostics without retaining game objects. */
     public int renderedWorldBoxes() { return renderedWorldBoxes; }
     public int renderedWorldLabels() { return renderedWorldLabels; }
+    public boolean renderedWorldBox(InstanceKey key) { return renderedBoxKeys.contains(key); }
+    public boolean renderedWorldLabel(InstanceKey key) { return renderedLabelKeys.contains(key); }
 
     private void expireHighlight() {
         if (highlighted != null && System.nanoTime() >= highlightUntilNanos) {
@@ -128,6 +136,8 @@ public final class WorldOverlay {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         renderedWorldBoxes = 0;
         renderedWorldLabels = 0;
+        renderedBoxKeys.clear();
+        renderedLabelKeys.clear();
         Minecraft minecraft = Minecraft.getInstance();
         if (!checkWorld(minecraft)) return;
         expireHighlight();
@@ -176,6 +186,7 @@ public final class WorldOverlay {
                 LevelRenderer.renderLineBox(pose, consumer, box.inflate(0.006),
                         ((color >> 16) & 255) / 255F, ((color >> 8) & 255) / 255F, (color & 255) / 255F, 0.95F);
                 renderedWorldBoxes++;
+                renderedBoxKeys.add(target.metric().context().key());
                 if (settings.showLabels) labels.add(new ResolvedTarget(target, box));
             }
             buffers.endBatch();
@@ -190,6 +201,7 @@ public final class WorldOverlay {
                 if (placement == null || occupied.stream().anyMatch(rect -> rect.overlaps(placement.rect()))) continue;
                 renderLabel(minecraft, pose, placement);
                 renderedWorldLabels++;
+                renderedLabelKeys.add(label.target().metric().context().key());
                 occupied.add(placement.rect());
                 if (++labelsDrawn >= 32) break;
             }
@@ -445,6 +457,7 @@ public final class WorldOverlay {
     }
 
     private static String formatMs(double ms) {
+        if (ms > 0 && ms < 0.001) return "<0.001";
         return String.format(Locale.ROOT, "%.3f", ms);
     }
 

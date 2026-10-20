@@ -1,4 +1,4 @@
-# RenderScope
+# RenderScope 0.2.0
 
 ![RenderScope](brand/renderscope-cover-1600x900.png)
 
@@ -44,9 +44,11 @@ Reports contain Minecraft/NeoForge/RenderScope versions, installed mod names and
 
 ## Measurement scope
 
-RenderScope measures **CPU-side elapsed time inside individual EntityRenderer and BlockEntityRenderer calls**. It does not claim GPU timings, per-mod VRAM, or coverage of every rendering subsystem. Terrain, particles, GUI, independent item-renderer calls and separate shader passes are outside this release's attribution scope.
+RenderScope measures **CPU-side elapsed time inside individual renderer calls and supported visual tasks**. Parallel visual work is summed from actual execution intervals and can exceed elapsed frame time. Shared Flywheel GPU timing is a separate metric; per-object GPU time, per-mod VRAM and complete rendering coverage are unavailable. Terrain, particles, GUI, independent item-renderer calls and separate shader passes are outside this release's attribution scope.
 
 Full mode observes vertices emitted through the standard BufferBuilder and RenderType requests through BufferSource. Custom pipelines may bypass these counters. **Estimated vertex data** describes observed geometry; it is not GPU upload bytes or GPU memory. Registry and renderer implementation owners remain separate; individual mixin contributors cannot be resolved from a modified class alone.
+
+**Optional Flywheel 1.0.5 support** associates visual creation/frame/tick/update/light CPU tasks with real instances. Shared batch submission is a separate CPU phase. In Full, asynchronous OpenGL timestamp queries provide a live shared-batch GPU view on supported contexts; Timing Only disables them. CPU sources and phases are exported, while GPU diagnostics remain live only. Per-object instanced vertices/GPU time and virtual contraption block entity positions are not inferred. The pinned Create/Mekanism compatibility scene is validated on the separate Forge build.
 
 ## Installation
 

@@ -102,7 +102,11 @@ public final class ClientRuntime implements ScreenActions {
     }
 
     private void renderWorld(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) RenderHooks.worldPass(true);
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
+            RenderHooks.worldPass(true);
+            FlywheelGpuTimers.frameStarted(settings.profiling
+                    && settings.mode == ProfilerSettings.MeasurementMode.FULL && hasInstancedRenderer());
+        }
         overlay.render(event);
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) RenderHooks.worldPass(false);
     }
@@ -117,10 +121,13 @@ public final class ClientRuntime implements ScreenActions {
         profiler.setCpuTimingEnabled(settings.cpuTiming);
         profiler.setSampleWindowSeconds(settings.sampleWindowSeconds);
         RenderHooks.setGeometryEnabled(settings.mode == ProfilerSettings.MeasurementMode.FULL);
+        if (!settings.profiling || settings.mode != ProfilerSettings.MeasurementMode.FULL)
+            FlywheelGpuTimers.reset();
     }
     @Override public void saveSettings() { applySettings(); settings.save(); }
     @Override public String modDisplayName(String namespace) { return ModOwnership.displayName(namespace); }
     @Override public boolean hasInstancedRenderer() { return net.minecraftforge.fml.ModList.get().isLoaded("flywheel"); }
+    @Override public FlywheelGpuTimers.Snapshot flywheelGpuTiming() { return FlywheelGpuTimers.snapshot(); }
     @Override public void toggleHighlight(InstanceKey key) { overlay.toggleHighlight(key); }
     @Override public void toggleTrack(InstanceKey key) { overlay.toggleTrack(key); }
     @Override public boolean isHighlighted(InstanceKey key) { return overlay.isHighlighted(key); }

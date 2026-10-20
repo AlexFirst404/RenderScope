@@ -1,11 +1,11 @@
-# Архитектура RenderScope 0.1.0
+# Архитектура RenderScope 0.2.0
 
 Релиз рассчитан на Minecraft **1.20.1** и имеет две отдельные цели сборки: **Forge 47.4.10** и исходную **NeoForge 47.1.106**. Выбор по умолчанию — `forge`; `-Ploader=neoforge` сохраняет исходный вариант. Упоминания API 1.21.1 в первоначальном задании не меняют целевую версию: точки вызовов, сигнатуры GUI и события проверяются для 1.20.1.
 
 | Выбор | Зависимость Minecraft/loader | Каталог сборки | Дистрибутив |
 | --- | --- | --- | --- |
-| `forge` | `net.minecraftforge:forge:1.20.1-47.4.10` | `build/forge/` | `distribution/forge/renderscope-forge-0.1.0+mc1.20.1.jar` |
-| `neoforge` | `net.neoforged:forge:1.20.1-47.1.106` | `build/neoforge/` | `distribution/renderscope-neoforge-0.1.0+mc1.20.1.jar` |
+| `forge` | `net.minecraftforge:forge:1.20.1-47.4.10` | `build/forge/` | `distribution/forge/renderscope-forge-0.2.0+mc1.20.1.jar` |
+| `neoforge` | `net.neoforged:forge:1.20.1-47.1.106` | `build/neoforge/` | `distribution/renderscope-neoforge-0.2.0+mc1.20.1.jar` |
 
 Forge 47.4.10 выбран из категории **Recommended** на [официальной странице Forge для 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html), проверенной 20 октября 2026 года. NeoForge остаётся на [исходном артефакте 47.1.106](https://maven.neoforged.net/releases/net/neoforged/forge/1.20.1-47.1.106/). Раздельные build/output каталоги изолируют классы, refmap, ресурсы, тестовые результаты и reobfuscation двух загрузчиков.
 
@@ -17,6 +17,12 @@ Forge 47.4.10 выбран из категории **Recommended** на [офи�
 flowchart LR
     A[Minecraft renderer calls] --> B[Mixins + RenderHooks]
     B --> C[RenderProfiler]
+    J[Flywheel visual tasks] --> K[Optional hooks + task scopes]
+    K --> C
+    L[Shared Flywheel draws] --> M[Shared CPU phase]
+    M --> C
+    L --> N[Async GPU query ring]
+    N --> E
     C --> D[Immutable ProfilerSnapshot]
     D --> E[RenderScopeScreen]
     D --> F[WorldOverlay]
@@ -32,6 +38,8 @@ flowchart LR
 | `dev.renderscope.core` | Измерения, окна статистики, агрегация, timeline, capture, неизменяемые значения |
 | `dev.renderscope.mixin` | Инструментирование точных Minecraft-вызовов, для которых обычного события недостаточно |
 | `dev.renderscope.client.RenderHooks` | Преобразование игровых объектов в value records, границы кадра и renderer scope |
+| `client.integration.FlywheelHooks` | Weak visual associations, CPU task scopes, перенос frame handle в executors, общая batch-фаза |
+| `FlywheelGpuTimers` | Ограниченное асинхронное кольцо общих GPU timestamps; отдельная живая сводка |
 | `ClientRuntime` | Регистрация событий, key mapping, применение настроек и выполнение действий UI |
 | `LoaderInfo` | Фактическое имя и версия загруженного Forge/NeoForge для логов, smoke-проверки и JSON |
 | `ModOwnership` | Разрешение имени мода и отдельного владельца класса рендерера |
@@ -61,9 +69,17 @@ flowchart LR
 
 Диагностические счётчики `RenderHooks.queuedDeferredCalls()`, `renderedDeferredCalls()` и `measuredDeferredCalls()` содержат только накопительные числа за текущую мировую сессию. Они позволяют проверить, что настоящая очередь, callback и атрибуция были задействованы. В точном Mekanism-артефакте этот путь используют в том числе RenderEnergyCube и RenderIndustrialAlarm; обычные FluidTank/DynamicTank рендерят жидкость непосредственно и сами по себе не доказывают работу deferred hook.
 
-### Граница Create / Flywheel
+### Необязательная интеграция Create / Flywheel
 
-В **Create 6.0.8 / Flywheel 1.0.5** обычный KineticBlockEntityRenderer может сразу вернуть управление, когда доступен visualization backend. Работа visuals, instancing и batch submission выполняется вне этого BER-интервала. RenderScope не выдаёт такой короткий вызов за полную стоимость объекта и не распределяет пакетную/GPU-стоимость по экземплярам. Счётчики Full также не видят геометрию, прошедшую мимо BufferBuilder.
+В **Create 6.0.8 / Flywheel 1.0.5** обычный KineticBlockEntityRenderer может сразу вернуть управление при активном visualization backend. В 0.2.0 дополнительные необязательные hooks измеряют CPU-работу visuals вне BER. `Storage.createRaw` связывает visual с исходным реальным клиентским BE/entity; weak identity map ограничен 8 192 записями. Ссылка на источник также слабая, в контексте остаются значения. Association создаётся и при выключенном профилировании; delete/rebuild и смена сессии удаляют связь.
+
+Простые `SimpleDynamicVisual.beginFrame` и `SimpleTickableVisual.tick` измеряются непосредственно. Для других Plan-задач scoped TaskExecutor wrappers измеряют интервалы фактического выполнения с исключением completion continuation. Serial/parallel executors переносят `FrameHandle`; `ScheduledContext` переносит также явное отсутствие кадра, поэтому задача, поставленная при выключенном сборе, не захватывает случайно последующий кадр. Поздняя работа другого кадра или поколения сессии не попадает в новые данные. Это сумма наблюдаемой CPU-работы, а не scheduling-to-completion latency. Параллельные интервалы могут перекрываться, поэтому их сумма может превышать wall time кадра.
+
+`Statistics.sources` разделяет обычные renderers и visual create/frame/tick/update/light. Renderer aggregates сохраняют каждый фактический implementation class: обычный BER и visual одного BE не скрывают друг друга. CPU-атрибуция относится к исходному registry owner, владелец visual-класса хранится отдельно.
+
+После join задач `Engine.render` обёрнут отдельной `PhaseMetric` с ID `flywheel:batch_submit` и source `FLYWHEEL_BATCH_SUBMIT`. Общая CPU-фаза не создаёт фиктивный объект и не добавляется к каждому модовому/instance total. Геометрия per-visual instancing не выводится из количества объектов: Full продолжает считать только наблюдаемые BufferBuilder vertices.
+
+`FlywheelGpuTimers` ставит парные `GL_TIMESTAMP` queries вокруг общей batch-фазы только в Full. Ограничение — 64 пары; чтение отложено до `GL_QUERY_RESULT_AVAILABLE`. Занятые слоты пропускаются, без `glFinish` или блокирующего ожидания. Среднее/пик используют завершённые измеренные Flywheel-кадры за пять секунд; текущие/неполные кадры исключены. GPU-метрика не распределяется по экземплярам и остаётся живой диагностикой UI. В capture экспортируются CPU `sources` и отдельные `phases`, без притворного GPU-capture.
 
 Create `BlockEntityRenderHelper` вызывает BER напрямую для виртуальных block entities contraption, минуя наш dispatcher hook. Их локальные позиции не являются координатами блоков основного мира. Эти дочерние экземпляры не получают отдельной атрибуции/подсветки; обычная внешняя contraption entity остаётся измеряемой, если проходит через EntityRenderDispatcher. Фильтр `entity.getLevel() == Minecraft.level` дополнительно защищает от записи virtual/inventory объектов как физических мировых блоков. Это осознанная граница текущей модели, требующая отдельного родительского instance/transform adapter для расширения.
 
@@ -103,14 +119,18 @@ Gradle 8.8 и JDK 21 создают Java 17 bytecode для загрузчико
 
 `scripts/build.ps1 -Loader forge|neoforge` передаёт Gradle `-Ploader=<цель>`, выбирает JDK 21 и копирует готовый JAR в нужный дистрибутив. Необязательный `-Smoke` запускает настоящий тестовый клиент. Source set `smoke` не входит в release JAR. Рабочие профили `run-smoke-forge/` и `run-smoke-neoforge/` раздельны; каждый запуск сохраняет собственные отчёт, capture и gallery в каталоге своего дистрибутива. Наличие NeoForge-галереи не считается доказательством проверки Forge.
 
-`scripts/verify-release.py --loader forge|neoforge` проверяет соответствующие JAR, `build/<loader>/test-results/test` и настоящий loader/version в JSON capture. `scripts/package-release.py --loader forge|neoforge` упаковывает соответствующие артефакты и фактические медиа. Утилиты по умолчанию выбирают Forge. Forge-пакет: `distribution/forge/renderscope-forge-0.1.0-publication.zip`; исходный NeoForge-пакет сохраняется как `distribution/renderscope-0.1.0-publication.zip`.
+`scripts/verify-release.py --loader forge|neoforge` проверяет текущий JAR, `build/<loader>/test-results/test` и фактический loader/version в JSON capture. `mod_version` и `minecraft_version` берутся из `gradle.properties`, поэтому сохранённые старые JAR не выбираются вместо текущего. `scripts/package-release.py` проверяет release metadata и пиксельные ассеты, затем создаёт `renderscope-forge-0.2.0-publication.zip` либо `renderscope-0.2.0-publication.zip`. Исторические основные 0.1.0 JAR остаются на диске, но исключаются из нового ZIP; неизвестные JAR и test harness в материалах приводят к отказу упаковки.
 
-Source set `compat` запускается командой `gradlew.bat -Ploader=forge runCompatClient`; отдельная `compatJar` создаёт reobfuscated `renderscope-forge-0.1.0+mc1.20.1-compat-harness.jar`. Он создаёт настоящие серверные fixtures Create 6.0.8 и Mekanism 10.4.16.80, проверяет обычные вызовы, charged-energy-cube deferred scope, Timing Only и Full, выбор/подсветку, capture и export privacy. Отдельная фаза временно выключает Flywheel backend и проверяет обычную кинетическую геометрию, затем восстанавливает исходный backend. Работа активного Flywheel проверяется как частичная наблюдаемость, без утверждения об измерении его GPU/instanced geometry.
+Source set `compat` запускается командой `gradlew.bat -Ploader=forge runCompatClient`; отдельная `compatJar` создаёт reobfuscated `renderscope-forge-0.2.0+mc1.20.1-compat-harness.jar`. Сценарий использует настоящие fixtures **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 и Mekanism 10.4.16.80**. Заполненные баки, заряженный energy cube, вращающиеся мотор/вал/шестерня и анимированный пресс создают настоящие renderer/visual callbacks; синтетические измерения не записываются.
 
-Development-сценарий [завершился успешно](../distribution/forge/compatibility/compat-result.json). Активный backend был `flywheel:indirect`; queued/rendered/measured deferred-счётчики совпали: 673 в Full и 506 в Timing Only. Вал вращался с реальными 32 rpm, а fallback показал 216 наблюдаемых кинетических вершин за кадр. Для выбранных экземпляров обоих модов подтверждены отдельные box и label. Capture охватил 594 кадра за 5,0049888 секунды, экспорт проверен по версиям/приватности; сохранено семь игровых кадров. Это доказательство выбранной сцены, а не общей матрицы любых shader/renderer модов. Текущие unit/privacy XML содержат 22 успешных теста.
+Проверяются отдельные источники: motor `FLYWHEEL_VISUAL_UPDATE`, shaft/cogwheel `FLYWHEEL_VISUAL_TICK`, press `FLYWHEEL_VISUAL_FRAME`. В обоих режимах требуются положительные реальные CPU-интервалы; per-visual vertices и estimated bytes остаются нулевыми. При активном default backend проверяются shared CPU phase и завершённые Full GPU queries; Timing Only должен выключить queries. Дополнительно проверяются fallback `flywheel:off`, восстановление backend, отдельные highlights/labels, heatmap четырёх механизмов, удаление/recreate visual и очистка после настоящего disconnect. Сценарий сохраняет 11 игровых PNG.
 
-`scripts/test-installed-client.py` готовит изолированный Windows-профиль из официальных Forge installer/Mojang manifests и принимает production JAR плюс отдельный `--harness`. Только явный `--launch` открывает настоящий клиент; mapped/development classpath не используется. Раздельные каталоги `compatibility/` и `compatibility-installed/` не позволяют назвать запуск ForgeGradle установленной production-проверкой. Успех подтверждается свежим `compat-result.json`, версиями загрузчика/модов, environment и реальными счётчиками; один exit code не считается доказательством.
+`scripts/test-installed-client.py` готовит изолированный Windows-профиль из официальных Forge installer/Mojang manifests и принимает production JAR плюс отдельный `--harness`. Только `--launch` открывает клиент; mapped/development classpath не используется. Результаты development и установленного клиента разделены: [compatibility](../distribution/forge/compatibility/compat-result.json) и [compatibility-installed](../distribution/forge/compatibility-installed/compat-result.json).
 
-Installed-проверка [завершилась успешно](../distribution/forge/compatibility-installed/compat-result.json): `environment: installed-production`, Forge 47.4.10, production `jar`, default `flywheel:indirect` и отдельный `flywheel:off`. Реальные deferred-счётчики совпали: 649 в Full и 504 в Timing Only. Подтверждены отдельные boxes/labels двух модов, пять heatmap boxes и capture 594 кадров за 5,0036182 секунды. [Installed verification](../distribution/forge/compatibility-installed/installed-verification.json) подтверждает запуск и SHA-256 основного JAR `42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309`; семь скриншотов сохранены отдельно от development-сцены. Новый baseline Forge без Mekanism также прошёл smoke run с текущими 22 unit/privacy-тестами.
+Успех установленной проверки требует свежего `compat-result.json`, `success: true`, `environment: installed-production`, Forge 47.4.10, фактического production JAR и совпадения его SHA-256 с launcher manifest. Один exit code успехом не считается. [Installed verification](../distribution/forge/compatibility-installed/installed-verification.json) связывает hash результата с hash измеренного артефакта. Release verification также проверяет закреплённые vendor-JAR hashes, CPU sources/shared phases в реальном capture, выключенные координаты, query diagnostics и все 11 PNG. Это проверка выбранных версий и сцены; NeoForge baseline сам по себе не доказывает совместимость сторонних модов в NeoForge-профиле.
 
-GPU queries, VRAM/texture-memory accounting, профилирование terrain, particles, item/GUI renderers и отдельные shader phases не включены в этот релиз. Ядро и типизированный `ObjectKind` оставляют отдельную точку для расширения категорий.
+Финальная Forge 0.2.0 сборка прошла **36 unit/privacy-тестов**. Vanilla baseline подтвердил **28** игровых снимков и **593 кадров** capture. Установленная production-проверка завершилась 20 октября 2026 в 20:49:18 UTC: 11 снимков, 592 capture-кадра, 10 heatmap boxes, реальные visual frame/tick/update и асинхронные shared GPU queries. Авторитетный [Forge verification](../distribution/forge/verification.json) связывает эти результаты с текущим артефактом; development compatibility 0.1.0 остаётся исторической проверкой.
+
+Финальный NeoForge 0.2.0 baseline завершён **2026-10-20T20:52:07.624400300Z**: **36 unit/privacy-тестов**, **28** игровых снимков и **579 кадров** capture. [NeoForge verification](../distribution/verification.json) относится к отдельному JAR; сторонний Create/Mekanism сценарий в NeoForge-профиле не запускался.
+
+Per-object GPU attribution, VRAM/texture-memory accounting, terrain, particles, самостоятельные item/GUI renderers и отдельные shader phases не включены в этот релиз. Ядро и типизированный `ObjectKind` сохраняют возможность добавления отдельных адаптеров.

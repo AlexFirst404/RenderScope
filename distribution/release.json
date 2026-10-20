@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publicationStatus": "prepared_locally",
+  "publicationStatus": "local_0.2.0_verified_historical_private_modrinth_0.1.0_preserved",
   "project": {
     "name": "RenderScope",
     "slug": "renderscope",
@@ -21,19 +21,26 @@
     ]
   },
   "release": {
-    "version": "0.1.0",
-    "versionNumber": "0.1.0+mc1.20.1",
-    "name": "RenderScope 0.1.0 for Minecraft 1.20.1",
+    "version": "0.2.0",
+    "versionNumber": "0.2.0+mc1.20.1",
+    "name": "RenderScope 0.2.0 for Minecraft 1.20.1 (NeoForge)",
     "type": "alpha",
-    "gameVersions": ["1.20.1"],
-    "loaders": ["neoforge"],
+    "gameVersions": [
+      "1.20.1"
+    ],
+    "loaders": [
+      "neoforge"
+    ],
     "targetLoaderVersion": "47.1.106",
     "javaRuntime": 21,
     "javaBytecodeRelease": 17,
-    "artifact": "renderscope-neoforge-0.1.0+mc1.20.1.jar",
-    "gradleArtifact": "../build/neoforge/libs/renderscope-neoforge-0.1.0+mc1.20.1.jar",
+    "artifact": "renderscope-neoforge-0.2.0+mc1.20.1.jar",
+    "gradleArtifact": "../build/neoforge/libs/renderscope-neoforge-0.2.0+mc1.20.1.jar",
     "bundledDependencies": [
-      {"name": "MixinExtras", "version": "0.4.1"}
+      {
+        "name": "MixinExtras",
+        "version": "0.4.1"
+      }
     ]
   },
   "materials": {
@@ -41,27 +48,82 @@
     "curseforgeDescription": "CURSEFORGE.md",
     "russianDescription": "DESCRIPTION_RU.md",
     "releaseChecklist": "RELEASE_CHECKLIST.md",
-    "icon512": "brand/renderscope-icon-512.png",
-    "icon1024": "brand/renderscope-icon-1024.png",
+    "icon768": "brand/renderscope-icon-768.png",
+    "icon1536": "brand/renderscope-icon-1536.png",
     "originalLogo": "brand/renderscope-original.png",
     "cover": "brand/renderscope-cover-1600x900.png",
     "heatmapAnimation": "gallery/heatmap-demo.gif",
     "galleryDirectory": "gallery"
   },
   "measurementScope": {
-    "timing": "CPU-side renderer wall time, not GPU execution time",
-    "categories": ["entities", "block entities"],
+    "timing": "Exclusive CPU-side renderer/deferred/visual task wall intervals; parallel task sums can exceed elapsed frame time. Shared batch CPU is separate.",
+    "categories": [
+      "entities",
+      "block entities"
+    ],
     "geometry": "Observed standard BufferBuilder vertices and estimated vertex data in Full mode",
     "defaultRollingWindowSeconds": 5,
-    "captureDurationsSeconds": [5, 10, 30],
+    "captureDurationsSeconds": [
+      5,
+      10,
+      30
+    ],
     "manualCapture": true,
     "positionsInReportsByDefault": false,
-    "automaticReportUpload": false
+    "automaticReportUpload": false,
+    "optionalMekanismDeferredRendererCallbacks": true,
+    "mekanismDeferredTargetArtifact": "Mekanism-1.20.1-10.4.16.80.jar",
+    "flywheelVisualCpuPerObjectAttribution": true,
+    "flywheelTargetVersion": "1.0.5",
+    "visualCpuSources": [
+      "FLYWHEEL_VISUAL_CREATE",
+      "FLYWHEEL_VISUAL_FRAME",
+      "FLYWHEEL_VISUAL_TICK",
+      "FLYWHEEL_VISUAL_UPDATE",
+      "FLYWHEEL_VISUAL_LIGHT"
+    ],
+    "flywheelSharedCpuPhase": "flywheel:batch_submit",
+    "cpuSourcesAndSharedPhasesExported": true,
+    "flywheelSharedGpu": {
+      "mode": "Full only",
+      "method": "asynchronous OpenGL timestamp query pairs",
+      "maximumPendingBatches": 64,
+      "rollingWindowSeconds": 5,
+      "sampledFrames": "completed sampled Flywheel frames; partial/dropped frames excluded",
+      "perInstanceAttribution": false,
+      "exportedInCapture": false
+    },
+    "flywheelInstancedGeometryPerInstance": false,
+    "createContraptionVirtualBlockEntityInstances": false
   },
   "notes": [
     "This file is local release preparation metadata, not a platform API submission or proof of publication.",
     "Keywords are descriptive suggestions; map them to the actual categories offered by each publishing platform.",
     "Use the primary bundled JAR, not the slim or sources JAR.",
-    "No server installation is required."
-  ]
+    "No server installation is required.",
+    "Local0.2.0 has not been uploaded to Modrinth or CurseForge; the historical private0.1.0 Forge artifact is recorded separately in forge/release.json."
+  ],
+  "currentReleaseUploadedToPlatforms": false,
+  "compatibilityValidation": {
+    "status": "current NeoForge vanilla baseline passed;third-party scene not run for this loader",
+    "renderscopeVersion": "0.2.0+mc1.20.1",
+    "thirdPartyScene": "not run on NeoForge; separate Forge installed evidence is not substituted",
+    "baselineWithoutOptionalMods": {
+      "status": "passed",
+      "tests": 36,
+      "frames": 579,
+      "durationSeconds": 5.0048617,
+      "completedAt": "2026-10-20T20:52:07.624400300Z",
+      "artifact": "renderscope-neoforge-0.2.0+mc1.20.1.jar",
+      "sha256": "ca79f3b94d5749c8b491a3081298a6dfdd86214d6d248b726667c2e921d5800b"
+    }
+  },
+  "verification": {
+    "record": "verification.json",
+    "artifact": "renderscope-neoforge-0.2.0+mc1.20.1.jar",
+    "sha256": "ca79f3b94d5749c8b491a3081298a6dfdd86214d6d248b726667c2e921d5800b",
+    "tests": 36,
+    "testFailures": 0,
+    "testErrors": 0
+  }
 }

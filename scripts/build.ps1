@@ -7,6 +7,12 @@ param(
 $ErrorActionPreference = 'Stop'
 $Loader = $Loader.ToLowerInvariant()
 $projectRoot = Split-Path -Parent $PSScriptRoot
+$properties = @{}
+Get-Content -LiteralPath (Join-Path $projectRoot 'gradle.properties') | ForEach-Object {
+    if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\S+)\s*$') { $properties[$Matches[1]] = $Matches[2] }
+}
+if (-not $properties['mod_version'] -or -not $properties['minecraft_version']) { throw 'Missing mod_version or minecraft_version in gradle.properties.' }
+$artifactName = "renderscope-$Loader-$($properties['mod_version'])+mc$($properties['minecraft_version']).jar"
 $destination = if ($Loader -eq 'forge') { Join-Path $projectRoot 'distribution/forge' } else { Join-Path $projectRoot 'distribution' }
 $candidates = @($env:JAVA_HOME, 'C:\Program Files\Java\jdk-21') + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools') -Directory -Filter 'jdk-21*' -ErrorAction SilentlyContinue | ForEach-Object FullName)
 $jdkPath = $candidates | Where-Object { $_ -and (Test-Path -LiteralPath (Join-Path $_ 'bin/javac.exe')) } | Where-Object {
@@ -39,11 +45,10 @@ try {
         }
     }
     $artifactDirectory = Join-Path $projectRoot "build/$Loader/libs"
-    $jars = @(Get-ChildItem -LiteralPath $artifactDirectory -Filter "renderscope-$Loader-*.jar" |
-        Where-Object { $_.Name -notmatch '-(slim|sources|compat-harness)\.jar$' })
-    if ($jars.Count -ne 1) { throw "Expected exactly one bundled $Loader release jar in $artifactDirectory; found $($jars.Count)." }
+    $artifactPath = Join-Path $artifactDirectory $artifactName
+    if (-not (Test-Path -LiteralPath $artifactPath -PathType Leaf)) { throw "Missing current bundled $Loader artifact: $artifactPath" }
     New-Item -ItemType Directory -Force -Path $destination | Out-Null
-    Copy-Item -LiteralPath $jars[0].FullName -Destination $destination -Force
+    Copy-Item -LiteralPath $artifactPath -Destination $destination -Force
     $relativeDestination = if ($Loader -eq 'forge') { 'distribution/forge' } else { 'distribution' }
-    Write-Output "Ready: $relativeDestination/$($jars[0].Name)"
+    Write-Output "Ready: $relativeDestination/$artifactName"
 } finally { Pop-Location }

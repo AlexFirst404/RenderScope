@@ -12,6 +12,7 @@ import dev.renderscope.core.Position;
 import dev.renderscope.core.ProfilerSnapshot;
 import dev.renderscope.core.RenderProfiler;
 import dev.renderscope.core.Statistics;
+import dev.renderscope.core.MeasurementSource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -334,7 +335,20 @@ public final class RenderScopeScreen extends Screen {
         y += 7;
         y = line(g, tr("cpu_note"), y, MUTED, mx, my);
         y = line(g, tr("geometry_note"), y, MUTED, mx, my);
-        if (actions.hasInstancedRenderer()) y = line(g, tr("instancing_note"), y, 0xffffce80, mx, my);
+        if (actions.hasInstancedRenderer()) {
+            y = heading(g, tr("flywheel_shared"), y + 8);
+            for (var phase : snapshot.phases())
+                y = pair(g, tr("batch_cpu"), ms(phase.stats().averageMs()) + "/f",
+                        tr("calls"), decimal(phase.stats().callsPerFrame()) + "/f", y, mx, my);
+            var gpu = actions.flywheelGpuTiming();
+            if (gpu.available()) {
+                y = pair(g, tr("batch_gpu"), ms(gpu.averageMs()), tr("peak"), ms(gpu.peakMs()), y, mx, my);
+                y = pair(g, tr("gpu_sampled_frames"), integer(gpu.sampledFrames()),
+                        tr("gpu_pending"), integer(gpu.pendingBatches()), y, mx, my);
+            } else y = line(g, tr("batch_gpu") + ": " + tr("gpu_" + gpu.status()), y, MUTED, mx, my);
+            y = line(g, tr("gpu_shared_note"), y, MUTED, mx, my);
+            y = line(g, tr("parallel_note"), y, MUTED, mx, my);
+        }
         contentHeight = y + (int) scroll - contentTop;
     }
 
@@ -497,11 +511,22 @@ public final class RenderScopeScreen extends Screen {
     }
 
     private int statistics(GuiGraphics g, Statistics s, int y, int mx, int my) {
+        boolean visualOnly = !s.sources().isEmpty() && !s.sources().containsKey(MeasurementSource.RENDERER);
         y = pair(g, tr("average"), ms(s.averageMs()) + "/f", tr("p95"), ms(s.p95Ms()), y, mx, my);
         y = pair(g, tr("peak"), ms(s.peakMs()), tr("calls"), decimal(s.callsPerFrame()) + "/f", y, mx, my);
         y = pair(g, tr("rolling_calls"), integer(s.calls()), tr("instances"), integer(s.instances()), y, mx, my);
-        y = pair(g, tr("vertices"), geometry(s.verticesPerFrame()), tr("vertex_data"), geometryBytes(s.estimatedBytesPerFrame()), y, mx, my);
+        y = pair(g, tr("vertices"), visualOnly ? "—" : geometry(s.verticesPerFrame()), tr("vertex_data"), visualOnly ? "—" : geometryBytes(s.estimatedBytesPerFrame()), y, mx, my);
         y = pair(g, tr("failures"), integer(s.failures()), tr("thread_cpu"), actions.settings().cpuTiming && s.cpuMs() >= 0 ? ms(s.cpuMs()) : "—", y, mx, my);
+        if (s.sources().keySet().stream().anyMatch(source -> source != MeasurementSource.RENDERER)) {
+            y = heading(g, tr("cpu_sources"), y + 7);
+            for (MeasurementSource source : MeasurementSource.values()) {
+                var metric = s.sources().get(source);
+                if (metric != null) y = pair(g, tr("source." + source.name().toLowerCase(Locale.ROOT)),
+                        ms(metric.averageMs()) + "/f", tr("calls"), decimal(metric.callsPerFrame()) + "/f", y, mx, my);
+            }
+            y = line(g, tr("parallel_note"), y, MUTED, mx, my);
+            y = line(g, tr("flywheel_geometry_note"), y, MUTED, mx, my);
+        }
         return y;
     }
 
@@ -798,7 +823,7 @@ public final class RenderScopeScreen extends Screen {
     private static String onOff(boolean value) { return tr(value ? "on" : "off"); }
     private static String decimal(double value) { return String.format(Locale.ROOT, "%.2f", value); }
     private static String integer(double value) { return String.format(Locale.ROOT, "%.0f", value); }
-    private static String ms(double value) { return decimal(value) + " ms"; }
+    private static String ms(double value) { return (value > 0 && value < .01 ? "<0.01" : decimal(value)) + " ms"; }
     private static String coordinate(double value) { return Math.abs(value - Math.rint(value)) < .01 ? integer(value) : String.format(Locale.ROOT, "%.1f", value); }
     private static String position(Position p) { return coordinate(p.x()) + " " + coordinate(p.y()) + " " + coordinate(p.z()); }
     private static String renderTypes(Statistics stats) { return stats.renderTypes().isEmpty() ? "—" : String.join(", ", stats.renderTypes()); }

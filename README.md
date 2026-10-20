@@ -17,8 +17,8 @@ RenderScope — клиентский профилировщик для **Minecra
 
 | Загрузчик профиля | Файл |
 | --- | --- |
-| Forge 47.4.10 | [renderscope-forge-0.1.0+mc1.20.1.jar](distribution/forge/renderscope-forge-0.1.0+mc1.20.1.jar) |
-| NeoForge 47.1.106 | [renderscope-neoforge-0.1.0+mc1.20.1.jar](distribution/renderscope-neoforge-0.1.0+mc1.20.1.jar) |
+| Forge 47.4.10 | [renderscope-forge-0.2.0+mc1.20.1.jar](distribution/forge/renderscope-forge-0.2.0+mc1.20.1.jar) |
+| NeoForge 47.1.106 | [renderscope-neoforge-0.2.0+mc1.20.1.jar](distribution/renderscope-neoforge-0.2.0+mc1.20.1.jar) |
 
 В один игровой профиль устанавливайте **только один** RenderScope JAR для его загрузчика. Файлы `-slim` и `-sources` не являются самостоятельным дистрибутивом. Исходная NeoForge-сборка сохранена отдельно от Forge-порта.
 
@@ -52,11 +52,15 @@ RenderScope — клиентский профилировщик для **Minecra
 
 Галерея Forge-сборки: локальная сцена с vanilla-объектами. Значения относятся к этой сцене и оборудованию; это не обещание определённой производительности других модов.
 
-Оба варианта имеют отдельные сборки на JDK 21 и baseline-запуск настоящего клиента с проверкой загрузчика, renderer calls, capture и экспорта. Число тестов и хеш артефакта указаны в соответствующих отчётах: [Forge 47.4.10](distribution/forge/verification.json) и [NeoForge 47.1.106](distribution/verification.json). Текущие Forge- и NeoForge-сборки проходят по 22 unit/privacy-теста и повторный vanilla-smoke без Mekanism: необязательный mixin не требует установки этого мода.
+Оба варианта имеют отдельные сборки на JDK 21 и baseline-запуск настоящего клиента с проверкой загрузчика, renderer calls, capture и экспорта. Число тестов и хеш артефакта указаны в соответствующих отчётах: [Forge 47.4.10](distribution/forge/verification.json) и [NeoForge 47.1.106](distribution/verification.json). Baseline запускается без Create/Mekanism и проверяет, что необязательные интеграции не требуют установки этих модов. Финальные обе сборки 0.2.0 прошли по **36 unit/privacy-тестов**, без ошибок.
 
-Сцена **Create 6.0.8 + Mekanism 1.20.1-10.4.16.80** прошла проверку и в development-клиенте, и в **обычном установленном Forge-профиле с production JAR**: типы и экземпляры обоих модов, геометрия баков, отложенная отрисовка energy cube, Timing Only, отдельные выделения, capture/export и Flywheel-off fallback. [Installed-результат](distribution/forge/compatibility-installed/compat-result.json), [проверка launcher/JAR](distribution/forge/compatibility-installed/installed-verification.json) и [его capture](distribution/forge/compatibility-installed/compat-capture-example.json) относятся к этой выбранной сцене. [Development-результат](distribution/forge/compatibility/compat-result.json) сохранён отдельно.
+Версия **0.2.0** прошла отдельный сценарий в **обычном установленном Forge-профиле с production JAR** с **Create 6.0.8 / Flywheel 1.0.5 и Mekanism 10.4.16.80**. Он использует вращающиеся мотор, вал и шестерню, анимированный пресс, заполненные баки и заряженный energy cube: visual CPU sources при включённом instancing, отдельные подсветки, heatmap, shared CPU/GPU batch, Full/Timing Only, capture/export, удаление/recreate и disconnect cleanup. [Installed-результат](distribution/forge/compatibility-installed/compat-result.json), [проверка launcher/JAR](distribution/forge/compatibility-installed/installed-verification.json) и [capture](distribution/forge/compatibility-installed/compat-capture-example.json) содержат фактический итог этой выбранной сцены. [Development-результат](distribution/forge/compatibility/compat-result.json) сохранён как **история 0.1.0** и не считается новой development-проверкой 0.2.0.
 
 ![Create и Mekanism в установленном Forge с production JAR](distribution/forge/compatibility-installed/01-create-mekanism-mods.png)
+
+![CPU-источники настоящего Flywheel visual](distribution/forge/compatibility-installed/08-create-instanced-shaft-detail.png)
+
+![Выделенный вращающийся вал при включённом instancing](distribution/forge/compatibility-installed/09-create-instanced-shaft-selected.png)
 
 ![Живая сводка RenderScope на Forge](distribution/forge/gallery/01-overview.png)
 
@@ -70,15 +74,17 @@ RenderScope — клиентский профилировщик для **Minecra
 
 ## Как читать измерения
 
-Основная величина — **прошедшее время CPU-side вызова `renderer.render(...)`**, измеренное через `System.nanoTime()`. Оно включает подготовку и отправку команд, а также возможные ожидания драйвера. Это **не время исполнения на GPU** и не полная стоимость всех подсистем рендера Minecraft.
+Основная величина — **прошедшее CPU-side время renderer/visual callback**, измеренное через `System.nanoTime()`. Оно включает работу внутри вызова и возможные ожидания. Это отдельная метрика от времени исполнения GPU. Параллельные CPU-задачи visuals суммируются по фактическим интервалам выполнения, поэтому их сумма может превышать длительность кадра.
 
-MVP измеряет мировые **EntityRenderer** и **BlockEntityRenderer**. Terrain, частицы, GUI, предметы вне этих вызовов и отдельные шейдерные проходы не входят в его атрибуцию по модам. Медленный кадр может быть вызван и другими подсистемами. Проценты в Mods относятся к сумме измеренных вызовов.
+Измеряются мировые **EntityRenderer**, **BlockEntityRenderer**, поддерживаемые **Flywheel visual CPU-задачи** и связанные deferred callbacks Mekanism. Terrain, частицы, GUI, предметы вне этих вызовов и отдельные шейдерные проходы не входят в атрибуцию по модам. Проценты в Mods относятся к сумме измеренной per-instance CPU-работы; общая Flywheel batch-фаза показывается отдельно.
 
 **Timing Only** — стандартный режим. **Full** дополнительно наблюдает вершины, проходящие через `BufferBuilder`, и запросы `RenderType` через стандартный `BufferSource`. Альтернативные пути рендера могут обходить эти счётчики. `Estimated vertex data` — оценка объёма наблюдаемой геометрии; она не является GPU upload bytes, VRAM или GPU memory. Подробнее: [методика измерений](docs/MEASUREMENTS.md).
 
 Встроена необязательная интеграция отложенного полупрозрачного рендера **Mekanism 10.4.16.80**. Если измеренный рендерер поставил работу в очередь, RenderScope связывает её последующий реальный вызов с тем же экземпляром, отдельно измеряет время и наблюдает его геометрию. Это работает и в Timing Only без счётчиков вершин. Установка Mekanism для самого RenderScope не требуется.
 
-**Create / Flywheel:** визуальные объекты, GPU instancing и пакетные проходы Flywheel могут обходить обычные вызовы рендереров. Их стоимость и геометрия не распределяются по отдельным объектам; маленькое измеренное время Create не доказывает низкую стоимость всего его рендера. Виртуальные block entities внутри движущихся contraptions также не получают отдельных мировых позиций и подсветки. Внешняя contraption entity измеряется, если её отрисовка проходит через обычный EntityRenderDispatcher. Профилировщик не меняет backend Flywheel автоматически.
+**Новое в 0.2.0 — Create / Flywheel 1.0.5:** CPU-задачи создания, frame, tick, update и light visuals связываются с настоящими экземплярами мира. Для мотора, вала, шестерни или пресса можно открыть источники времени, выбрать экземпляр и увидеть его подсветку при включённом instancing. Общая отправка batch имеет отдельную CPU-фазу.
+
+В **Full** общие Flywheel batches дополнительно измеряются настоящими асинхронными OpenGL timestamp queries: результат собирается позднее, без ожидания после каждого объекта. Это живая GPU-сводка завершённых измеренных Flywheel-кадров за пять секунд. GPU-время и инстансированная геометрия не распределяются между объектами; в JSON сохраняются CPU sources и shared phases. В **Timing Only** GPU queries выключены. Виртуальные дочерние block entities contraption по-прежнему не получают отдельных мировых координат и подсветки; внешний entity может измеряться обычным dispatcher. RenderScope не переключает backend Flywheel автоматически.
 
 ## Запись и приватность
 
@@ -146,7 +152,7 @@ Harness строит настоящую сцену с заполненными �
 
 ```powershell
 python .\scripts\test-installed-client.py
-python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.1.0+mc1.20.1-compat-harness.jar --launch
+python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.2.0+mc1.20.1-compat-harness.jar --launch
 ```
 
 Этот путь использует production JAR и обычный Forge launcher, без mapped Minecraft из ForgeGradle. Проверка установленного профиля завершена успешно: **649** queued/rendered/measured deferred-вызовов в фазе Full, **504** в Timing Only, **594 кадра за 5,004 секунды**, семь игровых скриншотов. Результаты находятся в `distribution/forge/compatibility-installed/`; helper подтвердил свежесть JSON, `environment: installed-production`, реальные версии и SHA-256 именно запущенного основного JAR. Код завершения Java или Gradle сам по себе не считается доказательством.
@@ -171,8 +177,8 @@ python .\scripts\package-release.py --loader forge
 
 В авторском кабинете CurseForge создан ещё не одобренный проект в состоянии **New**, доступный автору, ID **1756581**: [редактор файлов проекта](https://authors.curseforge.com/#/projects/1756581/files). Загружены логотип и четыре медиафайла. **JAR не загружен, проект не опубликован.** Первая загрузка JAR запускает модерацию проекта; режим unlisted доступен по прямой ссылке и не заменяет закрытый черновик, поэтому файл пока не загружается.
 
-На Modrinth создан [проект RenderScope](https://modrinth.com/project/renderscope/settings) с проверенной видимостью **Private**. Загружен прошедший installed-проверку основной Forge JAR как [Alpha-версия 0.1.0+mc1.20.1](https://modrinth.com/mod/renderscope/version/YzYFQvOb) для Minecraft 1.20.1; установка — только на клиент. Скачанный из интерфейса этой версии JAR имеет тот же SHA-256, что и проверенный installed JAR. Версия доступна только участникам проекта: отправка на проверку и публичная публикация не выполнялись. Сохранены иконка, английское описание с полноразмерными изображениями и пять gallery media: обложка, игровой GIF и три кадра installed-сцены Create + Mekanism. Их фактические ссылки записаны в [манифесте галереи](distribution/platforms/modrinth-gallery.json). В CurseForge сохранены четыре исходных gallery media и обновлённое описание с игровыми изображениями; JAR туда не загружен. Фактический статус сохранён в [снимке кабинетов](distribution/platforms/publication-status.json) и [Forge release.json](distribution/forge/release.json).
+Локальная версия **0.2.0** и её материалы отделены от истории публикации. В Private-проекте [Modrinth RenderScope](https://modrinth.com/project/renderscope/settings) остаётся ранее загруженная [Alpha 0.1.0+mc1.20.1](https://modrinth.com/mod/renderscope/version/YzYFQvOb), проверенная установленным клиентом на момент загрузки. Её JAR и SHA-256 сохранены как история; **0.2.0 на площадки не загружалась**. Проект не отправлен на review и не опубликован публично. CurseForge остаётся неодобренным авторским черновиком с описанием/медиа, без JAR. Исправленные иконки сохраняют весь исходный пиксельный рисунок без добавленных полей. Фактический статус кабинетов и история артефактов записаны в [publication-status.json](distribution/platforms/publication-status.json).
 
-В `distribution/brand/` находятся исходное лого 24×24 и PNG, увеличенные целочисленным nearest-neighbor масштабированием. Пиксельная сетка сохраняется без размытия. Квадратные иконки 512×512 и 1024×1024 используют поля в цвет фона исходника и целочисленный масштаб рисунка.
+В `distribution/brand/` и `distribution/forge/brand/` находятся исходное лого 24×24 и точные целочисленные увеличения 192×192, 384×384, 768×768 и 1536×1536. Иконки `renderscope-icon-768.png` и `renderscope-icon-1536.png` занимают весь исходный квадрат: каждый RGBA-пиксель повторён ровно 32×32 или 64×64 раза. Добавленных полей и рамок нет; исходные цвета, прозрачность и пиксельная сетка сохранены. Проверка записана в `pixel-integrity.json`.
 
 Код: **All Rights Reserved** до выбора владельцем проекта другой лицензии. Логотип предоставлен владельцем проекта.

@@ -1,6 +1,7 @@
 """Package the verified local release and actual publication media."""
 import argparse
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
@@ -11,6 +12,9 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--loader", choices=("forge", "neoforge"), default="forge")
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
+properties = dict(re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\S+)\s*$", (root / "gradle.properties").read_text(), re.MULTILINE))
+current_mod_version = properties["mod_version"]
+current_minecraft_version = properties["minecraft_version"]
 loader = args.loader
 loader_name, loader_version = {"forge": ("Forge", "47.4.10"), "neoforge": ("NeoForge", "47.1.106")}[loader]
 distribution = root / "distribution" / "forge" if loader == "forge" else root / "distribution"
@@ -18,6 +22,7 @@ verification = json.loads((distribution / "verification.json").read_text(encodin
 artifact_pattern = rf"renderscope-{loader}-(.+)\+mc1\.20\.1\.jar"
 artifact_match = re.fullmatch(artifact_pattern, verification["artifact"])
 assert artifact_match, f"Verification does not describe a bundled {loader_name} artifact"
+assert artifact_match.group(1) == current_mod_version, "Verification describes a previous RenderScope release"
 assert verification.get("loader", "NeoForge" if loader == "neoforge" else "") == loader_name
 assert verification.get("loaderVersion", verification.get(f"{loader}Version")) == loader_version
 artifact = distribution / verification["artifact"]
@@ -28,23 +33,37 @@ assert release["targetLoaderVersion"] == loader_version
 assert release["artifact"] == artifact.name
 
 brand = distribution / "brand"
-with Image.open(brand / "renderscope-original.png") as image:
+original_path = brand / "renderscope-original.png"
+with Image.open(original_path) as image:
     original = image.convert("RGBA")
 assert original.size == (24, 24)
-for factor in (8, 16, 32):
-    size = original.width * factor
-    with Image.open(brand / f"renderscope-logo-{size}x{size}.png") as image:
+integrity = json.loads((brand / "pixel-integrity.json").read_text(encoding="utf-8"))
+assert integrity["schemaVersion"] == 2 and integrity["sourceSize"] == [24, 24]
+assert integrity["sourceSha256"] == hashlib.sha256(original_path.read_bytes()).hexdigest()
+assert integrity["integerScales"] == [8, 16, 32, 64]
+assert integrity["publicationIconSizes"] == [768, 1536] and integrity["addedPaddingPixels"] == [0, 0, 0, 0]
+assert integrity["rgbaIdenticalToNearestNeighbor"] is True and integrity["nativeSourceBackgroundPreserved"] is True
+assert integrity["guiLogoSize"] == [24, 24] and integrity["modListLogoSize"] == [768, 768]
+assets = {row["file"]: row for row in integrity["assets"]}
+expected_scales = {f"renderscope-logo-{24 * factor}x{24 * factor}.png": factor for factor in (8, 16, 32, 64)}
+expected_scales.update({f"renderscope-icon-{size}.png": size // 24 for size in (768, 1536)})
+assert set(assets) == set(expected_scales) and len(integrity["assets"]) == len(expected_scales)
+for name, metadata in assets.items():
+    assert metadata["integerScale"] == expected_scales[name], f"Incorrect scale/filename: {name}"
+    size = 24 * metadata["integerScale"]
+    assert metadata["size"] == [size, size]
+    path = brand / name
+    assert metadata["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest(), f"Pixel integrity metadata mismatch: {name}"
+    with Image.open(path) as image:
         actual = image.convert("RGBA")
     expected = original.resize((size, size), Image.Resampling.NEAREST)
-    assert actual.tobytes() == expected.tobytes(), f"Pixel/alpha changed in {size}px logo"
-for size, factor in ((512, 16), (1024, 32)):
-    with Image.open(brand / f"renderscope-icon-{size}.png") as image:
-        actual = image.convert("RGBA")
-    scaled = original.resize((24 * factor, 24 * factor), Image.Resampling.NEAREST)
-    padding = (size - scaled.width) // 2
-    assert actual.size == (size, size)
-    assert actual.crop((padding, padding, padding + scaled.width, padding + scaled.height)).tobytes() == scaled.tobytes()
-    assert actual.getpixel((0, 0)) == original.getpixel((0, 0))
+    assert actual.size == expected.size and actual.tobytes() == expected.tobytes(), f"Pixels/alpha/bounds changed in {name}"
+assert not any((brand / f"renderscope-icon-{size}.png").exists() for size in (512, 1024)), "Retired padded icons must not be packaged"
+assert (root / "src/main/resources/assets/renderscope/textures/gui/logo.png").read_bytes() == original_path.read_bytes(), "GUI source logo changed"
+with zipfile.ZipFile(artifact) as archive:
+    with Image.open(io.BytesIO(archive.read("renderscope-logo.png"))) as image:
+        mod_list_logo = image.convert("RGBA")
+assert mod_list_logo.size == (768, 768) and mod_list_logo.tobytes() == original.resize((768, 768), Image.Resampling.NEAREST).tobytes(), "Mod list logo must be the exact unpadded 32x original"
 with Image.open(distribution / "gallery/heatmap-demo.gif") as gif:
     assert gif.n_frames == 16 and gif.size == (1280, 720)
 
@@ -55,21 +74,20 @@ for markdown in [root / "README.md", *root.glob("docs/*.md"), *distribution.glob
         target = link.split("#", 1)[0].strip("<>")
         assert (markdown.parent / target).exists(), f"Broken local link: {markdown.name}: {target}"
 
-(brand / "pixel-integrity.json").write_text(json.dumps({
-    "sourceSize": [24, 24],
-    "integerScales": [8, 16, 32],
-    "rgbaIdenticalToNearestNeighbor": True,
-    "paddedPublicationIcons": [512, 1024],
-    "padding": "Opaque, matching the original corner color",
-}, indent=2) + "\n", encoding="utf-8")
-
 version = artifact_match.group(1)
 package_name = f"renderscope-forge-{version}-publication.zip" if loader == "forge" else f"renderscope-{version}-publication.zip"
 destination = distribution / package_name
-files = [path for path in distribution.rglob("*") if path.is_file() and path.suffix.lower() != ".zip"
-         and path.relative_to(distribution).parts[0] not in ("forge", "neoforge", "platforms")]
-for path in files:
-    assert path.suffix.lower() != ".jar" or path == artifact, f"Unexpected other artifact in {loader_name} materials: {path.name}"
+files = []
+current_numbers = tuple(int(part) for part in current_mod_version.split("."))
+for path in distribution.rglob("*"):
+    if not path.is_file() or path.suffix.lower() == ".zip" or path.relative_to(distribution).parts[0] in ("forge", "neoforge", "platforms"):
+        continue
+    if path.suffix.lower() == ".jar" and path != artifact:
+        old = re.fullmatch(rf"renderscope-{loader}-(\d+)\.(\d+)\.(\d+)\+mc{re.escape(current_minecraft_version)}\.jar", path.name)
+        if path.parent == distribution and old and tuple(int(part) for part in old.groups()) < current_numbers:
+            continue  # Preserve historical primary JARs on disk, outside this release ZIP.
+        raise AssertionError(f"Unexpected other artifact in {loader_name} materials: {path.name}")
+    files.append(path)
 with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
     for path in sorted(files):
         archive.write(path, path.relative_to(distribution).as_posix())
@@ -77,6 +95,7 @@ with zipfile.ZipFile(destination) as archive:
     assert archive.testzip() is None
     assert archive.read(artifact.name) == artifact.read_bytes()
     assert "gallery/heatmap-demo.gif" in archive.namelist()
+    assert [name for name in archive.namelist() if name.endswith(".jar")] == [artifact.name], "Release archive contains a historical or test JAR"
     assert not any(name.startswith(("forge/", "neoforge/")) for name in archive.namelist()), "Mixed platform materials"
 print(f"{destination.name}: {len(files)} files, {destination.stat().st_size:,} bytes")
-print("Verified original RGBA pixels, padded icons, GIF frames, links and archived jar.")
+print("Verified original RGBA pixels and full-bounds integer logos/icons, GIF frames, links and archived jar.")

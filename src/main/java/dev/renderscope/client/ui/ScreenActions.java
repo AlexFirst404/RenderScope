@@ -1,6 +1,7 @@
 package dev.renderscope.client.ui;
 
 import dev.renderscope.client.ProfilerSettings;
+import dev.renderscope.client.FlywheelGpuTimers;
 import dev.renderscope.core.InstanceKey;
 
 /** Main-thread client operations requested by the screen, kept outside profiler state. */
@@ -10,6 +11,9 @@ public interface ScreenActions {
     String modDisplayName(String namespace);
 
     default boolean hasInstancedRenderer() { return false; }
+    default FlywheelGpuTimers.Snapshot flywheelGpuTiming() {
+        return new FlywheelGpuTimers.Snapshot("disabled", 0, 0, 0, 0, 0, 0);
+    }
 
     /** Persist settings and apply the measurement/window options to the profiler. */
     void saveSettings();

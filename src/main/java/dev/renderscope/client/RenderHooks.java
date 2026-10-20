@@ -1,6 +1,7 @@
 package dev.renderscope.client;
 
 import dev.renderscope.core.*;
+import dev.renderscope.client.integration.FlywheelHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +17,7 @@ public final class RenderHooks {
     private static final DeferredContexts DEFERRED = new DeferredContexts(4096);
     private static volatile boolean geometryEnabled;
     private static boolean worldPass;
-    private static boolean frameOpen;
+    private static volatile boolean frameOpen;
     private static long frameStarted;
     private static Object worldSession;
     private static String dimensionSession;
@@ -27,6 +28,7 @@ public final class RenderHooks {
     private RenderHooks() { }
     public static void setGeometryEnabled(boolean enabled) { geometryEnabled = enabled; }
     public static void worldPass(boolean active) { worldPass = active; }
+    public static boolean isWorldPass() { return frameOpen && worldPass; }
 
     public static void beginFrame() {
         ACTIVE.remove();
@@ -43,12 +45,15 @@ public final class RenderHooks {
             measuredDeferredCalls = 0;
             queuedDeferredCalls = 0;
             renderedDeferredCalls = 0;
+            FlywheelHooks.clear();
+            FlywheelGpuTimers.reset();
         }
         worldPass = false;
         frameOpen = level != null;
         if (frameOpen) {
             frameStarted = System.nanoTime();
             runtime.profiler().beginFrame();
+            FlywheelHooks.refreshEntityContexts();
         }
     }
 
@@ -65,29 +70,42 @@ public final class RenderHooks {
     public static Scope begin(Entity entity, Object renderer) {
         var runtime = ClientRuntime.current();
         if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
-        if (entity.level() != Minecraft.getInstance().level) return null;
+        SampleContext context = context(entity, renderer);
+        return context == null ? null : begin(runtime, context);
+    }
+
+    /** Value-only metadata for optional visual creation, also while profiling is disabled. */
+    public static SampleContext context(Entity entity, Object renderer) {
+        var runtime = ClientRuntime.current();
+        if (runtime == null || entity.level() != Minecraft.getInstance().level) return null;
         ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         AABB box = entity.getBoundingBox();
-        return begin(runtime, new SampleContext(new InstanceKey(ObjectKind.ENTITY,
+        return new SampleContext(new InstanceKey(ObjectKind.ENTITY,
                 entity.level().dimension().location().toString(), Integer.toString(entity.getId())),
                 id.toString(), id.getNamespace(), renderer.getClass().getName(),
                 runtime.ownership().rendererOwner(renderer.getClass()),
-                new Position(entity.getX(), entity.getY(), entity.getZ()), bounds(box)));
+                new Position(entity.getX(), entity.getY(), entity.getZ()), bounds(box));
     }
 
     public static Scope begin(BlockEntity entity, Object renderer) {
         var runtime = ClientRuntime.current();
         if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
-        if (entity.getLevel() == null || entity.getLevel() != Minecraft.getInstance().level) return null;
+        SampleContext context = context(entity, renderer);
+        return context == null ? null : begin(runtime, context);
+    }
+
+    public static SampleContext context(BlockEntity entity, Object renderer) {
+        var runtime = ClientRuntime.current();
+        if (runtime == null || entity.getLevel() == null || entity.getLevel() != Minecraft.getInstance().level) return null;
         var pos = entity.getBlockPos();
         ResourceLocation id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(entity.getType());
         if (id == null) return null;
-        return begin(runtime, new SampleContext(new InstanceKey(ObjectKind.BLOCK_ENTITY,
+        return new SampleContext(new InstanceKey(ObjectKind.BLOCK_ENTITY,
                 entity.getLevel().dimension().location().toString(), pos.getX() + "," + pos.getY() + "," + pos.getZ()),
                 id.toString(), id.getNamespace(), renderer.getClass().getName(),
                 runtime.ownership().rendererOwner(renderer.getClass()),
                 new Position(pos.getX(), pos.getY(), pos.getZ()),
-                new Bounds(pos.getX(), pos.getY(), pos.getZ(), pos.getX()+1, pos.getY()+1, pos.getZ()+1)));
+                new Bounds(pos.getX(), pos.getY(), pos.getZ(), pos.getX()+1, pos.getY()+1, pos.getZ()+1));
     }
 
     private static Bounds bounds(AABB b) { return new Bounds(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ); }
@@ -97,6 +115,30 @@ public final class RenderHooks {
         if (scope.token == null) return null;
         ACTIVE.set(scope);
         return scope;
+    }
+
+    /** CPU visual work can run on Flywheel workers, outside a vanilla renderer/world pass. */
+    public static Scope beginVisual(SampleContext context, MeasurementSource source, RenderProfiler.FrameHandle frame) {
+        var runtime = ClientRuntime.current();
+        if (runtime == null || context == null || frame == null) return null;
+        Scope scope = new Scope(runtime.profiler(), ACTIVE.get(), false, context);
+        scope.token = runtime.profiler().beginCall(context, source, frame);
+        if (scope.token == null) return null;
+        ACTIVE.set(scope);
+        return scope;
+    }
+
+    /** Completion callbacks may synchronously start a different plan: exclude that interval. */
+    public static void withoutScope(Runnable continuation) {
+        Scope previous = ACTIVE.get();
+        if (previous == null) { continuation.run(); return; }
+        RenderProfiler.ExcludedInterval interval = previous.profiler.beginExcludedInterval(previous.token);
+        ACTIVE.remove();
+        try { continuation.run(); }
+        finally {
+            previous.profiler.endExcludedInterval(interval);
+            ACTIVE.set(previous);
+        }
     }
 
     /** Optional integrations call this while a measured renderer queues deferred world work. */
@@ -142,6 +184,8 @@ public final class RenderHooks {
         if (scope.parent != null) scope.profiler.excludeNestedCall(scope.parent.token, scope.token);
         if (scope.deferred) measuredDeferredCalls++;
     }
+
+    public static boolean recorded(Scope scope) { return scope != null && scope.token.recorded(); }
 
     public static void vertex(int formatBytes) {
         if (!geometryEnabled) return;
