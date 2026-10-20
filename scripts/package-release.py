@@ -8,6 +8,9 @@ import re
 import zipfile
 from PIL import Image
 
+LICENSE_ID = "LicenseRef-RenderScope-Source-Available-1.0"
+LICENSE_NAME = "RenderScope Source-Available License 1.0"
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--loader", choices=("forge", "neoforge"), default="forge")
 args = parser.parse_args()
@@ -27,10 +30,29 @@ assert verification.get("loader", "NeoForge" if loader == "neoforge" else "") ==
 assert verification.get("loaderVersion", verification.get(f"{loader}Version")) == loader_version
 artifact = distribution / verification["artifact"]
 assert hashlib.sha256(artifact.read_bytes()).hexdigest() == verification["sha256"]
-release = json.loads((distribution / "release.json").read_text(encoding="utf-8"))["release"]
+release_metadata = json.loads((distribution / "release.json").read_text(encoding="utf-8"))
+release = release_metadata["release"]
 assert release["loaders"] == [loader], "Publication metadata targets a different loader"
 assert release["targetLoaderVersion"] == loader_version
 assert release["artifact"] == artifact.name
+assert release_metadata["project"]["license"] == LICENSE_ID, "Publication metadata must declare RenderScope's custom source-available license"
+license_bytes = (root / "LICENSE").read_bytes()
+notices_bytes = (root / "THIRD_PARTY_NOTICES.md").read_bytes()
+assert license_bytes.decode("utf-8").splitlines()[0] == LICENSE_NAME
+assert f"SPDX-License-Identifier: {LICENSE_ID}" in license_bytes.decode("utf-8")
+for folder in (root / "distribution", root / "distribution/forge"):
+    assert (folder / "LICENSE").read_bytes() == license_bytes, f"Stale distribution license: {folder.name}"
+    assert (folder / "THIRD_PARTY_NOTICES.md").read_bytes() == notices_bytes, f"Stale distribution third-party notices: {folder.name}"
+assert verification["license"]["id"] == LICENSE_ID and verification["license"]["bundledTextsMatchSource"] is True
+assert verification["license"]["licenseSha256"] == hashlib.sha256(license_bytes).hexdigest()
+assert verification["license"]["thirdPartyNoticesSha256"] == hashlib.sha256(notices_bytes).hexdigest()
+with zipfile.ZipFile(artifact) as archive:
+    for name, expected in (("META-INF/LICENSE", license_bytes), ("META-INF/THIRD_PARTY_NOTICES.md", notices_bytes)):
+        assert archive.namelist().count(name) == 1, f"Missing or duplicate bundled legal notice: {name}"
+        assert archive.read(name) == expected, f"Bundled legal notice differs from source: {name}"
+    metadata = archive.read("META-INF/mods.toml").decode("utf-8")
+    match = re.search(r'^\s*license\s*=\s*"([^"\r\n]+)"\s*$', metadata, re.MULTILINE)
+    assert match and match.group(1) == LICENSE_ID, "Artifact license metadata is stale or claims another license"
 
 brand = distribution / "brand"
 original_path = brand / "renderscope-original.png"
@@ -82,6 +104,9 @@ current_numbers = tuple(int(part) for part in current_mod_version.split("."))
 for path in distribution.rglob("*"):
     if not path.is_file() or path.suffix.lower() == ".zip" or path.relative_to(distribution).parts[0] in ("forge", "neoforge", "platforms"):
         continue
+    relative = path.relative_to(distribution)
+    if path.suffix.lower() == ".png" and len(relative.parts) >= 3 and relative.parts[0] == "presentation" and relative.parts[1].startswith("media-frame-"):
+        continue  # Source-repository frame proof; keep capture.json and final media in this ZIP.
     if path.suffix.lower() == ".jar" and path != artifact:
         old = re.fullmatch(rf"renderscope-{loader}-(\d+)\.(\d+)\.(\d+)\+mc{re.escape(current_minecraft_version)}\.jar", path.name)
         if path.parent == distribution and old and tuple(int(part) for part in old.groups()) < current_numbers:
@@ -94,8 +119,10 @@ with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compres
 with zipfile.ZipFile(destination) as archive:
     assert archive.testzip() is None
     assert archive.read(artifact.name) == artifact.read_bytes()
+    assert archive.read("LICENSE") == license_bytes and archive.read("THIRD_PARTY_NOTICES.md") == notices_bytes
     assert "gallery/heatmap-demo.gif" in archive.namelist()
     assert [name for name in archive.namelist() if name.endswith(".jar")] == [artifact.name], "Release archive contains a historical or test JAR"
     assert not any(name.startswith(("forge/", "neoforge/")) for name in archive.namelist()), "Mixed platform materials"
+    assert not any(re.match(r"presentation/media-frame-[^/]+/.+\.png$", name, re.IGNORECASE) for name in archive.namelist()), "Raw presentation frames belong in repository proof only"
 print(f"{destination.name}: {len(files)} files, {destination.stat().st_size:,} bytes")
-print("Verified original RGBA pixels and full-bounds integer logos/icons, GIF frames, links and archived jar.")
+print("Verified custom license/notices, original RGBA pixels and full-bounds integer logos/icons, GIF frames, links and archived jar.")

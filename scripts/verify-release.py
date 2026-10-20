@@ -10,6 +10,30 @@ import struct
 from xml.etree import ElementTree
 import zipfile
 
+LICENSE_ID = "LicenseRef-RenderScope-Source-Available-1.0"
+LICENSE_NAME = "RenderScope Source-Available License 1.0"
+
+
+def verify_license(root, archive):
+    license_bytes = (root / "LICENSE").read_bytes()
+    notices_bytes = (root / "THIRD_PARTY_NOTICES.md").read_bytes()
+    assert license_bytes.decode("utf-8").splitlines()[0] == LICENSE_NAME, "Unexpected RenderScope license text"
+    assert f"SPDX-License-Identifier: {LICENSE_ID}" in license_bytes.decode("utf-8"), "Missing custom license identifier"
+    assert notices_bytes, "Empty third-party notices"
+    for folder in (root / "distribution", root / "distribution/forge"):
+        assert (folder / "LICENSE").read_bytes() == license_bytes, f"Stale distribution license: {folder.name}"
+        assert (folder / "THIRD_PARTY_NOTICES.md").read_bytes() == notices_bytes, f"Stale distribution third-party notices: {folder.name}"
+    for name, expected in (("META-INF/LICENSE", license_bytes), ("META-INF/THIRD_PARTY_NOTICES.md", notices_bytes)):
+        assert archive.namelist().count(name) == 1, f"Missing or duplicate bundled legal notice: {name}"
+        assert archive.read(name) == expected, f"Bundled legal notice differs from source: {name}"
+    metadata = archive.read("META-INF/mods.toml").decode("utf-8")
+    match = re.search(r'^\s*license\s*=\s*"([^"\r\n]+)"\s*$', metadata, re.MULTILINE)
+    assert match and match.group(1) == LICENSE_ID, "RenderScope metadata must declare its custom source-available license, not MIT/All Rights Reserved"
+    return {"id": LICENSE_ID, "name": LICENSE_NAME,
+            "licenseSha256": hashlib.sha256(license_bytes).hexdigest(),
+            "thirdPartyNoticesSha256": hashlib.sha256(notices_bytes).hexdigest(),
+            "bundledTextsMatchSource": True, "bothDistributionCopiesMatchSource": True}
+
 
 def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -209,6 +233,7 @@ jar = build / "libs" / f"renderscope-{loader}-{current_version}.jar"
 assert jar.is_file(), f"Missing current bundled {loader_name} release jar: {jar}"
 with zipfile.ZipFile(jar) as archive:
     names = archive.namelist()
+    legal = verify_license(root, archive)
     for required in ("META-INF/mods.toml", "META-INF/MANIFEST.MF", "renderscope.refmap.json",
                      "renderscope.mixins.json", "META-INF/jarjar/metadata.json", "renderscope-logo.png"):
         assert required in names, f"Missing {required}"
@@ -287,6 +312,7 @@ record = {
     "testFailures": failures,
     "testErrors": errors,
     "productionMetadataRefmapAndBundledRuntimeVerified": True,
+    "license": legal,
     "coreHasNoMinecraftLoaderDependencies": True,
     "developmentClientSmokeTest": "passed",
     "smokeRuntimeLoaderAndVersionVerified": True,

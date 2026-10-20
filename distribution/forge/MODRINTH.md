@@ -1,72 +1,67 @@
-# RenderScope 0.2.0
+# RenderScope
 
-![RenderScope](brand/renderscope-cover-1600x900.png)
+![RenderScope — profiling inside Minecraft](presentation/cover.png)
 
-**Follow expensive renderer calls all the way to an object in your world.**
+**Find the render cost. Follow it into your world.**
 
-RenderScope is a client-side render profiler for **Minecraft 1.20.1 / Forge 47.4.10**. See which registered objects account for measured renderer time, open their individual instances, and highlight the one you want to investigate directly in the world.
+**Minecraft 1.20.1 · Forge 47.4.10 · Java 21 · Client-side**
 
-## From a slow scene to a specific instance
+RenderScope connects measured rendering work to a mod, an object type and a specific instance in your world. Investigate a costly renderer, select its entity or block entity, and see exactly where that object is.
 
-Open **F8** or **Esc → RenderScope**, choose a mod, inspect an entity or block entity type, and select an instance by position. **Highlight** draws a temporary bounding box; **Track** keeps the selection active; **Copy Position** copies its coordinates.
+---
 
-The profiler continues collecting while the screen is closed. You can also enable **Inspect** to read the measured object under your crosshair, or use a **world heatmap** to compare the cost of nearby measured instances. Green, yellow and red reflect relative cost in the current candidate scene, including a red zone for the most expensive 5%.
+## From a mod to one object
 
-## Inside the profiler
+Open **F8** or **Esc → RenderScope**. Choose a mod in **Mods**, inspect a type in **Objects**, then select an instance. Average/P95/peak time, calls, renderer implementation and CPU work sources show what was measured.
 
-- **Overview:** FPS, frame time, 1% low, P50/P95/P99, worst frame and current measured offenders.
-- **Mods:** searchable, sortable tables with render time, measured-render share, calls and instance counts.
-- **Objects:** entities and block entities with per-frame averages, P95, peak, instances, renderer implementation and observed RenderTypes.
-- **Timeline:** a live 30-second history; click a recorded frame to see its actual measured offenders and worst instance.
-- **Capture:** record 5, 10 or 30 seconds, or stop manually, then inspect the summary and export JSON.
-- **Settings:** Timing Only or Full mode, rolling window, optional thread CPU timing, heatmap filters and report privacy.
+![Measured Flywheel visual CPU sources in the installed Forge test](presentation/flywheel-visual-detail.png)
 
-English and Russian UI are included. Native Minecraft buttons and scrollable tables adapt to the GUI scale.
+## Bring the answer into your world
 
-## In game
+**Highlight** draws the selected bounding box. **Track** adds direction and distance. The **heatmap** compares nearby measured instances with relative colors; **Inspect** reads the object under your crosshair. Filters control categories, distance, cost, labels and through-wall display.
 
-These screenshots were captured from an actual local world with vanilla objects. Reported costs depend on the scene and hardware.
+![Real Create mechanism animation with the selected instance highlighted](presentation/create-shaft-live.gif)
 
-![Live performance overview](gallery/01-overview.png)
+## Keep a useful report
 
-![Object details and measured instances](gallery/04-object-detail.png)
+**Overview** shows FPS, frame-time percentiles and measured offenders. **Timeline** keeps about 30 seconds of history. Record **5 / 10 / 30 seconds** or stop manually, then export JSON to your profile's `renderscope-reports` folder.
 
-![Relative render-cost heatmap in the world](gallery/09-world-heatmap.png)
+Reports stay local. **Positions and dimensions are off by default.** Player names, server addresses, world names, chat, UUIDs and absolute paths are excluded. Versions, installed mod names/versions and measured CPU sources/phases are included.
 
-![Crosshair inspector with real measured object statistics](gallery/10-crosshair-inspector.png)
+---
 
-![RenderScope heatmap recorded inside Minecraft](gallery/heatmap-demo.gif)
+## Install and start
 
-## What the numbers mean
+1. Use **Minecraft 1.20.1**, **Forge 47.4.10** and **Java 21**.
+2. Put `renderscope-forge-0.2.0+mc1.20.1.jar` into the client profile's `mods` folder. Keep one RenderScope JAR matching your loader; MixinExtras is bundled.
+3. Open a world and press **F8**. Rebind it under **Options → Controls → RenderScope**.
 
-The primary timer measures **CPU-side elapsed time around individual renderer calls and supported visual tasks**. Parallel visual tasks contribute their actual execution intervals; their sum can exceed elapsed frame time. This CPU timer is separate from GPU execution measurements. This release profiles **EntityRenderer, BlockEntityRenderer and supported Flywheel visual CPU callbacks**, rather than every part of Minecraft rendering: terrain, particles, GUI and standalone shader passes are outside its mod-attribution scope.
+**The server does not need RenderScope.** English and Russian UI are included. Profiling continues with the screen closed.
 
-**Timing Only** is the default. **Full** additionally observes standard BufferBuilder vertices and BufferSource RenderType requests. Alternative render pipelines can bypass these counters. “Estimated vertex data” is an estimate of observed geometry, not GPU uploads or VRAM.
+## Read the measurements
 
-An optional **Mekanism 10.4.16.80** integration measures real deferred translucent callbacks and attributes their CPU time and observed geometry to the world instance that queued them. Timing Only keeps these timing measurements. Mekanism is not required to use RenderScope.
+**Timing Only** measures individual renderer calls, supported Flywheel visual CPU tasks and attributed Mekanism deferred callbacks. **Full** adds observed standard BufferBuilder geometry and real asynchronous shared Flywheel GPU timings on supported contexts.
 
-**New in 0.2.0: Flywheel 1.0.5 visual CPU profiling.** Visual creation, frame, tick, update and light work is associated with real world instances, including Create mechanisms using the active instancing backend. Source breakdowns distinguish ordinary renderer calls from visual CPU tasks; instance highlights and heatmaps use the same measured world objects. Shared batch submission has a separate CPU phase.
+Visual CPU work and shared CPU/GPU batches are separate. Parallel CPU intervals can overlap; their sum may exceed frame latency. Shared GPU time and instanced vertices are not divided among objects. The GPU view is live only; captures export CPU sources/phases. “Estimated vertex data” is not GPU uploads or VRAM.
 
-In **Full**, asynchronous OpenGL timestamp queries also measure shared Flywheel batch GPU intervals when supported. The live GPU view uses completed sampled Flywheel frames from approximately five seconds; results are collected later without blocking after each object. **Timing Only** disables GPU queries. CPU sources and shared phases are exported; the live GPU diagnostic is not a GPU capture. Instanced vertices and GPU time are not divided among individual objects. Virtual block entities inside contraptions remain outside separate world-position attribution, and RenderScope does not force a different backend.
+The optional visual integration targets **Flywheel 1.0.5**. Virtual contraption block entities do not receive separate world-position attribution. Terrain, particles, GUI and standalone shader passes are outside this profiling scope. RenderScope does not force a different Flywheel backend.
 
-The **0.2.0 installed production Forge scenario passed** with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80** with rotating motor/shaft/cogwheel and an animated press. It verified actual per-instance visual CPU sources with instancing enabled, shared CPU/GPU diagnostics, Full/Timing Only, individual selections, heatmap, private capture, visual removal/recreation and world-disconnect cleanup. This is a pinned scene, not a general rendering compatibility matrix.
+The installed Forge production JAR was tested with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80**: real rotating mechanisms, an animated press, filled tanks and deferred energy-cube rendering. This is a pinned scene, not a general shader/renderer compatibility matrix.
 
-![Create and Mekanism in the installed Forge production profile](compatibility-installed/01-create-mekanism-mods.png)
+---
 
-![Flywheel visual CPU sources for a real mechanism](compatibility-installed/08-create-instanced-shaft-detail.png)
+## Русский
 
-![A rotating shaft selected with instancing enabled](compatibility-installed/09-create-instanced-shaft-selected.png)
+**Найдите конкретный объект с дорогим рендером.** Откройте **F8 → Mods → Objects**, выберите экземпляр и нажмите **Highlight** или **Track**. Теплокарта сравнивает измеренную стоимость объектов, **Inspect** показывает данные под прицелом.
 
-Mod totals use registry ownership; renderer class ownership is shown separately. Changes injected into another mod's class cannot be precisely attributed to individual mixin authors.
+Нужны **Minecraft 1.20.1, Forge 47.4.10, Java 21**. Мод устанавливается только на клиент. Интерфейс доступен на русском. **Capture** записывает 5/10/30 секунд или до ручной остановки; JSON сохраняется локально, координаты и dimension по умолчанию выключены.
 
-## Install
+Измеряются реальные CPU-вызовы рендереров и поддерживаемые visual-задачи. Общая Flywheel GPU-сводка в Full показывается отдельно; её время и инстансированная геометрия не распределяются между объектами.
 
-Use **Minecraft 1.20.1, Forge 47.4.10 and Java 21**. Place `renderscope-forge-0.2.0+mc1.20.1.jar` in your Forge client profile's `mods` folder. Required MixinExtras runtime support is bundled. NeoForge has a separate build; install only one RenderScope JAR matching your profile's loader.
+## Source and license
 
-**No server installation is required.** RenderScope sends no custom profiling packets and can be used while playing on a server without RenderScope. It does not optimize or modify the selected world objects.
+RenderScope uses the custom **RenderScope Source-Available License 1.0**. Personal use, private use as a tool at work, modification and free redistribution/inclusion are allowed under its terms. **Selling the code/mod, including it in paid projects/modpacks/bundles, or charging for access requires the owner's prior written permission.** Keep license/notices and identify modified versions. Unconditional voluntary donations and ordinary ads on freely accessible projects are allowed.
 
-## Local reports, positions off by default
+Исходники доступны: разрешены личное и бесплатное использование, изменения и бесплатное включение в проекты. Для продажи, включения кода/мода в платные проекты/сборки и платного доступа нужно предварительное письменное разрешение владельца. Личное использование как инструмента, в том числе на работе, разрешено.
 
-Exports are saved in `renderscope-reports` inside your Minecraft profile. They include versions, installed mod names/versions and recorded metrics. Player names, server addresses, world names, chat, UUIDs and absolute paths are excluded. Coordinates and dimensions are included only if you explicitly enable **Include world positions**.
-
-Reports are not uploaded automatically.
+[Source code](https://github.com/AlexFirst404/RenderScope) · [Full license](https://github.com/AlexFirst404/RenderScope/blob/main/LICENSE)

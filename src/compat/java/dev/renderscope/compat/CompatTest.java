@@ -94,6 +94,7 @@ public final class CompatTest {
     private static final Map<String, String> FIXTURE_TYPES = new ConcurrentHashMap<>();
     private static final JsonObject RESULT = new JsonObject();
     private static final JsonArray IMAGES = new JsonArray();
+    private static final JsonObject MOTION = new JsonObject();
     private static final Queue<CaptureImage> IMAGE_QUEUE = new ArrayDeque<>();
     private static final Queue<Throwable> ERRORS = new ConcurrentLinkedQueue<>();
     private static final AtomicInteger IMAGE_WRITES = new AtomicInteger();
@@ -121,6 +122,13 @@ public final class CompatTest {
     private static long renderedBeforeTiming;
     private static long visualFrameBeforeTiming;
     private static long visualTickBeforeTiming;
+    private static String motionName;
+    private static long motionStarted;
+    private static long motionNextFrame;
+    private static int motionFrames;
+    private static JsonArray motionTimes;
+    private static Path motionDirectory;
+    private static int motionPressChangesBefore;
 
     private enum Phase {
         BOOT, WORLD, DEFAULT_FULL, DEFAULT_TIMING, FALLBACK_FULL, RESTORE_FULL, CAPTURE,
@@ -377,6 +385,7 @@ public final class CompatTest {
                 case SHAFT_SELECTION -> {
                     if (age() < 35) return;
                     checkSelection(runtime, "createShaft");
+                    if (!captureMotion("shaft")) return;
                     image("09-create-instanced-shaft-selected.png", () -> selectMechanism("motor"));
                     advance(Phase.MOTOR_SELECTION);
                 }
@@ -389,6 +398,7 @@ public final class CompatTest {
                 case PRESS_SELECTION -> {
                     if (age() < 35) return;
                     checkSelection(runtime, "createPress");
+                    if (!captureMotion("press")) return;
                     image("11-create-instanced-press-selected.png", () -> enableHeatmap(mc, runtime));
                     advance(Phase.HEATMAP);
                 }
@@ -450,6 +460,8 @@ public final class CompatTest {
                 case FINISH -> {
                     if (age() < 25 || !IMAGE_QUEUE.isEmpty() || IMAGE_WRITES.get() != 0) return;
                     require(IMAGES.size() == 11, "Missing compatibility screenshots");
+                    require(MOTION.size() == 2, "Missing real selected-mechanism motion captures");
+                    RESULT.add("presentationMotion", MOTION);
                     RESULT.add("screenshots", IMAGES); RESULT.addProperty("success", true);
                     RESULT.addProperty("completedAt", Instant.now().toString()); writeResult();
                     LOGGER.info("RENDERSCOPE_COMPAT_SUCCESS: Create and Mekanism real timing, geometry, Flywheel default/fallback, selected instances and private capture verified");
@@ -753,14 +765,15 @@ public final class CompatTest {
         if (finished || IMAGE_QUEUE.isEmpty()) return;
         try {
             CaptureImage request = IMAGE_QUEUE.remove(); Minecraft mc = Minecraft.getInstance();
+            if (request.provenance() != null) request.provenance().addProperty("capturedAtMillis", (System.nanoTime() - request.originNanos()) / 1_000_000.0);
             IMAGE_WRITES.incrementAndGet();
-            String file = "renderscope-compat-" + request.name();
+            String file = "renderscope-compat-" + request.screenshotName();
             Screenshot.grab(mc.gameDirectory, file, mc.getMainRenderTarget(), message -> {
                 try {
                     Path source = mc.gameDirectory.toPath().resolve("screenshots").resolve(file);
                     require(Files.isRegularFile(source), "Screenshot failed: " + message.getString());
-                    Files.copy(source, output.resolve(request.name()), StandardCopyOption.REPLACE_EXISTING);
-                    synchronized (IMAGES) { IMAGES.add(request.name()); }
+                    Files.copy(source, request.destination(), StandardCopyOption.REPLACE_EXISTING);
+                    if (request.gallery()) synchronized (IMAGES) { IMAGES.add(request.destination().getFileName().toString()); }
                 } catch (Throwable failure) { ERRORS.add(failure); }
                 finally { IMAGE_WRITES.decrementAndGet(); }
             });
@@ -768,8 +781,50 @@ public final class CompatTest {
         } catch (Throwable failure) { fail(failure); }
     }
 
-    private static void image(String name, Runnable after) { IMAGE_QUEUE.add(new CaptureImage(name, after)); }
-    private record CaptureImage(String name, Runnable after) {}
+    private static void image(String name, Runnable after) { IMAGE_QUEUE.add(new CaptureImage(output.resolve(name), name, true, after, null, 0)); }
+    private record CaptureImage(Path destination, String screenshotName, boolean gallery, Runnable after, JsonObject provenance, long originNanos) {}
+
+    /** Additional publication footage; the eleven diagnostic screenshots remain a separate contract. */
+    private static boolean captureMotion(String mechanism) throws Exception {
+        long now = System.nanoTime();
+        if (motionName == null) {
+            require(flywheelOn(), "Motion footage must show the real enabled Flywheel backend");
+            motionName = mechanism;
+            motionStarted = motionNextFrame = now;
+            motionFrames = 0;
+            motionTimes = new JsonArray();
+            motionPressChangesBefore = pressHeadOffsetChanges;
+            Path presentation = Path.of(System.getProperty("renderscope.compat.presentation.output", output.getParent().resolve("presentation").toString()));
+            motionDirectory = presentation.resolve("media-frame-" + mechanism);
+            Files.createDirectories(motionDirectory);
+        }
+        require(motionName.equals(mechanism), "Overlapping motion captures");
+        if (motionFrames < 16 && now >= motionNextFrame) {
+            String filename = String.format(Locale.ROOT, "frame-%02d.png", motionFrames);
+            JsonObject sample = new JsonObject();
+            sample.addProperty("file", filename);
+            sample.addProperty("requestedAtMillis", (now - motionStarted) / 1_000_000.0);
+            IMAGE_QUEUE.add(new CaptureImage(motionDirectory.resolve(filename), "motion-" + mechanism + "-" + filename, false, null, sample, motionStarted));
+            motionTimes.add(sample);
+            motionFrames++;
+            motionNextFrame = now + 150_000_000L;
+        }
+        if (motionFrames < 16 || !IMAGE_QUEUE.isEmpty() || IMAGE_WRITES.get() != 0) return false;
+        if (mechanism.equals("press")) require(pressHeadOffsetChanges > motionPressChangesBefore, "Press head did not actually move during publication footage");
+        JsonObject capture = new JsonObject();
+        capture.addProperty("source", "Actual installed Minecraft framebuffer screenshots; no generated UI, timings or animation");
+        capture.addProperty("rawFrameAvailability", "Original PNG frames are source-repository evidence; release ZIPs include this provenance and the encoded GIF");
+        capture.addProperty("loader", loader.name()); capture.addProperty("loaderVersion", loader.version());
+        capture.addProperty("environment", RESULT.get("environment").getAsString());
+        if (RESULT.has("primaryJarSha256")) capture.add("primaryJarSha256", RESULT.get("primaryJarSha256"));
+        capture.addProperty("mechanism", mechanism); capture.addProperty("flywheelBackend", backendName());
+        capture.addProperty("frameCount", motionFrames); capture.addProperty("playbackFrameDurationMillis", 150);
+        capture.addProperty("completedAt", Instant.now().toString()); capture.add("frames", motionTimes);
+        Files.writeString(motionDirectory.resolve("capture.json"), GSON.toJson(capture), StandardCharsets.UTF_8);
+        MOTION.add(mechanism, capture);
+        motionName = null;
+        return true;
+    }
     private static int age() { return ticks - since; }
     private static void advance(Phase next) { phase = next; since = ticks; LOGGER.info("Compatibility phase: {}", next); }
     private static void command(MinecraftServer server, String text) { server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withPermission(4).withSuppressedOutput(), text); }

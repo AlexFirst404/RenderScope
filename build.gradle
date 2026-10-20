@@ -112,6 +112,12 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 17
 }
+
+// Redistributors receive the same license and third-party notices as source users.
+tasks.withType(Jar).configureEach {
+    from('LICENSE') { into 'META-INF' }
+    from('THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+}
 tasks.named('test') { useJUnitPlatform() }
 tasks.named('processResources') {
     def metadata = [version: project.version, loader_name: targetLoaderName,

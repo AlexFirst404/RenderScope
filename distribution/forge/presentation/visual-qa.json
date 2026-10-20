@@ -1,0 +1,18 @@
+{
+  "reviewedArtifacts": [
+    "mods.png",
+    "flywheel-visual-detail.png",
+    "create-shaft-highlight.png",
+    "create-motor-highlight.png",
+    "create-press-highlight.png",
+    "heatmap.png",
+    "capture.png",
+    "create-shaft-live.gif",
+    "create-press-live.gif"
+  ],
+  "mainJarSha256": "1de007b2ae41e514cb19f358e7a7923910f30b2b9dff9f04e3797521a4264b0a",
+  "visualReview": "Rounded outer corners were viewed over a checkerboard. Native UI remains readable. Encoded GIF frames 0, 5, 10 and 15 were visually compared: actual cog/shaft rotation and press-head movement are visible; selected mechanism boxes remain correctly placed. No intermediate motion frames or metrics were generated.",
+  "machineChecks": "All still-image RGB pixels equal their evidence sources; only outer alpha corners change. All GIF frames have transparent corners, an opaque center, 150 ms playback duration and shared indexed colors. Each sequence contains 16 distinct source PNGs with recorded framebuffer readback times. Source SHA-256 values were verified unchanged after processing.",
+  "evidence": "presentation-manifest.json and media-frame-shaft/capture.json, media-frame-press/capture.json",
+  "rawFrameAvailability": "Source repository only; release ZIP includes final GIFs and capture provenance."
+}
