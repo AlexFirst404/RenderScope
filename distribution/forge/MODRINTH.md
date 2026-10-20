@@ -43,6 +43,14 @@ The primary timer measures **CPU-side elapsed time around individual world rende
 
 **Timing Only** is the default. **Full** additionally observes standard BufferBuilder vertices and BufferSource RenderType requests. Alternative render pipelines can bypass these counters. “Estimated vertex data” is an estimate of observed geometry, not GPU uploads or VRAM.
 
+An optional **Mekanism 10.4.16.80** integration measures real deferred translucent callbacks and attributes their CPU time and observed geometry to the world instance that queued them. Timing Only keeps these timing measurements. Mekanism is not required to use RenderScope.
+
+**Create / Flywheel coverage is partial.** Flywheel visuals, instanced geometry and batched rendering can bypass ordinary renderer calls and the vertex counters. Their cost is not distributed across individual objects. Virtual block entities inside moving contraptions are not profiled or highlighted separately; an outer contraption entity can still be measured through the normal entity dispatcher. RenderScope does not change the Flywheel backend automatically.
+
+A real scene passed in both the development client and an **installed Forge production profile** with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 1.20.1-10.4.16.80**: filled tanks, charged-energy-cube deferred callbacks, Full/Timing Only, selected instances, capture/export and a separate Flywheel-off fallback. The installed launcher and measured JAR hash were verified. This covers the selected scene, without claiming complete per-object coverage of instanced rendering.
+
+![Create and Mekanism in the installed Forge production profile](compatibility-installed/01-create-mekanism-mods.png)
+
 Mod totals use registry ownership; renderer class ownership is shown separately. Changes injected into another mod's class cannot be precisely attributed to individual mixin authors.
 
 ## Install

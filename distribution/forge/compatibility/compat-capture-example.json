@@ -1,0 +1,2133 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-20T20:13:05.159Z",
+  "durationSeconds": 5.0049888,
+  "frames": 594,
+  "measurementMode": "FULL",
+  "threadCpuTimingEnabled": false,
+  "positionsIncluded": false,
+  "timingMeaning": "Measured CPU-side renderer wall time; includes submission and driver waits, not GPU execution time.",
+  "geometryMeaning": "Observed BufferBuilder vertices and estimated vertex data; alternative rendering pipelines may bypass these counters. Not GPU uploads or VRAM.",
+  "coverageMeaning": "Measured standard entity/block entity renderer calls and attributed deferred Mekanism renderer calls. Flywheel instanced visual updates/draws and Create contraption virtual worlds are not covered; totals are not the complete cost of a mod.",
+  "percentiles": "Capture percentiles use bounded histograms; averages include frames with zero calls.",
+  "droppedMeasurements": 0,
+  "performance": {
+    "frames": 594,
+    "fps": 120.40220661164597,
+    "currentFrameMs": 8.1484,
+    "averageFrameMs": 8.305495622895622,
+    "onePercentLowFps": 101.4601845170828,
+    "p50FrameMs": 8.190874594119117,
+    "p95FrameMs": 8.743452683674326,
+    "p99FrameMs": 9.1323964328549,
+    "worstFrameMs": 12.6414,
+    "measuredRenderMs": 0.0489537037037037,
+    "entityRenderMs": 0.0,
+    "blockEntityRenderMs": 0.0489537037037037,
+    "rendererCallsPerFrame": 6.0,
+    "renderedEntitiesPerFrame": 0.0,
+    "renderedBlockEntitiesPerFrame": 5.0,
+    "measuredObjects": 5,
+    "verticesPerFrame": 100.25589225589225,
+    "estimatedBytesPerFrame": 3449.212121212121
+  },
+  "mods": [
+    {
+      "id": "mekanism",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.03835117845117845,
+        "p95Ms": 0.06121794150211673,
+        "peakMs": 0.3448,
+        "cpuMs": 0.0,
+        "callsPerFrame": 4.0,
+        "calls": 2376,
+        "failures": 0,
+        "verticesPerFrame": 60.255892255892256,
+        "estimatedBytesPerFrame": 2169.212121212121,
+        "instances": 3,
+        "renderTypes": [
+          "mek_standard_translucent_target",
+          "entity_translucent_cull"
+        ]
+      }
+    },
+    {
+      "id": "create",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "statistics": {
+        "averageMs": 0.010602525252525252,
+        "p95Ms": 0.014558599511921537,
+        "peakMs": 0.0493,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 40.0,
+        "estimatedBytesPerFrame": 1280.0,
+        "instances": 2,
+        "renderTypes": [
+          "ponder:fluid"
+        ]
+      }
+    }
+  ],
+  "renderers": [
+    {
+      "id": "mekanism.client.render.tileentity.RenderFluidTank",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.02156801346801347,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.3276,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 36.255892255892256,
+        "estimatedBytesPerFrame": 1305.2121212121212,
+        "instances": 2,
+        "renderTypes": [
+          "entity_translucent_cull"
+        ]
+      }
+    },
+    {
+      "id": "mekanism.client.render.tileentity.RenderEnergyCube",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.016783164983164983,
+        "p95Ms": 0.024015420905761187,
+        "peakMs": 0.2792,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 864.0,
+        "instances": 1,
+        "renderTypes": [
+          "mek_standard_translucent_target"
+        ]
+      }
+    },
+    {
+      "id": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "statistics": {
+        "averageMs": 0.010602525252525252,
+        "p95Ms": 0.014558599511921537,
+        "peakMs": 0.0493,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 40.0,
+        "estimatedBytesPerFrame": 1280.0,
+        "instances": 2,
+        "renderTypes": [
+          "ponder:fluid"
+        ]
+      }
+    }
+  ],
+  "objects": [
+    {
+      "id": "mekanism:basic_fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.019366329966329966,
+        "p95Ms": 0.03328538921772799,
+        "peakMs": 0.3251,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 18.127946127946128,
+        "estimatedBytesPerFrame": 652.6060606060606,
+        "instances": 1,
+        "renderTypes": [
+          "entity_translucent_cull"
+        ]
+      }
+    },
+    {
+      "id": "mekanism:basic_energy_cube",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.016783164983164983,
+        "p95Ms": 0.024015420905761187,
+        "peakMs": 0.2792,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 864.0,
+        "instances": 1,
+        "renderTypes": [
+          "mek_standard_translucent_target"
+        ]
+      }
+    },
+    {
+      "id": "create:fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "statistics": {
+        "averageMs": 0.010602525252525252,
+        "p95Ms": 0.014558599511921537,
+        "peakMs": 0.0493,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 40.0,
+        "estimatedBytesPerFrame": 1280.0,
+        "instances": 2,
+        "renderTypes": [
+          "ponder:fluid"
+        ]
+      }
+    },
+    {
+      "id": "mekanism:advanced_fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.0022016835016835015,
+        "p95Ms": 0.0037771485016800904,
+        "peakMs": 0.0214,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 18.127946127946128,
+        "estimatedBytesPerFrame": 652.6060606060606,
+        "instances": 1,
+        "renderTypes": [
+          "entity_translucent_cull"
+        ]
+      }
+    }
+  ],
+  "instances": [
+    {
+      "registryId": "mekanism:basic_fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.019366329966329966,
+        "p95Ms": 0.03328538921772799,
+        "peakMs": 0.3251,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 18.127946127946128,
+        "estimatedBytesPerFrame": 652.6060606060606,
+        "instances": 1,
+        "renderTypes": [
+          "entity_translucent_cull"
+        ]
+      }
+    },
+    {
+      "registryId": "mekanism:basic_energy_cube",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.016783164983164983,
+        "p95Ms": 0.024015420905761187,
+        "peakMs": 0.2792,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1188,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 864.0,
+        "instances": 1,
+        "renderTypes": [
+          "mek_standard_translucent_target"
+        ]
+      }
+    },
+    {
+      "registryId": "create:fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "statistics": {
+        "averageMs": 0.00868097643097643,
+        "p95Ms": 0.01171144926481744,
+        "peakMs": 0.0478,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 20.0,
+        "estimatedBytesPerFrame": 640.0,
+        "instances": 1,
+        "renderTypes": [
+          "ponder:fluid"
+        ]
+      }
+    },
+    {
+      "registryId": "mekanism:advanced_fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "mekanism",
+      "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "statistics": {
+        "averageMs": 0.0022016835016835015,
+        "p95Ms": 0.0037771485016800904,
+        "peakMs": 0.0214,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 18.127946127946128,
+        "estimatedBytesPerFrame": 652.6060606060606,
+        "instances": 1,
+        "renderTypes": [
+          "entity_translucent_cull"
+        ]
+      }
+    },
+    {
+      "registryId": "create:fluid_tank",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "statistics": {
+        "averageMs": 0.0019215488215488215,
+        "p95Ms": 0.002785168781684197,
+        "peakMs": 0.0315,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 20.0,
+        "estimatedBytesPerFrame": 640.0,
+        "instances": 1,
+        "renderTypes": [
+          "ponder:fluid"
+        ]
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "secondsFromTimelineStart": 0.0,
+      "frameMs": 8.2494,
+      "measuredRendererMs": 0.0366,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0366,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0268,
+        "create": 0.0098
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0138,
+          "p95Ms": 0.0138,
+          "peakMs": 0.0138,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.100173,
+      "frameMs": 8.3559,
+      "measuredRendererMs": 0.0365,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0365,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0278,
+        "create": 0.0087
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0141,
+          "p95Ms": 0.0141,
+          "peakMs": 0.0141,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.1922191,
+      "frameMs": 8.4182,
+      "measuredRendererMs": 0.0414,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0414,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0318,
+        "create": 0.0096
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0168,
+          "p95Ms": 0.0168,
+          "peakMs": 0.0168,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.3512581,
+      "frameMs": 8.5405,
+      "measuredRendererMs": 0.0364,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0364,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0274,
+        "create": 0.009
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0136,
+          "p95Ms": 0.0136,
+          "peakMs": 0.0136,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.478029,
+      "frameMs": 9.1396,
+      "measuredRendererMs": 0.0397,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0397,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0301,
+        "create": 0.0096
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0147,
+          "p95Ms": 0.0147,
+          "peakMs": 0.0147,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.5450536,
+      "frameMs": 8.5583,
+      "measuredRendererMs": 0.0379,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0379,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0284,
+        "create": 0.0095
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0138,
+          "p95Ms": 0.0138,
+          "peakMs": 0.0138,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.6375288,
+      "frameMs": 8.7519,
+      "measuredRendererMs": 0.0425,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0425,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0312,
+        "create": 0.0113
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0148,
+          "p95Ms": 0.0148,
+          "peakMs": 0.0148,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.7637704,
+      "frameMs": 8.6406,
+      "measuredRendererMs": 0.0463,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0463,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0375,
+        "create": 0.0088
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0239,
+          "p95Ms": 0.0239,
+          "peakMs": 0.0239,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.8234819,
+      "frameMs": 9.042,
+      "measuredRendererMs": 0.0501,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0501,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0409,
+        "create": 0.0092
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0261,
+          "p95Ms": 0.0261,
+          "peakMs": 0.0261,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.9420098,
+      "frameMs": 8.7657,
+      "measuredRendererMs": 0.0375,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0375,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0284,
+        "create": 0.0091
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0138,
+          "p95Ms": 0.0138,
+          "peakMs": 0.0138,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.0089032,
+      "frameMs": 8.3467,
+      "measuredRendererMs": 0.0436,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0436,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0319,
+        "create": 0.0117
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0155,
+          "p95Ms": 0.0155,
+          "peakMs": 0.0155,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.1343581,
+      "frameMs": 8.2945,
+      "measuredRendererMs": 0.0465,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0465,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0348,
+        "create": 0.0117
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0178,
+          "p95Ms": 0.0178,
+          "peakMs": 0.0178,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.2723266,
+      "frameMs": 12.6414,
+      "measuredRendererMs": 0.0429,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0429,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0314,
+        "create": 0.0115
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0158,
+          "p95Ms": 0.0158,
+          "peakMs": 0.0158,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.3307291,
+      "frameMs": 8.3039,
+      "measuredRendererMs": 0.0731,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0731,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0626,
+        "create": 0.0105
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0334,
+          "p95Ms": 0.0334,
+          "peakMs": 0.0334,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.4153438,
+      "frameMs": 9.1409,
+      "measuredRendererMs": 0.067,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.067,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.055,
+        "create": 0.012
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0291,
+          "p95Ms": 0.0291,
+          "peakMs": 0.0291,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.5175083,
+      "frameMs": 8.5857,
+      "measuredRendererMs": 0.059,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.059,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0502,
+        "create": 0.0088
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0274,
+          "p95Ms": 0.0274,
+          "peakMs": 0.0274,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.6433135,
+      "frameMs": 8.6224,
+      "measuredRendererMs": 0.0614,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0614,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0493,
+        "create": 0.0121
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.026,
+          "p95Ms": 0.026,
+          "peakMs": 0.026,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.7601573,
+      "frameMs": 8.2572,
+      "measuredRendererMs": 0.0411,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0411,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0312,
+        "create": 0.0099
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0147,
+          "p95Ms": 0.0147,
+          "peakMs": 0.0147,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.8785334,
+      "frameMs": 9.1627,
+      "measuredRendererMs": 0.0845,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0845,
+      "spike": false,
+      "topModsMs": {
+        "create": 0.0447,
+        "mekanism": 0.0398
+      },
+      "worstInstance": {
+        "registryId": "create:fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "create",
+        "rendererClass": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+        "rendererOwner": "create",
+        "statistics": {
+          "averageMs": 0.0363,
+          "p95Ms": 0.0363,
+          "peakMs": 0.0363,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 640.0,
+          "instances": 1,
+          "renderTypes": [
+            "ponder:fluid"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.8873866,
+      "frameMs": 8.6982,
+      "measuredRendererMs": 0.051,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.051,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0385,
+        "create": 0.0125
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.02,
+          "p95Ms": 0.02,
+          "peakMs": 0.02,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.0796562,
+      "frameMs": 8.3428,
+      "measuredRendererMs": 0.053,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.053,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0412,
+        "create": 0.0118
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0197,
+          "p95Ms": 0.0197,
+          "peakMs": 0.0197,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.1048551,
+      "frameMs": 8.3309,
+      "measuredRendererMs": 0.0515,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0515,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0399,
+        "create": 0.0116
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0193,
+          "p95Ms": 0.0193,
+          "peakMs": 0.0193,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.2471369,
+      "frameMs": 8.3682,
+      "measuredRendererMs": 0.0556,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0556,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0414,
+        "create": 0.0142
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0206,
+          "p95Ms": 0.0206,
+          "peakMs": 0.0206,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.3819553,
+      "frameMs": 9.2597,
+      "measuredRendererMs": 0.0476,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0476,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0377,
+        "create": 0.0099
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0182,
+          "p95Ms": 0.0182,
+          "peakMs": 0.0182,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.4663514,
+      "frameMs": 8.8557,
+      "measuredRendererMs": 0.0433,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0433,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0342,
+        "create": 0.0091
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0166,
+          "p95Ms": 0.0166,
+          "peakMs": 0.0166,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.5180861,
+      "frameMs": 9.15,
+      "measuredRendererMs": 0.0462,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0462,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0352,
+        "create": 0.011
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0187,
+          "p95Ms": 0.0187,
+          "peakMs": 0.0187,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.6777925,
+      "frameMs": 8.5339,
+      "measuredRendererMs": 0.0485,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0485,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0369,
+        "create": 0.0116
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.019,
+          "p95Ms": 0.019,
+          "peakMs": 0.019,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.7627132,
+      "frameMs": 9.215,
+      "measuredRendererMs": 0.0437,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0437,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.034,
+        "create": 0.0097
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0173,
+          "p95Ms": 0.0173,
+          "peakMs": 0.0173,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.8226399,
+      "frameMs": 9.7087,
+      "measuredRendererMs": 0.0372,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0372,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0286,
+        "create": 0.0086
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0145,
+          "p95Ms": 0.0145,
+          "peakMs": 0.0145,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.9645788,
+      "frameMs": 8.4528,
+      "measuredRendererMs": 0.0364,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0364,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0275,
+        "create": 0.0089
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.015,
+          "p95Ms": 0.015,
+          "peakMs": 0.015,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.0667262,
+      "frameMs": 8.9756,
+      "measuredRendererMs": 0.0771,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0771,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.061,
+        "create": 0.0161
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0381,
+          "p95Ms": 0.0381,
+          "peakMs": 0.0381,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.1179864,
+      "frameMs": 8.8207,
+      "measuredRendererMs": 0.0376,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0376,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0285,
+        "create": 0.0091
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0149,
+          "p95Ms": 0.0149,
+          "peakMs": 0.0149,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.2853074,
+      "frameMs": 8.5264,
+      "measuredRendererMs": 0.0365,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0365,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.027,
+        "create": 0.0095
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.013,
+          "p95Ms": 0.013,
+          "peakMs": 0.013,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 12.0,
+          "estimatedBytesPerFrame": 432.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.3353804,
+      "frameMs": 8.3058,
+      "measuredRendererMs": 0.0384,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0384,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0296,
+        "create": 0.0088
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0157,
+          "p95Ms": 0.0157,
+          "peakMs": 0.0157,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.4604256,
+      "frameMs": 8.2837,
+      "measuredRendererMs": 0.0362,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0362,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0275,
+        "create": 0.0087
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0143,
+          "p95Ms": 0.0143,
+          "peakMs": 0.0143,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.5108798,
+      "frameMs": 8.6842,
+      "measuredRendererMs": 0.0372,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0372,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0283,
+        "create": 0.0089
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0154,
+          "p95Ms": 0.0154,
+          "peakMs": 0.0154,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.6464103,
+      "frameMs": 8.7923,
+      "measuredRendererMs": 0.036,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.036,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0274,
+        "create": 0.0086
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0138,
+          "p95Ms": 0.0138,
+          "peakMs": 0.0138,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.6883665,
+      "frameMs": 8.3747,
+      "measuredRendererMs": 0.0351,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0351,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0268,
+        "create": 0.0083
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0139,
+          "p95Ms": 0.0139,
+          "peakMs": 0.0139,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.7892205,
+      "frameMs": 8.9439,
+      "measuredRendererMs": 0.0359,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0359,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0283,
+        "create": 0.0076
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0142,
+          "p95Ms": 0.0142,
+          "peakMs": 0.0142,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.9406155,
+      "frameMs": 8.414,
+      "measuredRendererMs": 0.0405,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0405,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0321,
+        "create": 0.0084
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.016,
+          "p95Ms": 0.016,
+          "peakMs": 0.016,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.0164782,
+      "frameMs": 8.7382,
+      "measuredRendererMs": 0.0447,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0447,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0349,
+        "create": 0.0098
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0169,
+          "p95Ms": 0.0169,
+          "peakMs": 0.0169,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.1430406,
+      "frameMs": 8.7164,
+      "measuredRendererMs": 0.0605,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0605,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.052,
+        "create": 0.0085
+      },
+      "worstInstance": {
+        "registryId": "mekanism:advanced_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0214,
+          "p95Ms": 0.0214,
+          "peakMs": 0.0214,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.2349993,
+      "frameMs": 8.3416,
+      "measuredRendererMs": 0.0456,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0456,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0359,
+        "create": 0.0097
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0177,
+          "p95Ms": 0.0177,
+          "peakMs": 0.0177,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.3355784,
+      "frameMs": 8.7265,
+      "measuredRendererMs": 0.0404,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0404,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0328,
+        "create": 0.0076
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0179,
+          "p95Ms": 0.0179,
+          "peakMs": 0.0179,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.452881,
+      "frameMs": 8.7711,
+      "measuredRendererMs": 0.0411,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0411,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0333,
+        "create": 0.0078
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.016,
+          "p95Ms": 0.016,
+          "peakMs": 0.016,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.5708768,
+      "frameMs": 8.6798,
+      "measuredRendererMs": 0.0452,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0452,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0356,
+        "create": 0.0096
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0173,
+          "p95Ms": 0.0173,
+          "peakMs": 0.0173,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.6382115,
+      "frameMs": 8.7302,
+      "measuredRendererMs": 0.0478,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0478,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0367,
+        "create": 0.0111
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0189,
+          "p95Ms": 0.0189,
+          "peakMs": 0.0189,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.7220479,
+      "frameMs": 8.3546,
+      "measuredRendererMs": 0.0476,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0476,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0389,
+        "create": 0.0087
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0211,
+          "p95Ms": 0.0211,
+          "peakMs": 0.0211,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.8143436,
+      "frameMs": 8.7264,
+      "measuredRendererMs": 0.0382,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0382,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0305,
+        "create": 0.0077
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_fluid_tank",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderFluidTank",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0171,
+          "p95Ms": 0.0171,
+          "peakMs": 0.0171,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 20.0,
+          "estimatedBytesPerFrame": 720.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_translucent_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.9823468,
+      "frameMs": 8.8797,
+      "measuredRendererMs": 0.0715,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.0715,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.0612,
+        "create": 0.0103
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0436,
+          "p95Ms": 0.0436,
+          "peakMs": 0.0436,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.9906823,
+      "frameMs": 8.1484,
+      "measuredRendererMs": 0.069,
+      "entityRendererMs": 0.0,
+      "blockEntityRendererMs": 0.069,
+      "spike": false,
+      "topModsMs": {
+        "mekanism": 0.061,
+        "create": 0.008
+      },
+      "worstInstance": {
+        "registryId": "mekanism:basic_energy_cube",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "mekanism",
+        "rendererClass": "mekanism.client.render.tileentity.RenderEnergyCube",
+        "rendererOwner": "mekanism",
+        "statistics": {
+          "averageMs": 0.0406,
+          "p95Ms": 0.0406,
+          "peakMs": 0.0406,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 24.0,
+          "estimatedBytesPerFrame": 864.0,
+          "instances": 1,
+          "renderTypes": [
+            "mek_standard_translucent_target"
+          ]
+        }
+      }
+    }
+  ],
+  "minecraftVersion": "1.20.1",
+  "loader": "Forge",
+  "loaderVersion": "47.4.10",
+  "renderscopeVersion": "0.1.0+mc1.20.1",
+  "installedMods": [
+    {
+      "id": "minecraft",
+      "name": "Minecraft",
+      "version": "1.20.1"
+    },
+    {
+      "id": "renderscope",
+      "name": "RenderScope",
+      "version": "0.1.0+mc1.20.1"
+    },
+    {
+      "id": "mixinextras",
+      "name": "MixinExtras",
+      "version": "0.4.1"
+    },
+    {
+      "id": "mekanism",
+      "name": "Mekanism",
+      "version": "10.4.16"
+    },
+    {
+      "id": "forge",
+      "name": "Forge",
+      "version": "47.4.10"
+    },
+    {
+      "id": "flywheel",
+      "name": "Flywheel",
+      "version": "1.0.5"
+    },
+    {
+      "id": "ponder",
+      "name": "Ponder",
+      "version": "1.0.91"
+    },
+    {
+      "id": "create",
+      "name": "Create",
+      "version": "6.0.8"
+    },
+    {
+      "id": "renderscope_compat",
+      "name": "RenderScope Create and Mekanism Compatibility Harness",
+      "version": "1.0"
+    }
+  ]
+}

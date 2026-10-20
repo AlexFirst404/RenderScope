@@ -50,6 +50,7 @@ import java.util.Map;
 public final class WorldOverlay {
     private static final int HIGHLIGHT_COLOR = 0x66DDFF;
     private static final int TRACK_COLOR = 0xDDAAFF;
+    private static final float LABEL_SCALE = 0.025F;
     private final RenderProfiler profiler;
     private final ProfilerSettings settings;
     // This buffer belongs exclusively to RenderScope. Never flush the world's shared buffer source.
@@ -259,10 +260,16 @@ public final class WorldOverlay {
     }
 
     private static void orientLabel(Minecraft minecraft, PoseStack pose, AABB box) {
-        pose.translate((box.minX + box.maxX) * 0.5, box.maxY + 0.22, (box.minZ + box.maxZ) * 0.5);
+        // Font's positive Y points down after billboard scaling. Lift the complete two-line
+        // rectangle above the box so its registry ID is not depth-occluded by its own object.
+        double height = labelBottom(minecraft) * LABEL_SCALE + 0.12;
+        pose.translate((box.minX + box.maxX) * 0.5, box.maxY + height, (box.minZ + box.maxZ) * 0.5);
         pose.mulPose(minecraft.getEntityRenderDispatcher().cameraOrientation());
-        pose.scale(-0.025F, -0.025F, 0.025F);
+        pose.scale(-LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE);
     }
+
+    private static int labelLineSpacing(Minecraft minecraft) { return minecraft.font.lineHeight + 1; }
+    private static int labelBottom(Minecraft minecraft) { return labelLineSpacing(minecraft) + minecraft.font.lineHeight + 2; }
 
     private LabelPlacement projectLabel(Minecraft minecraft, PoseStack pose, ResolvedTarget resolved, Matrix4f projection) {
         String timing = formatMs(resolved.target().metric().stats().averageMs()) + " CPU ms/frame";
@@ -276,7 +283,7 @@ public final class WorldOverlay {
         try {
             orientLabel(minecraft, pose, resolved.box());
             for (float x : new float[]{-halfWidth, halfWidth}) {
-                for (float y : new float[]{-2, 21}) {
+                for (float y : new float[]{-2, labelBottom(minecraft)}) {
                     Vector4f clip = new Vector4f(x, y, 0, 1).mul(pose.last().pose()).mul(projection);
                     if (clip.w <= 0 || !Float.isFinite(clip.w)) return null;
                     double screenX = (clip.x / clip.w * 0.5 + 0.5) * screenWidth;
@@ -329,7 +336,7 @@ public final class WorldOverlay {
             Font.DisplayMode mode = settings.throughWalls ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
             minecraft.font.drawInBatch(timing, -minecraft.font.width(timing) / 2F, 0, 0xFF000000 | target.color(), false,
                     pose.last().pose(), buffers, mode, 0x90000000, 15728880);
-            minecraft.font.drawInBatch(name, -minecraft.font.width(name) / 2F, 10, 0xFFFFFFFF, false,
+            minecraft.font.drawInBatch(name, -minecraft.font.width(name) / 2F, labelLineSpacing(minecraft), 0xFFFFFFFF, false,
                     pose.last().pose(), buffers, mode, 0x90000000, 15728880);
         } finally {
             pose.popPose();

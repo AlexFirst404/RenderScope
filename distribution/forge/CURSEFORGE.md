@@ -48,6 +48,14 @@ RenderScope measures **CPU-side elapsed time inside individual EntityRenderer an
 
 Full mode observes vertices emitted through the standard BufferBuilder and RenderType requests through BufferSource. Custom pipelines may bypass these counters. **Estimated vertex data** describes observed geometry; it is not GPU upload bytes or GPU memory. Registry and renderer implementation owners remain separate; individual mixin contributors cannot be resolved from a modified class alone.
 
+Optional **Mekanism 10.4.16.80** support follows translucent work queued by a measured renderer and times its actual deferred callback against the originating instance. The queue itself does not create timing samples. Timing Only retains callback timing without geometry counters; Mekanism is not a required dependency.
+
+**Create / Flywheel:** visuals, instanced geometry and batch passes can execute outside ordinary renderer calls. RenderScope does not claim their full per-object CPU/GPU cost or vertex count. Virtual block entities rendered inside moving contraptions do not receive separate world-position attribution or highlights; the outer entity may still be measured through Minecraft's entity dispatcher. RenderScope does not force a different Flywheel backend.
+
+A real scene passed in both the development client and an **installed Forge production profile** with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 1.20.1-10.4.16.80**. It exercised filled tanks, charged-energy-cube deferred callbacks, Full/Timing Only, individual highlights, capture/export and a separate Flywheel-off fallback. The installed launcher and production JAR hash were verified. This is a selected-scene result, not a general rendering compatibility matrix.
+
+![Real Create and Mekanism verification with installed production JARs](compatibility-installed/01-create-mekanism-mods.png)
+
 ## Installation
 
 Install **Forge 47.4.10 for Minecraft 1.20.1**, run the profile on **Java 21**, and put `renderscope-forge-0.1.0+mc1.20.1.jar` into the client's `mods` directory. Runtime MixinExtras support is bundled in the main JAR. NeoForge has a separate build; use only one RenderScope JAR matching the profile's loader.

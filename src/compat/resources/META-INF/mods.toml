@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+clientSideOnly=true
+
+[[mods]]
+modId="renderscope_compat"
+version="1.0"
+displayName="RenderScope Create and Mekanism Compatibility Harness"
+displayTest="IGNORE_ALL_VERSION"
+description='''Development-only real-client compatibility checks. Excluded from RenderScope release artifacts.'''
+
+[[dependencies.renderscope_compat]]
+modId="renderscope"
+mandatory=true
+versionRange="[0,)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.renderscope_compat]]
+modId="create"
+mandatory=true
+versionRange="[6.0.8,)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.renderscope_compat]]
+modId="mekanism"
+mandatory=true
+versionRange="[10.4.16,)"
+ordering="AFTER"
+side="CLIENT"

@@ -1,5 +1,6 @@
 """Verify the distributable jar and persist the evidence from unit/game checks."""
 import argparse
+from datetime import datetime
 import hashlib
 import io
 import json
@@ -7,6 +8,131 @@ from pathlib import Path
 import struct
 from xml.etree import ElementTree
 import zipfile
+
+
+def sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read_json(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def private_capture_fields(value):
+    forbidden = {"position", "coordinates", "dimension", "identity", "uuid", "entityid",
+                 "playerusername", "username", "serverip", "serverhostname", "serveraddress",
+                 "worldname", "chat", "absolutepath"}
+    if isinstance(value, dict):
+        for key, child in value.items():
+            assert key.lower().replace("_", "") not in forbidden, f"Private field in compatibility capture: {key}"
+            private_capture_fields(child)
+    elif isinstance(value, list):
+        for child in value:
+            private_capture_fields(child)
+
+
+def verify_installed_compatibility(directory, primary_jar, primary_sha, renderscope_version):
+    """Accept evidence only for this exact release JAR and installed client run."""
+    result_path = directory / "compat-result.json"
+    result = read_json(result_path)
+    launch = read_json(directory / "installed-launch.json")
+    verification = read_json(directory / "installed-verification.json")
+    assert result.get("success") is True, "Installed Create/Mekanism checks failed"
+    assert result.get("environment") == "installed-production" and result.get("primaryArtifactKind") == "jar", "Compatibility evidence is not an installed production JAR run"
+    assert result.get("loader") == "Forge" and result.get("loaderVersion") == "47.4.10", "Wrong installed compatibility runtime"
+    assert result.get("primaryJarSha256") == primary_sha, "Installed compatibility measured another RenderScope JAR"
+    assert verification.get("success") is True, "Installed launcher result verification failed"
+    assert verification.get("runtimeLoader") == "Forge" and verification.get("runtimeLoaderVersion") == "47.4.10"
+    assert verification.get("primaryJarSha256") == primary_sha, "Installed launcher verified another JAR"
+    assert verification.get("compatibilityResultSha256") == sha256(result_path), "Installed compatibility result changed after launcher verification"
+    assert launch.get("clientLaunched") is True and launch.get("developmentClasspath") is False
+    assert launch.get("minecraftVersion") == "1.20.1" and launch.get("loader") == "Forge" and launch.get("loaderVersion") == "47.4.10"
+    assert launch.get("mainClass") == "cpw.mods.bootstraplauncher.BootstrapLauncher" and launch.get("launchTarget") == "forgeclient"
+    assert launch.get("javaRuntime") == 21 and launch.get("vanillaClientBootstrapIgnored") is True
+    assert launch.get("forgeInstallerSha1") == "66bfea9963bfa60d88bab6b2750e74a958392715"
+    assert launch.get("vanillaClientSha1") == "0c3ec587af28e5a785c0b4a7b8a30f9a8f78f838"
+    timestamps = [launch["launchedAt"], result["startedAt"], result["completedAt"], verification["verifiedAt"]]
+    moments = [datetime.fromisoformat(value.replace("Z", "+00:00")) for value in timestamps]
+    assert moments == sorted(moments), "Installed evidence combines different or out-of-order client runs"
+
+    pinned_mods = {
+        "create-1.20.1-6.0.8.jar": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0",
+        "Mekanism-1.20.1-10.4.16.80.jar": "3b0d191fa4a45e662f9725991d76a30192f30186abb2ba694b873b5f7b9358d2",
+    }
+    staged = {row["file"]: row["sha256"] for row in launch["mods"]}
+    assert len(staged) == len(launch["mods"]) == 4, "Installed compatibility profile must contain exactly four separate JARs"
+    assert staged.get(primary_jar.name) == primary_sha, "Installed launcher staged a different release JAR"
+    for name, expected_sha in pinned_mods.items():
+        assert staged.get(name) == expected_sha, f"Installed compatibility loaded another vendor build: {name}"
+    harness_name = primary_jar.stem + "-compat-harness.jar"
+    assert harness_name in staged, "Missing separate compatibility harness in installed launch"
+    harness = primary_jar.parent / harness_name
+    assert harness.is_file() and sha256(harness) == staged[harness_name], "Installed evidence used another compatibility harness"
+    with zipfile.ZipFile(harness) as archive:
+        # This successful harness cannot reach capture or FINISH unless it has
+        # restored Flywheel after the explicit fallback phase.
+        code = archive.read("dev/renderscope/compat/CompatTest.class")
+        assert b"Default Flywheel backend was not restored" in code, "Harness omitted the Flywheel restoration guard"
+    versions = {row["id"]: row["version"] for row in result["testedMods"]}
+    assert versions == {"create": "6.0.8", "mekanism": "10.4.16"}, "Wrong installed mod metadata versions"
+    # Mekanism build80 declares 10.4.16 in mods.toml; the exact build is pinned
+    # above by the vendor filename and SHA-256, rather than its display version.
+    assert result["defaultFlywheelBackend"] == "flywheel:indirect" and result["fallbackFlywheelBackend"] == "flywheel:off"
+    assert result["fallbackKineticVerticesPerFrame"] > 0 and result["observedCreateShaftRpm"] > 0 and result["realFluidAnimationUpdates"] > 0
+    for phase, geometry in (("defaultFull", True), ("defaultTimingOnly", False), ("fallbackFull", True)):
+        for mod in ("create", "mekanism"):
+            row = result[phase][mod]
+            assert row["type"].startswith(mod + ":") and row["rendererOwner"] == mod
+            for field in ("modStatistics", "typeStatistics", "instanceStatistics"):
+                statistics = row[field]
+                assert statistics["calls"] > 0 and statistics["averageMs"] > 0 and statistics["failures"] == 0
+                if geometry:
+                    assert statistics["verticesPerFrame"] > 0 and statistics["estimatedBytesPerFrame"] > 0 and statistics["renderTypes"]
+                else:
+                    assert statistics["verticesPerFrame"] == statistics["estimatedBytesPerFrame"] == 0 and not statistics["renderTypes"]
+    for prefix in ("default", "timingOnly"):
+        measured = result[prefix + "DeferredRendererCalls"]
+        assert measured > 0 and result[prefix + "QueuedDeferredCalls"] > 0 and result[prefix + "RenderedDeferredCalls"] >= measured
+    cube = result["deferredEnergyCubeStatistics"]
+    assert cube["calls"] > 0 and cube["averageMs"] > 0 and cube["verticesPerFrame"] > 0 and cube["renderTypes"]
+    for field in ("captureExportMetadataAndPrivacy", "createSelectedInstanceBoxAndLabel", "mekanismSelectedInstanceBoxAndLabel"):
+        assert result.get(field) is True, f"Installed compatibility check failed: {field}"
+    assert result["combinedHeatmapBoxes"] >= 2
+
+    capture_path = directory / "compat-capture-example.json"
+    capture = read_json(capture_path)
+    assert capture["loader"] == "Forge" and capture["loaderVersion"] == "47.4.10" and capture["minecraftVersion"] == "1.20.1"
+    assert capture["renderscopeVersion"] == renderscope_version and capture["positionsIncluded"] is False
+    assert capture["measurementMode"] == "FULL" and capture["frames"] == result["captureFrames"] > 0
+    assert capture["durationSeconds"] == result["captureDurationSeconds"] >= 4.8
+    private_capture_fields(capture)
+    for mod in ("create", "mekanism"):
+        assert any(row["id"] == mod and row["statistics"]["calls"] > 0 for row in capture["mods"]), f"Installed capture omitted measured {mod} calls"
+        assert any(row["id"] == mod and row["version"] == versions[mod] for row in capture["installedMods"]), f"Installed capture omitted {mod} metadata"
+    expected_images = {"01-create-mekanism-mods.png", "02-create-fluid-tank-detail.png", "03-mekanism-fluid-tank-detail.png",
+                       "04-create-selected-instance.png", "05-mekanism-selected-instance.png", "06-create-mekanism-heatmap.png",
+                       "07-compatibility-capture.png"}
+    assert len(result["screenshots"]) == 7 and set(result["screenshots"]) == expected_images, "Incomplete installed compatibility screenshot evidence"
+    screenshots = []
+    for name in result["screenshots"]:
+        path = directory / name
+        image = path.read_bytes()
+        assert image[:8] == b"\x89PNG\r\n\x1a\n" and image[12:16] == b"IHDR", f"Invalid installed gameplay PNG: {name}"
+        width, height = struct.unpack(">II", image[16:24])
+        assert width >= 320 and height >= 240, f"Invalid gameplay screenshot size: {name}"
+        screenshots.append({"file": name, "sha256": sha256(path)})
+    return {
+        "status": "passed", "environment": result["environment"], "loader": result["loader"], "loaderVersion": result["loaderVersion"],
+        "primaryJarSha256": primary_sha, "completedAt": result["completedAt"],
+        "evidenceDirectory": "compatibility-installed", "resultSha256": sha256(result_path),
+        "captureSha256": sha256(capture_path), "stagedArtifacts": launch["mods"], "testedMods": result["testedMods"],
+        "realGameplayScreenshots": screenshots, "fullAndTimingOnlyMeasurements": True,
+        "mekanismDeferredFullCalls": result["defaultDeferredRendererCalls"],
+        "mekanismDeferredTimingOnlyCalls": result["timingOnlyDeferredRendererCalls"],
+        "flywheelDefaultFallbackAndRestoration": "passed by installed harness", "bothSelectedInstanceBoxesAndLabels": True,
+        "captureExportMetadataAndPrivacy": True,
+        "scope": "Pinned Create6.0.8 and Mekanism10.4.16.80 fixtures; Flywheel instanced rendering and Create contraption virtual worlds remain outside profiler coverage.",
+    }
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--loader", choices=("forge", "neoforge"), default="forge")
@@ -17,7 +143,7 @@ loader_name, loader_version = {"forge": ("Forge", "47.4.10"), "neoforge": ("NeoF
 build = root / "build" / loader
 distribution = root / "distribution" / "forge" if loader == "forge" else root / "distribution"
 candidates = [p for p in (build / "libs").glob(f"renderscope-{loader}-*.jar")
-              if not p.name.endswith(("-slim.jar", "-sources.jar"))]
+              if not p.name.endswith(("-slim.jar", "-sources.jar", "-compat-harness.jar"))]
 assert len(candidates) == 1, f"Expected one bundled {loader_name} release jar in {build / 'libs'}"
 jar = candidates[0]
 with zipfile.ZipFile(jar) as archive:
@@ -25,7 +151,7 @@ with zipfile.ZipFile(jar) as archive:
     for required in ("META-INF/mods.toml", "META-INF/MANIFEST.MF", "renderscope.refmap.json",
                      "renderscope.mixins.json", "META-INF/jarjar/metadata.json", "renderscope-logo.png"):
         assert required in names, f"Missing {required}"
-    assert not any("smoke" in name.lower() or "/test/" in name for name in names), "Test code in release jar"
+    assert not any("smoke" in name.lower() or "/test/" in name or "dev/renderscope/compat/" in name for name in names), "Test code in release jar"
     metadata = archive.read("META-INF/mods.toml").decode()
     assert "${" not in metadata, "Unexpanded release metadata"
     assert 'modId="renderscope"' in metadata and 'displayTest="IGNORE_ALL_VERSION"' in metadata
@@ -108,6 +234,11 @@ record = {
     "externalVanillaServerTest": "not run",
     "thirdPartyRendererCompatibilityMatrix": "not run",
 }
+installed_evidence = distribution / "compatibility-installed"
+if loader == "forge" and installed_evidence.exists():
+    record["installedProductionClientCompatibility"] = verify_installed_compatibility(
+        installed_evidence, jar, record["sha256"], capture["renderscopeVersion"])
+    record["thirdPartyRendererCompatibilityMatrix"] = "passed pinned pair: Create6.0.8 + Mekanism10.4.16.80 on Forge47.4.10; see compatibility-installed"
 destination = distribution / "verification.json"
 destination.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 print(f"Verified {jar.name}: {tests} tests, actual {loader_name} {loader_version} client smoke test, bytecode/refmap/dependencies")

@@ -353,6 +353,20 @@ class RenderProfilerTest {
         return snapshot.objects().stream().filter(metric -> metric.id().equals(id)).findFirst().orElseThrow().stats();
     }
 
+    @Test
+    void droppedAdapterAssociationsAreVisibleWithoutFabricatingRendererSamples() {
+        Fixture f = new Fixture();
+        f.profiler.recordDroppedMeasurement(); // No frame: there was no measured scene.
+        f.profiler.beginFrame();
+        f.profiler.recordDroppedMeasurement();
+        f.finish(10_000_000);
+        ProfilerSnapshot snapshot = f.profiler.snapshot();
+        assertEquals(1, snapshot.droppedMeasurements());
+        assertEquals(0, snapshot.performance().rendererCallsPerFrame());
+        assertTrue(snapshot.instances().isEmpty());
+        assertTrue(snapshot.objects().isEmpty());
+    }
+
     private static final class Fixture {
         final AtomicLong clock = new AtomicLong(10_000_000_000L);
         final RenderProfiler profiler = new RenderProfiler(clock::get, clock::get, () -> 1_000_000L);

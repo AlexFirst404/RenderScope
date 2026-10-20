@@ -58,6 +58,7 @@ public final class ReportExporter {
         root.addProperty("positionsIncluded",positions);
         root.addProperty("timingMeaning","Measured CPU-side renderer wall time; includes submission and driver waits, not GPU execution time.");
         root.addProperty("geometryMeaning","Observed BufferBuilder vertices and estimated vertex data; alternative rendering pipelines may bypass these counters. Not GPU uploads or VRAM.");
+        root.addProperty("coverageMeaning","Measured standard entity/block entity renderer calls and attributed deferred Mekanism renderer calls. Flywheel instanced visual updates/draws and Create contraption virtual worlds are not covered; totals are not the complete cost of a mod.");
         root.addProperty("percentiles","Capture percentiles use bounded histograms; averages include frames with zero calls.");
         root.addProperty("droppedMeasurements",capture.droppedMeasurements());
         root.add("performance",GSON.toJsonTree(capture.performance()));

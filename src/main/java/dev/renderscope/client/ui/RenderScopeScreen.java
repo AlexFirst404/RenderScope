@@ -263,6 +263,8 @@ public final class RenderScopeScreen extends Screen {
         rowAction = null;
         tableHeaders = List.of();
         drawHeader(g);
+        if (width >= 440 && actions.hasInstancedRenderer())
+            drawTruncated(g, tr("instancing_note"), 43, 24, width - 53, 0xffffce80, mouseX, mouseY);
         g.fill(7, 62, width - 7, height - 33, 0x8820252d);
         g.enableScissor(8, contentTop, width - 8, contentBottom);
         contentHeight = 0;
@@ -332,6 +334,7 @@ public final class RenderScopeScreen extends Screen {
         y += 7;
         y = line(g, tr("cpu_note"), y, MUTED, mx, my);
         y = line(g, tr("geometry_note"), y, MUTED, mx, my);
+        if (actions.hasInstancedRenderer()) y = line(g, tr("instancing_note"), y, 0xffffce80, mx, my);
         contentHeight = y + (int) scroll - contentTop;
     }
 

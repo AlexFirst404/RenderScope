@@ -120,6 +120,7 @@ public final class ClientRuntime implements ScreenActions {
     }
     @Override public void saveSettings() { applySettings(); settings.save(); }
     @Override public String modDisplayName(String namespace) { return ModOwnership.displayName(namespace); }
+    @Override public boolean hasInstancedRenderer() { return net.minecraftforge.fml.ModList.get().isLoaded("flywheel"); }
     @Override public void toggleHighlight(InstanceKey key) { overlay.toggleHighlight(key); }
     @Override public void toggleTrack(InstanceKey key) { overlay.toggleTrack(key); }
     @Override public boolean isHighlighted(InstanceKey key) { return overlay.isHighlighted(key); }

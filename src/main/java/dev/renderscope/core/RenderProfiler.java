@@ -103,6 +103,11 @@ public final class RenderProfiler {
             cpuTimingEnabled ? cpuClock.getAsLong() : -1, Thread.currentThread().getId());
     }
 
+    /** An adapter intercepted real work but could not retain an unambiguous bounded association. */
+    public synchronized void recordDroppedMeasurement() {
+        if (enabled && current != null) droppedMeasurements = saturatedAdd(droppedMeasurements, 1);
+    }
+
     /** Finish in a finally block. A failed renderer is still measured. */
     public synchronized void endCall(CallToken token, long vertices, long estimatedBytes,
                                      Set<String> renderTypes, boolean failure) {

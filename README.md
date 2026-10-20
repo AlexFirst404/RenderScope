@@ -52,7 +52,11 @@ RenderScope — клиентский профилировщик для **Minecra
 
 Галерея Forge-сборки: локальная сцена с vanilla-объектами. Значения относятся к этой сцене и оборудованию; это не обещание определённой производительности других модов.
 
-Оба варианта прошли отдельные сборки на JDK 21, по 17 unit/privacy-тестов и запуск настоящего клиента в среде разработки с проверкой загрузчика, renderer calls, capture и экспорта. Результаты: [Forge 47.4.10](distribution/forge/verification.json) и [NeoForge 47.1.106](distribution/verification.json).
+Оба варианта имеют отдельные сборки на JDK 21 и baseline-запуск настоящего клиента с проверкой загрузчика, renderer calls, capture и экспорта. Число тестов и хеш артефакта указаны в соответствующих отчётах: [Forge 47.4.10](distribution/forge/verification.json) и [NeoForge 47.1.106](distribution/verification.json). Текущие Forge- и NeoForge-сборки проходят по 22 unit/privacy-теста и повторный vanilla-smoke без Mekanism: необязательный mixin не требует установки этого мода.
+
+Сцена **Create 6.0.8 + Mekanism 1.20.1-10.4.16.80** прошла проверку и в development-клиенте, и в **обычном установленном Forge-профиле с production JAR**: типы и экземпляры обоих модов, геометрия баков, отложенная отрисовка energy cube, Timing Only, отдельные выделения, capture/export и Flywheel-off fallback. [Installed-результат](distribution/forge/compatibility-installed/compat-result.json), [проверка launcher/JAR](distribution/forge/compatibility-installed/installed-verification.json) и [его capture](distribution/forge/compatibility-installed/compat-capture-example.json) относятся к этой выбранной сцене. [Development-результат](distribution/forge/compatibility/compat-result.json) сохранён отдельно.
+
+![Create и Mekanism в установленном Forge с production JAR](distribution/forge/compatibility-installed/01-create-mekanism-mods.png)
 
 ![Живая сводка RenderScope на Forge](distribution/forge/gallery/01-overview.png)
 
@@ -71,6 +75,10 @@ RenderScope — клиентский профилировщик для **Minecra
 MVP измеряет мировые **EntityRenderer** и **BlockEntityRenderer**. Terrain, частицы, GUI, предметы вне этих вызовов и отдельные шейдерные проходы не входят в его атрибуцию по модам. Медленный кадр может быть вызван и другими подсистемами. Проценты в Mods относятся к сумме измеренных вызовов.
 
 **Timing Only** — стандартный режим. **Full** дополнительно наблюдает вершины, проходящие через `BufferBuilder`, и запросы `RenderType` через стандартный `BufferSource`. Альтернативные пути рендера могут обходить эти счётчики. `Estimated vertex data` — оценка объёма наблюдаемой геометрии; она не является GPU upload bytes, VRAM или GPU memory. Подробнее: [методика измерений](docs/MEASUREMENTS.md).
+
+Встроена необязательная интеграция отложенного полупрозрачного рендера **Mekanism 10.4.16.80**. Если измеренный рендерер поставил работу в очередь, RenderScope связывает её последующий реальный вызов с тем же экземпляром, отдельно измеряет время и наблюдает его геометрию. Это работает и в Timing Only без счётчиков вершин. Установка Mekanism для самого RenderScope не требуется.
+
+**Create / Flywheel:** визуальные объекты, GPU instancing и пакетные проходы Flywheel могут обходить обычные вызовы рендереров. Их стоимость и геометрия не распределяются по отдельным объектам; маленькое измеренное время Create не доказывает низкую стоимость всего его рендера. Виртуальные block entities внутри движущихся contraptions также не получают отдельных мировых позиций и подсветки. Внешняя contraption entity измеряется, если её отрисовка проходит через обычный EntityRenderDispatcher. Профилировщик не меняет backend Flywheel автоматически.
 
 ## Запись и приватность
 
@@ -125,6 +133,24 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
 
 Скрипт запускает Gradle-задачу `runSmokeClient` выбранного загрузчика. Профили изолированы в `run-smoke-forge/` и `run-smoke-neoforge/`. Harness создаёт реальную сцену с vanilla-объектами, проверяет измерения и экспорт и снимает игровые скриншоты. Forge-результаты сохраняются в `distribution/forge/`, NeoForge-результаты — в `distribution/`: `smoke-result.json`, `smoke-capture-example.json` и `gallery/`. При успешном завершении в логе появляется `RENDERSCOPE_SMOKE_SUCCESS`, затем тестовый клиент закрывается. Harness находится в source set `smoke` и не входит в основной JAR.
 
+Для отдельной проверки **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 + Mekanism 1.20.1-10.4.16.80** на Forge предусмотрен source set `compat`:
+
+```powershell
+.\gradlew.bat -Ploader=forge test build compatJar
+.\gradlew.bat -Ploader=forge runCompatClient
+```
+
+Harness строит настоящую сцену с заполненными баками, вращающимися механизмами и заряженным energy cube. Он проверяет Full и Timing Only, реальный отложенный вызов Mekanism и backend Flywheel, затем временно включает `flywheel:off` для проверки обычного пути кинетической геометрии и восстанавливает backend. Development-сценарий завершён успешно: исходный backend — `flywheel:indirect`; queued/rendered/measured deferred-счётчики совпали (673 в фазе Full, 506 в Timing Only); реальная 5,005-секундная запись содержит 594 кадра. Результаты и семь игровых скриншотов находятся в `distribution/forge/compatibility/`. Это проверка выбранных объектов, без полной атрибуции instanced rendering или утверждения о любых сборках модов. `compat-harness.jar` — отдельный тестовый мод, он не входит в дистрибутив RenderScope.
+
+Дополнительный Windows-helper готовит изолированный установленный профиль из официального Forge installer и Minecraft manifests. По умолчанию он только подготавливает профиль; запуск требует явного `--launch` и отдельного reobfuscated harness:
+
+```powershell
+python .\scripts\test-installed-client.py
+python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.1.0+mc1.20.1-compat-harness.jar --launch
+```
+
+Этот путь использует production JAR и обычный Forge launcher, без mapped Minecraft из ForgeGradle. Проверка установленного профиля завершена успешно: **649** queued/rendered/measured deferred-вызовов в фазе Full, **504** в Timing Only, **594 кадра за 5,004 секунды**, семь игровых скриншотов. Результаты находятся в `distribution/forge/compatibility-installed/`; helper подтвердил свежесть JSON, `environment: installed-production`, реальные версии и SHA-256 именно запущенного основного JAR. Код завершения Java или Gradle сам по себе не считается доказательством.
+
 Проверка и упаковка материалов также выбирают загрузчик; Python-скрипт упаковки использует Pillow:
 
 ```powershell
@@ -142,6 +168,10 @@ python .\scripts\package-release.py --loader forge
 Для **Forge** подготовлены [Modrinth](distribution/forge/MODRINTH.md), [CurseForge](distribution/forge/CURSEFORGE.md), [русское описание](distribution/forge/DESCRIPTION_RU.md), [метаданные alpha-релиза](distribution/forge/release.json) и [контрольный список](distribution/forge/RELEASE_CHECKLIST.md).
 
 Материалы исходной **NeoForge**-сборки сохранены: [Modrinth](distribution/MODRINTH.md), [CurseForge](distribution/CURSEFORGE.md), [русское описание](distribution/DESCRIPTION_RU.md), [метаданные](distribution/release.json) и [контрольный список](distribution/RELEASE_CHECKLIST.md). Это локальные материалы для последующей загрузки на площадки; галереи каждого загрузчика получаются его собственным запуском Minecraft.
+
+В авторском кабинете CurseForge создан ещё не одобренный проект в состоянии **New**, доступный автору, ID **1756581**: [редактор файлов проекта](https://authors.curseforge.com/#/projects/1756581/files). Загружены логотип и четыре медиафайла. **JAR не загружен, проект не опубликован.** Первая загрузка JAR запускает модерацию проекта; режим unlisted доступен по прямой ссылке и не заменяет закрытый черновик, поэтому файл пока не загружается.
+
+На Modrinth создан [проект RenderScope](https://modrinth.com/project/renderscope/settings) с проверенной видимостью **Private**. Загружен прошедший installed-проверку основной Forge JAR как [Alpha-версия 0.1.0+mc1.20.1](https://modrinth.com/mod/renderscope/version/YzYFQvOb) для Minecraft 1.20.1; установка — только на клиент. Скачанный из интерфейса этой версии JAR имеет тот же SHA-256, что и проверенный installed JAR. Версия доступна только участникам проекта: отправка на проверку и публичная публикация не выполнялись. Сохранены иконка, английское описание с полноразмерными изображениями и пять gallery media: обложка, игровой GIF и три кадра installed-сцены Create + Mekanism. Их фактические ссылки записаны в [манифесте галереи](distribution/platforms/modrinth-gallery.json). В CurseForge сохранены четыре исходных gallery media и обновлённое описание с игровыми изображениями; JAR туда не загружен. Фактический статус сохранён в [снимке кабинетов](distribution/platforms/publication-status.json) и [Forge release.json](distribution/forge/release.json).
 
 В `distribution/brand/` находятся исходное лого 24×24 и PNG, увеличенные целочисленным nearest-neighbor масштабированием. Пиксельная сетка сохраняется без размытия. Квадратные иконки 512×512 и 1024×1024 используют поля в цвет фона исходника и целочисленный масштаб рисунка.
 

@@ -1,28 +1,29 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-10-19T22:58:45.646Z",
-  "durationSeconds": 5.0028105,
-  "frames": 592,
+  "recordedAt": "2026-10-20T20:19:56.310Z",
+  "durationSeconds": 5.0014193,
+  "frames": 594,
   "measurementMode": "FULL",
   "threadCpuTimingEnabled": false,
   "positionsIncluded": false,
   "timingMeaning": "Measured CPU-side renderer wall time; includes submission and driver waits, not GPU execution time.",
   "geometryMeaning": "Observed BufferBuilder vertices and estimated vertex data; alternative rendering pipelines may bypass these counters. Not GPU uploads or VRAM.",
+  "coverageMeaning": "Measured standard entity/block entity renderer calls and attributed deferred Mekanism renderer calls. Flywheel instanced visual updates/draws and Create contraption virtual worlds are not covered; totals are not the complete cost of a mod.",
   "percentiles": "Capture percentiles use bounded histograms; averages include frames with zero calls.",
   "droppedMeasurements": 0,
   "performance": {
-    "frames": 592,
-    "fps": 120.91674670425955,
-    "currentFrameMs": 8.4843,
-    "averageFrameMs": 8.270153037162162,
-    "onePercentLowFps": 106.73473946652062,
+    "frames": 594,
+    "fps": 121.58252303221245,
+    "currentFrameMs": 8.1813,
+    "averageFrameMs": 8.22486632996633,
+    "onePercentLowFps": 96.36097139732362,
     "p50FrameMs": 8.190874594119117,
-    "p95FrameMs": 8.743452683674326,
-    "p99FrameMs": 9.1323964328549,
-    "worstFrameMs": 9.6489,
-    "measuredRenderMs": 0.5019497516891892,
-    "entityRenderMs": 0.4115890878378378,
-    "blockEntityRenderMs": 0.09036066385135134,
+    "p95FrameMs": 8.555237459563918,
+    "p99FrameMs": 8.935808642715148,
+    "worstFrameMs": 16.8034,
+    "measuredRenderMs": 0.5662276094276095,
+    "entityRenderMs": 0.4619402356902357,
+    "blockEntityRenderMs": 0.10428737373737373,
     "rendererCallsPerFrame": 14.0,
     "renderedEntitiesPerFrame": 4.0,
     "renderedBlockEntitiesPerFrame": 10.0,
@@ -37,22 +38,22 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.5019497516891892,
-        "p95Ms": 0.7641570684474557,
-        "peakMs": 1.678295,
+        "averageMs": 0.5662276094276095,
+        "p95Ms": 0.851995132612685,
+        "peakMs": 1.7188,
         "cpuMs": 0.0,
         "callsPerFrame": 14.0,
-        "calls": 8288,
+        "calls": 8316,
         "failures": 0,
         "verticesPerFrame": 2456.0,
         "estimatedBytesPerFrame": 88288.0,
         "instances": 14,
         "renderTypes": [
+          "entity_cutout_no_cull",
           "armor_cutout_no_cull",
           "entity_solid",
           "entity_cutout",
-          "beacon_beam",
-          "entity_cutout_no_cull"
+          "beacon_beam"
         ]
       }
     }
@@ -64,12 +65,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.16618527533783783,
-        "p95Ms": 0.2870068906892048,
-        "peakMs": 0.9932,
+        "averageMs": 0.17819124579124582,
+        "p95Ms": 0.3342324360685335,
+        "peakMs": 0.8931,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 480.0,
         "estimatedBytesPerFrame": 17280.0,
@@ -86,12 +87,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.10755775,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.897001,
+        "averageMs": 0.12129107744107745,
+        "p95Ms": 0.20707558014926328,
+        "peakMs": 0.4889,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 528.0,
         "estimatedBytesPerFrame": 19008.0,
@@ -107,15 +108,36 @@
       "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.09798443918918918,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.869799,
+        "averageMs": 0.11414276094276095,
+        "p95Ms": 0.23087843279205578,
+        "peakMs": 0.8493,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 288.0,
         "estimatedBytesPerFrame": 10368.0,
+        "instances": 1,
+        "renderTypes": [
+          "entity_cutout_no_cull"
+        ]
+      }
+    },
+    {
+      "id": "net.minecraft.client.renderer.entity.CowRenderer",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.04831515151515151,
+        "p95Ms": 0.06534786594095868,
+        "peakMs": 0.1013,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 216.0,
+        "estimatedBytesPerFrame": 7776.0,
         "instances": 1,
         "renderTypes": [
           "entity_cutout_no_cull"
@@ -128,12 +150,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.03993634290540541,
-        "p95Ms": 0.06256473621516331,
-        "peakMs": 0.3923,
+        "averageMs": 0.044993771043771044,
+        "p95Ms": 0.08484810730580336,
+        "peakMs": 0.4423,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 32.0,
         "estimatedBytesPerFrame": 1024.0,
@@ -144,59 +166,17 @@
       }
     },
     {
-      "id": "net.minecraft.client.renderer.entity.CowRenderer",
-      "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
-      "rendererOwner": "minecraft",
-      "statistics": {
-        "averageMs": 0.03986162331081081,
-        "p95Ms": 0.054906560993126574,
-        "peakMs": 0.1024,
-        "cpuMs": 0.0,
-        "callsPerFrame": 1.0,
-        "calls": 592,
-        "failures": 0,
-        "verticesPerFrame": 216.0,
-        "estimatedBytesPerFrame": 7776.0,
-        "instances": 1,
-        "renderTypes": [
-          "entity_cutout_no_cull"
-        ]
-      }
-    },
-    {
-      "id": "net.minecraft.client.renderer.blockentity.ChestRenderer",
-      "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
-      "rendererOwner": "minecraft",
-      "statistics": {
-        "averageMs": 0.023457554054054055,
-        "p95Ms": 0.03328538921772799,
-        "peakMs": 0.105002,
-        "cpuMs": 0.0,
-        "callsPerFrame": 5.0,
-        "calls": 2960,
-        "failures": 0,
-        "verticesPerFrame": 360.0,
-        "estimatedBytesPerFrame": 12960.0,
-        "instances": 5,
-        "renderTypes": [
-          "entity_cutout"
-        ]
-      }
-    },
-    {
       "id": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "registryOwner": "minecraft",
       "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.022735342905405406,
-        "p95Ms": 0.03118178353134091,
-        "peakMs": 0.1746,
+        "averageMs": 0.02773181818181818,
+        "p95Ms": 0.03792791896922642,
+        "peakMs": 0.1863,
         "cpuMs": 0.0,
         "callsPerFrame": 3.0,
-        "calls": 1776,
+        "calls": 1782,
         "failures": 0,
         "verticesPerFrame": 504.0,
         "estimatedBytesPerFrame": 18144.0,
@@ -207,17 +187,38 @@
       }
     },
     {
+      "id": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.026475757575757576,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.1025,
+        "cpuMs": 0.0,
+        "callsPerFrame": 5.0,
+        "calls": 2970,
+        "failures": 0,
+        "verticesPerFrame": 360.0,
+        "estimatedBytesPerFrame": 12960.0,
+        "instances": 5,
+        "renderTypes": [
+          "entity_cutout"
+        ]
+      }
+    },
+    {
       "id": "net.minecraft.client.renderer.blockentity.BellRenderer",
       "registryOwner": "minecraft",
       "rendererClass": "net.minecraft.client.renderer.blockentity.BellRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.004231423986486487,
-        "p95Ms": 0.005468009851947456,
-        "peakMs": 0.059299,
+        "averageMs": 0.005086026936026936,
+        "p95Ms": 0.006651006167724368,
+        "peakMs": 0.0152,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 48.0,
         "estimatedBytesPerFrame": 1728.0,
@@ -236,12 +237,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.16618527533783783,
-        "p95Ms": 0.2870068906892048,
-        "peakMs": 0.9932,
+        "averageMs": 0.17819124579124582,
+        "p95Ms": 0.3342324360685335,
+        "peakMs": 0.8931,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 480.0,
         "estimatedBytesPerFrame": 17280.0,
@@ -259,12 +260,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.10755775,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.897001,
+        "averageMs": 0.12129107744107745,
+        "p95Ms": 0.20707558014926328,
+        "peakMs": 0.4889,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 528.0,
         "estimatedBytesPerFrame": 19008.0,
@@ -281,15 +282,37 @@
       "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.09798443918918918,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.869799,
+        "averageMs": 0.11414276094276095,
+        "p95Ms": 0.23087843279205578,
+        "peakMs": 0.8493,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 288.0,
         "estimatedBytesPerFrame": 10368.0,
+        "instances": 1,
+        "renderTypes": [
+          "entity_cutout_no_cull"
+        ]
+      }
+    },
+    {
+      "id": "minecraft:cow",
+      "kind": "ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.04831515151515151,
+        "p95Ms": 0.06534786594095868,
+        "peakMs": 0.1013,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 216.0,
+        "estimatedBytesPerFrame": 7776.0,
         "instances": 1,
         "renderTypes": [
           "entity_cutout_no_cull"
@@ -303,12 +326,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.03993634290540541,
-        "p95Ms": 0.06256473621516331,
-        "peakMs": 0.3923,
+        "averageMs": 0.044993771043771044,
+        "p95Ms": 0.08484810730580336,
+        "peakMs": 0.4423,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 32.0,
         "estimatedBytesPerFrame": 1024.0,
@@ -319,62 +342,18 @@
       }
     },
     {
-      "id": "minecraft:cow",
-      "kind": "ENTITY",
-      "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
-      "rendererOwner": "minecraft",
-      "statistics": {
-        "averageMs": 0.03986162331081081,
-        "p95Ms": 0.054906560993126574,
-        "peakMs": 0.1024,
-        "cpuMs": 0.0,
-        "callsPerFrame": 1.0,
-        "calls": 592,
-        "failures": 0,
-        "verticesPerFrame": 216.0,
-        "estimatedBytesPerFrame": 7776.0,
-        "instances": 1,
-        "renderTypes": [
-          "entity_cutout_no_cull"
-        ]
-      }
-    },
-    {
-      "id": "minecraft:chest",
-      "kind": "BLOCK_ENTITY",
-      "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
-      "rendererOwner": "minecraft",
-      "statistics": {
-        "averageMs": 0.023457554054054055,
-        "p95Ms": 0.03328538921772799,
-        "peakMs": 0.105002,
-        "cpuMs": 0.0,
-        "callsPerFrame": 5.0,
-        "calls": 2960,
-        "failures": 0,
-        "verticesPerFrame": 360.0,
-        "estimatedBytesPerFrame": 12960.0,
-        "instances": 5,
-        "renderTypes": [
-          "entity_cutout"
-        ]
-      }
-    },
-    {
       "id": "minecraft:enchanting_table",
       "kind": "BLOCK_ENTITY",
       "registryOwner": "minecraft",
       "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.022735342905405406,
-        "p95Ms": 0.03118178353134091,
-        "peakMs": 0.1746,
+        "averageMs": 0.02773181818181818,
+        "p95Ms": 0.03792791896922642,
+        "peakMs": 0.1863,
         "cpuMs": 0.0,
         "callsPerFrame": 3.0,
-        "calls": 1776,
+        "calls": 1782,
         "failures": 0,
         "verticesPerFrame": 504.0,
         "estimatedBytesPerFrame": 18144.0,
@@ -385,18 +364,40 @@
       }
     },
     {
+      "id": "minecraft:chest",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.026475757575757576,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.1025,
+        "cpuMs": 0.0,
+        "callsPerFrame": 5.0,
+        "calls": 2970,
+        "failures": 0,
+        "verticesPerFrame": 360.0,
+        "estimatedBytesPerFrame": 12960.0,
+        "instances": 5,
+        "renderTypes": [
+          "entity_cutout"
+        ]
+      }
+    },
+    {
       "id": "minecraft:bell",
       "kind": "BLOCK_ENTITY",
       "registryOwner": "minecraft",
       "rendererClass": "net.minecraft.client.renderer.blockentity.BellRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.004231423986486487,
-        "p95Ms": 0.005468009851947456,
-        "peakMs": 0.059299,
+        "averageMs": 0.005086026936026936,
+        "p95Ms": 0.006651006167724368,
+        "peakMs": 0.0152,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 48.0,
         "estimatedBytesPerFrame": 1728.0,
@@ -415,12 +416,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.16618527533783783,
-        "p95Ms": 0.2870068906892048,
-        "peakMs": 0.9932,
+        "averageMs": 0.17819124579124582,
+        "p95Ms": 0.3342324360685335,
+        "peakMs": 0.8931,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 480.0,
         "estimatedBytesPerFrame": 17280.0,
@@ -438,12 +439,12 @@
       "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.10755775,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.897001,
+        "averageMs": 0.12129107744107745,
+        "p95Ms": 0.20707558014926328,
+        "peakMs": 0.4889,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 528.0,
         "estimatedBytesPerFrame": 19008.0,
@@ -460,15 +461,37 @@
       "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.09798443918918918,
-        "p95Ms": 0.17024361183855535,
-        "peakMs": 0.869799,
+        "averageMs": 0.11414276094276095,
+        "p95Ms": 0.23087843279205578,
+        "peakMs": 0.8493,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 288.0,
         "estimatedBytesPerFrame": 10368.0,
+        "instances": 1,
+        "renderTypes": [
+          "entity_cutout_no_cull"
+        ]
+      }
+    },
+    {
+      "registryId": "minecraft:cow",
+      "kind": "ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.04831515151515151,
+        "p95Ms": 0.06534786594095868,
+        "peakMs": 0.1013,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 594,
+        "failures": 0,
+        "verticesPerFrame": 216.0,
+        "estimatedBytesPerFrame": 7776.0,
         "instances": 1,
         "renderTypes": [
           "entity_cutout_no_cull"
@@ -482,12 +505,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.03993634290540541,
-        "p95Ms": 0.06256473621516331,
-        "peakMs": 0.3923,
+        "averageMs": 0.044993771043771044,
+        "p95Ms": 0.08484810730580336,
+        "peakMs": 0.4423,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 32.0,
         "estimatedBytesPerFrame": 1024.0,
@@ -498,24 +521,24 @@
       }
     },
     {
-      "registryId": "minecraft:cow",
-      "kind": "ENTITY",
+      "registryId": "minecraft:enchanting_table",
+      "kind": "BLOCK_ENTITY",
       "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.entity.CowRenderer",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.03986162331081081,
-        "p95Ms": 0.054906560993126574,
-        "peakMs": 0.1024,
+        "averageMs": 0.015321717171717172,
+        "p95Ms": 0.0220133743714891,
+        "peakMs": 0.0671,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
-        "verticesPerFrame": 216.0,
-        "estimatedBytesPerFrame": 7776.0,
+        "verticesPerFrame": 168.0,
+        "estimatedBytesPerFrame": 6048.0,
         "instances": 1,
         "renderTypes": [
-          "entity_cutout_no_cull"
+          "entity_solid"
         ]
       }
     },
@@ -526,12 +549,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.01331216554054054,
-        "p95Ms": 0.018496069690856133,
-        "peakMs": 0.073099,
+        "averageMs": 0.013922727272727272,
+        "p95Ms": 0.01974386352979381,
+        "peakMs": 0.0918,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 72.0,
         "estimatedBytesPerFrame": 2592.0,
@@ -548,12 +571,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.013190731418918918,
-        "p95Ms": 0.0180979155487829,
-        "peakMs": 0.061099,
+        "averageMs": 0.006287878787878788,
+        "p95Ms": 0.00882569664634423,
+        "peakMs": 0.0743,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 168.0,
         "estimatedBytesPerFrame": 6048.0,
@@ -570,34 +593,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.004807255067567568,
-        "p95Ms": 0.007255894070087989,
-        "peakMs": 0.0575,
+        "averageMs": 0.0061222222222222225,
+        "p95Ms": 0.008635711004250713,
+        "peakMs": 0.0457,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
-        "failures": 0,
-        "verticesPerFrame": 168.0,
-        "estimatedBytesPerFrame": 6048.0,
-        "instances": 1,
-        "renderTypes": [
-          "entity_solid"
-        ]
-      }
-    },
-    {
-      "registryId": "minecraft:enchanting_table",
-      "kind": "BLOCK_ENTITY",
-      "registryOwner": "minecraft",
-      "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
-      "rendererOwner": "minecraft",
-      "statistics": {
-        "averageMs": 0.004737356418918919,
-        "p95Ms": 0.006651006167724368,
-        "peakMs": 0.056001,
-        "cpuMs": 0.0,
-        "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 168.0,
         "estimatedBytesPerFrame": 6048.0,
@@ -614,12 +615,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.BellRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.004231423986486487,
-        "p95Ms": 0.005468009851947456,
-        "peakMs": 0.059299,
+        "averageMs": 0.005086026936026936,
+        "p95Ms": 0.006651006167724368,
+        "peakMs": 0.0152,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 48.0,
         "estimatedBytesPerFrame": 1728.0,
@@ -636,12 +637,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.0027974695945945944,
-        "p95Ms": 0.004798703464751535,
-        "peakMs": 0.023699,
+        "averageMs": 0.0034291245791245794,
+        "p95Ms": 0.005350303181944673,
+        "peakMs": 0.0256,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 72.0,
         "estimatedBytesPerFrame": 2592.0,
@@ -658,12 +659,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.0025724256756756757,
-        "p95Ms": 0.0036958400212134005,
-        "peakMs": 0.0126,
+        "averageMs": 0.0031659932659932662,
+        "p95Ms": 0.004594329319311289,
+        "peakMs": 0.0099,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 72.0,
         "estimatedBytesPerFrame": 2592.0,
@@ -680,12 +681,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.0024558969594594597,
-        "p95Ms": 0.0033148103409941496,
-        "peakMs": 0.0561,
+        "averageMs": 0.0030070707070707072,
+        "p95Ms": 0.004398659356496879,
+        "peakMs": 0.0299,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 72.0,
         "estimatedBytesPerFrame": 2592.0,
@@ -702,12 +703,12 @@
       "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
       "rendererOwner": "minecraft",
       "statistics": {
-        "averageMs": 0.002319596283783784,
-        "p95Ms": 0.0033148103409941496,
-        "peakMs": 0.030901,
+        "averageMs": 0.0029508417508417512,
+        "p95Ms": 0.004594329319311289,
+        "peakMs": 0.0171,
         "cpuMs": 0.0,
         "callsPerFrame": 1.0,
-        "calls": 592,
+        "calls": 594,
         "failures": 0,
         "verticesPerFrame": 72.0,
         "estimatedBytesPerFrame": 2592.0,
@@ -721,183 +722,13 @@
   "timeline": [
     {
       "secondsFromTimelineStart": 0.0,
-      "frameMs": 8.462399,
-      "measuredRendererMs": 0.526301,
-      "entityRendererMs": 0.445801,
-      "blockEntityRendererMs": 0.0805,
+      "frameMs": 8.4286,
+      "measuredRendererMs": 0.5239,
+      "entityRendererMs": 0.4287,
+      "blockEntityRendererMs": 0.0952,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.526301
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2069,
-          "p95Ms": 0.2069,
-          "peakMs": 0.2069,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 0.0761113,
-      "frameMs": 8.9933,
-      "measuredRendererMs": 0.7812,
-      "entityRendererMs": 0.660699,
-      "blockEntityRendererMs": 0.120501,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.7812
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.3121,
-          "p95Ms": 0.3121,
-          "peakMs": 0.3121,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 0.244522299,
-      "frameMs": 8.6197,
-      "measuredRendererMs": 0.698995,
-      "entityRendererMs": 0.532096,
-      "blockEntityRendererMs": 0.166899,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.698995
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.252999,
-          "p95Ms": 0.252999,
-          "peakMs": 0.252999,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 0.337352,
-      "frameMs": 8.8582,
-      "measuredRendererMs": 0.5391,
-      "entityRendererMs": 0.4383,
-      "blockEntityRendererMs": 0.1008,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.5391
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2073,
-          "p95Ms": 0.2073,
-          "peakMs": 0.2073,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 0.454524,
-      "frameMs": 8.3605,
-      "measuredRendererMs": 0.550796,
-      "entityRendererMs": 0.476301,
-      "blockEntityRendererMs": 0.074495,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.550796
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1817,
-          "p95Ms": 0.1817,
-          "peakMs": 0.1817,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 0.5138876,
-      "frameMs": 8.690501,
-      "measuredRendererMs": 0.465601,
-      "entityRendererMs": 0.377001,
-      "blockEntityRendererMs": 0.0886,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.465601
+        "minecraft": 0.5239
       },
       "worstInstance": {
         "registryId": "minecraft:villager",
@@ -906,9 +737,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1271,
-          "p95Ms": 0.1271,
-          "peakMs": 0.1271,
+          "averageMs": 0.1311,
+          "p95Ms": 0.1311,
+          "peakMs": 0.1311,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -923,14 +754,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 0.5981445,
-      "frameMs": 8.578999,
-      "measuredRendererMs": 0.540001,
-      "entityRendererMs": 0.4531,
-      "blockEntityRendererMs": 0.086901,
+      "secondsFromTimelineStart": 0.0841218,
+      "frameMs": 8.5006,
+      "measuredRendererMs": 0.4546,
+      "entityRendererMs": 0.3786,
+      "blockEntityRendererMs": 0.076,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.540001
+        "minecraft": 0.4546
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -939,9 +770,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.193,
-          "p95Ms": 0.193,
-          "peakMs": 0.193,
+          "averageMs": 0.1496,
+          "p95Ms": 0.1496,
+          "peakMs": 0.1496,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -957,14 +788,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 0.7252507,
-      "frameMs": 8.9328,
-      "measuredRendererMs": 0.719299,
-      "entityRendererMs": 0.62,
-      "blockEntityRendererMs": 0.099299,
+      "secondsFromTimelineStart": 0.2098607,
+      "frameMs": 8.5703,
+      "measuredRendererMs": 0.4766,
+      "entityRendererMs": 0.3886,
+      "blockEntityRendererMs": 0.088,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.719299
+        "minecraft": 0.4766
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -973,9 +804,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.2367,
-          "p95Ms": 0.2367,
-          "peakMs": 0.2367,
+          "averageMs": 0.1437,
+          "p95Ms": 0.1437,
+          "peakMs": 0.1437,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -991,14 +822,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 0.8018957,
-      "frameMs": 8.782599,
-      "measuredRendererMs": 0.450904,
-      "entityRendererMs": 0.368302,
-      "blockEntityRendererMs": 0.082602,
+      "secondsFromTimelineStart": 0.3537458,
+      "frameMs": 9.0705,
+      "measuredRendererMs": 0.646,
+      "entityRendererMs": 0.526,
+      "blockEntityRendererMs": 0.12,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.450904
+        "minecraft": 0.646
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -1007,9 +838,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1435,
-          "p95Ms": 0.1435,
-          "peakMs": 0.1435,
+          "averageMs": 0.2271,
+          "p95Ms": 0.2271,
+          "peakMs": 0.2271,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1025,14 +856,82 @@
       }
     },
     {
-      "secondsFromTimelineStart": 0.945682799,
-      "frameMs": 8.9362,
-      "measuredRendererMs": 0.649301,
-      "entityRendererMs": 0.5779,
-      "blockEntityRendererMs": 0.071401,
+      "secondsFromTimelineStart": 0.4540079,
+      "frameMs": 8.2354,
+      "measuredRendererMs": 0.4967,
+      "entityRendererMs": 0.3912,
+      "blockEntityRendererMs": 0.1055,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.649301
+        "minecraft": 0.4967
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.192,
+          "p95Ms": 0.192,
+          "peakMs": 0.192,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.5560503,
+      "frameMs": 8.8417,
+      "measuredRendererMs": 0.4089,
+      "entityRendererMs": 0.33,
+      "blockEntityRendererMs": 0.0789,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4089
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1417,
+          "p95Ms": 0.1417,
+          "peakMs": 0.1417,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.5979663,
+      "frameMs": 8.3627,
+      "measuredRendererMs": 0.646,
+      "entityRendererMs": 0.5289,
+      "blockEntityRendererMs": 0.1171,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.646
       },
       "worstInstance": {
         "registryId": "minecraft:sheep",
@@ -1041,9 +940,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.233501,
-          "p95Ms": 0.233501,
-          "peakMs": 0.233501,
+          "averageMs": 0.1775,
+          "p95Ms": 0.1775,
+          "peakMs": 0.1775,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1058,14 +957,47 @@
       }
     },
     {
-      "secondsFromTimelineStart": 1.0302001,
-      "frameMs": 8.2467,
-      "measuredRendererMs": 0.4959,
-      "entityRendererMs": 0.410401,
-      "blockEntityRendererMs": 0.085499,
+      "secondsFromTimelineStart": 0.7480654,
+      "frameMs": 8.2275,
+      "measuredRendererMs": 0.9733,
+      "entityRendererMs": 0.7982,
+      "blockEntityRendererMs": 0.1751,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.4959
+        "minecraft": 0.9733
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.3514,
+          "p95Ms": 0.3514,
+          "peakMs": 0.3514,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.7898013,
+      "frameMs": 8.2054,
+      "measuredRendererMs": 0.6599,
+      "entityRendererMs": 0.5414,
+      "blockEntityRendererMs": 0.1185,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.6599
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -1074,9 +1006,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1677,
-          "p95Ms": 0.1677,
-          "peakMs": 0.1677,
+          "averageMs": 0.252,
+          "p95Ms": 0.252,
+          "peakMs": 0.252,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1092,422 +1024,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 1.089216,
-      "frameMs": 8.4507,
-      "measuredRendererMs": 0.417096,
-      "entityRendererMs": 0.328699,
-      "blockEntityRendererMs": 0.088397,
+      "secondsFromTimelineStart": 0.9664523,
+      "frameMs": 8.689,
+      "measuredRendererMs": 0.5749,
+      "entityRendererMs": 0.4514,
+      "blockEntityRendererMs": 0.1235,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.417096
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.155199,
-          "p95Ms": 0.155199,
-          "peakMs": 0.155199,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.1985376,
-      "frameMs": 8.438999,
-      "measuredRendererMs": 0.5061,
-      "entityRendererMs": 0.4235,
-      "blockEntityRendererMs": 0.0826,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.5061
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.198101,
-          "p95Ms": 0.198101,
-          "peakMs": 0.198101,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.291732799,
-      "frameMs": 9.274901,
-      "measuredRendererMs": 0.3432,
-      "entityRendererMs": 0.278302,
-      "blockEntityRendererMs": 0.064898,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.3432
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.094,
-          "p95Ms": 0.094,
-          "peakMs": 0.094,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.4019774,
-      "frameMs": 9.0004,
-      "measuredRendererMs": 0.458404,
-      "entityRendererMs": 0.377102,
-      "blockEntityRendererMs": 0.081302,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.458404
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.144601,
-          "p95Ms": 0.144601,
-          "peakMs": 0.144601,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.5471797,
-      "frameMs": 9.6489,
-      "measuredRendererMs": 0.617699,
-      "entityRendererMs": 0.527399,
-      "blockEntityRendererMs": 0.0903,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.617699
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2254,
-          "p95Ms": 0.2254,
-          "peakMs": 0.2254,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.5816933,
-      "frameMs": 9.119199,
-      "measuredRendererMs": 0.384704,
-      "entityRendererMs": 0.314201,
-      "blockEntityRendererMs": 0.070503,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.384704
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.101701,
-          "p95Ms": 0.101701,
-          "peakMs": 0.101701,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.7079916,
-      "frameMs": 8.9113,
-      "measuredRendererMs": 0.294802,
-      "entityRendererMs": 0.2322,
-      "blockEntityRendererMs": 0.062602,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.294802
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.0914,
-          "p95Ms": 0.0914,
-          "peakMs": 0.0914,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.8350217,
-      "frameMs": 8.8981,
-      "measuredRendererMs": 0.463699,
-      "entityRendererMs": 0.365601,
-      "blockEntityRendererMs": 0.098098,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.463699
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1605,
-          "p95Ms": 0.1605,
-          "peakMs": 0.1605,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.9191488,
-      "frameMs": 8.6543,
-      "measuredRendererMs": 0.314103,
-      "entityRendererMs": 0.250001,
-      "blockEntityRendererMs": 0.064102,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.314103
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.0992,
-          "p95Ms": 0.0992,
-          "peakMs": 0.0992,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 1.9782794,
-      "frameMs": 8.897501,
-      "measuredRendererMs": 0.544503,
-      "entityRendererMs": 0.4529,
-      "blockEntityRendererMs": 0.091603,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.544503
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2088,
-          "p95Ms": 0.2088,
-          "peakMs": 0.2088,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.1052098,
-      "frameMs": 9.3298,
-      "measuredRendererMs": 0.664498,
-      "entityRendererMs": 0.546299,
-      "blockEntityRendererMs": 0.118199,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.664498
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.193499,
-          "p95Ms": 0.193499,
-          "peakMs": 0.193499,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.181417499,
-      "frameMs": 8.9217,
-      "measuredRendererMs": 0.679799,
-      "entityRendererMs": 0.5601,
-      "blockEntityRendererMs": 0.119699,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.679799
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.233401,
-          "p95Ms": 0.233401,
-          "peakMs": 0.233401,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.2742732,
-      "frameMs": 8.5875,
-      "measuredRendererMs": 0.6752,
-      "entityRendererMs": 0.589901,
-      "blockEntityRendererMs": 0.085299,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.6752
+        "minecraft": 0.5749
       },
       "worstInstance": {
         "registryId": "minecraft:villager",
@@ -1516,9 +1040,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.2133,
-          "p95Ms": 0.2133,
-          "peakMs": 0.2133,
+          "averageMs": 0.1667,
+          "p95Ms": 0.1667,
+          "peakMs": 0.1667,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1533,14 +1057,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 2.4518627,
-      "frameMs": 9.296401,
-      "measuredRendererMs": 0.5526,
-      "entityRendererMs": 0.4708,
-      "blockEntityRendererMs": 0.0818,
+      "secondsFromTimelineStart": 1.0256495,
+      "frameMs": 8.8082,
+      "measuredRendererMs": 0.4244,
+      "entityRendererMs": 0.3257,
+      "blockEntityRendererMs": 0.0987,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.5526
+        "minecraft": 0.4244
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -1549,9 +1073,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1911,
-          "p95Ms": 0.1911,
-          "peakMs": 0.1911,
+          "averageMs": 0.1383,
+          "p95Ms": 0.1383,
+          "peakMs": 0.1383,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1567,14 +1091,47 @@
       }
     },
     {
-      "secondsFromTimelineStart": 2.4693914,
-      "frameMs": 9.038999,
-      "measuredRendererMs": 0.391096,
-      "entityRendererMs": 0.320698,
-      "blockEntityRendererMs": 0.070398,
+      "secondsFromTimelineStart": 1.1261818,
+      "frameMs": 8.3174,
+      "measuredRendererMs": 0.9367,
+      "entityRendererMs": 0.8233,
+      "blockEntityRendererMs": 0.1134,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.391096
+        "minecraft": 0.9367
+      },
+      "worstInstance": {
+        "registryId": "minecraft:villager",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.3698,
+          "p95Ms": 0.3698,
+          "peakMs": 0.3698,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 528.0,
+          "estimatedBytesPerFrame": 19008.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.2432041,
+      "frameMs": 8.2969,
+      "measuredRendererMs": 0.4678,
+      "entityRendererMs": 0.3875,
+      "blockEntityRendererMs": 0.0803,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4678
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -1583,9 +1140,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.134099,
-          "p95Ms": 0.134099,
-          "peakMs": 0.134099,
+          "averageMs": 0.1863,
+          "p95Ms": 0.1863,
+          "peakMs": 0.1863,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -1601,557 +1158,721 @@
       }
     },
     {
-      "secondsFromTimelineStart": 2.6567619,
-      "frameMs": 8.7977,
-      "measuredRendererMs": 0.450202,
+      "secondsFromTimelineStart": 1.3608159,
+      "frameMs": 8.6904,
+      "measuredRendererMs": 0.4974,
+      "entityRendererMs": 0.3421,
+      "blockEntityRendererMs": 0.1553,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4974
+      },
+      "worstInstance": {
+        "registryId": "minecraft:villager",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.127,
+          "p95Ms": 0.127,
+          "peakMs": 0.127,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 528.0,
+          "estimatedBytesPerFrame": 19008.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.4028989,
+      "frameMs": 8.5628,
+      "measuredRendererMs": 0.4147,
+      "entityRendererMs": 0.339,
+      "blockEntityRendererMs": 0.0757,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4147
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1117,
+          "p95Ms": 0.1117,
+          "peakMs": 0.1117,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.5617137,
+      "frameMs": 8.1728,
+      "measuredRendererMs": 0.4794,
+      "entityRendererMs": 0.3836,
+      "blockEntityRendererMs": 0.0958,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4794
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1295,
+          "p95Ms": 0.1295,
+          "peakMs": 0.1295,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.6636878,
+      "frameMs": 8.5935,
+      "measuredRendererMs": 0.4173,
+      "entityRendererMs": 0.3431,
+      "blockEntityRendererMs": 0.0742,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4173
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.117,
+          "p95Ms": 0.117,
+          "peakMs": 0.117,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.7637628,
+      "frameMs": 8.2043,
+      "measuredRendererMs": 0.588,
+      "entityRendererMs": 0.3004,
+      "blockEntityRendererMs": 0.2876,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.588
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2363,
+          "p95Ms": 0.2363,
+          "peakMs": 0.2363,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 32.0,
+          "estimatedBytesPerFrame": 1024.0,
+          "instances": 1,
+          "renderTypes": [
+            "beacon_beam"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.7806895,
+      "frameMs": 8.3738,
+      "measuredRendererMs": 0.6718,
+      "entityRendererMs": 0.5754,
+      "blockEntityRendererMs": 0.0964,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.6718
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2173,
+          "p95Ms": 0.2173,
+          "peakMs": 0.2173,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.9310915,
+      "frameMs": 8.3422,
+      "measuredRendererMs": 0.5073,
+      "entityRendererMs": 0.4288,
+      "blockEntityRendererMs": 0.0785,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5073
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1662,
+          "p95Ms": 0.1662,
+          "peakMs": 0.1662,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.0485356,
+      "frameMs": 8.7734,
+      "measuredRendererMs": 0.5987,
+      "entityRendererMs": 0.464,
+      "blockEntityRendererMs": 0.1347,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5987
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2704,
+          "p95Ms": 0.2704,
+          "peakMs": 0.2704,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.1328056,
+      "frameMs": 8.4795,
+      "measuredRendererMs": 0.4686,
+      "entityRendererMs": 0.3656,
+      "blockEntityRendererMs": 0.103,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4686
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1235,
+          "p95Ms": 0.1235,
+          "peakMs": 0.1235,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.2674649,
+      "frameMs": 8.8484,
+      "measuredRendererMs": 0.5643,
+      "entityRendererMs": 0.4463,
+      "blockEntityRendererMs": 0.118,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5643
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1797,
+          "p95Ms": 0.1797,
+          "peakMs": 0.1797,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.3607333,
+      "frameMs": 9.3423,
+      "measuredRendererMs": 0.4313,
+      "entityRendererMs": 0.357,
+      "blockEntityRendererMs": 0.0743,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4313
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1417,
+          "p95Ms": 0.1417,
+          "peakMs": 0.1417,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.4451882,
+      "frameMs": 8.6612,
+      "measuredRendererMs": 0.4618,
+      "entityRendererMs": 0.3693,
+      "blockEntityRendererMs": 0.0925,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4618
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1191,
+          "p95Ms": 0.1191,
+          "peakMs": 0.1191,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.5457034,
+      "frameMs": 8.5696,
+      "measuredRendererMs": 0.6512,
+      "entityRendererMs": 0.5353,
+      "blockEntityRendererMs": 0.1159,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.6512
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2589,
+          "p95Ms": 0.2589,
+          "peakMs": 0.2589,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.6469652,
+      "frameMs": 8.7404,
+      "measuredRendererMs": 0.4401,
+      "entityRendererMs": 0.3578,
+      "blockEntityRendererMs": 0.0823,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4401
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1161,
+          "p95Ms": 0.1161,
+          "peakMs": 0.1161,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.6804497,
+      "frameMs": 8.2409,
+      "measuredRendererMs": 0.8978,
+      "entityRendererMs": 0.7741,
+      "blockEntityRendererMs": 0.1237,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.8978
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.3881,
+          "p95Ms": 0.3881,
+          "peakMs": 0.3881,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.8566847,
+      "frameMs": 8.4835,
+      "measuredRendererMs": 0.7247,
+      "entityRendererMs": 0.5952,
+      "blockEntityRendererMs": 0.1295,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.7247
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2155,
+          "p95Ms": 0.2155,
+          "peakMs": 0.2155,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.9076138,
+      "frameMs": 8.8161,
+      "measuredRendererMs": 0.7047,
+      "entityRendererMs": 0.5747,
+      "blockEntityRendererMs": 0.13,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.7047
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.214,
+          "p95Ms": 0.214,
+          "peakMs": 0.214,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.9836237,
+      "frameMs": 8.7953,
+      "measuredRendererMs": 0.5198,
+      "entityRendererMs": 0.4056,
+      "blockEntityRendererMs": 0.1142,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5198
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2084,
+          "p95Ms": 0.2084,
+          "peakMs": 0.2084,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.1264926,
+      "frameMs": 8.4095,
+      "measuredRendererMs": 0.7056,
+      "entityRendererMs": 0.5848,
+      "blockEntityRendererMs": 0.1208,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.7056
+      },
+      "worstInstance": {
+        "registryId": "minecraft:villager",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2668,
+          "p95Ms": 0.2668,
+          "peakMs": 0.2668,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 528.0,
+          "estimatedBytesPerFrame": 19008.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.2102827,
+      "frameMs": 8.3856,
+      "measuredRendererMs": 0.4095,
+      "entityRendererMs": 0.3375,
+      "blockEntityRendererMs": 0.072,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4095
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1608,
+          "p95Ms": 0.1608,
+          "peakMs": 0.1608,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.3277099,
+      "frameMs": 8.6087,
+      "measuredRendererMs": 0.5293,
+      "entityRendererMs": 0.4506,
+      "blockEntityRendererMs": 0.0787,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5293
+      },
+      "worstInstance": {
+        "registryId": "minecraft:villager",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1554,
+          "p95Ms": 0.1554,
+          "peakMs": 0.1554,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 528.0,
+          "estimatedBytesPerFrame": 19008.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.4453238,
+      "frameMs": 8.5347,
+      "measuredRendererMs": 0.4703,
       "entityRendererMs": 0.3739,
-      "blockEntityRendererMs": 0.076302,
+      "blockEntityRendererMs": 0.0964,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.450202
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.156401,
-          "p95Ms": 0.156401,
-          "peakMs": 0.156401,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.7323657,
-      "frameMs": 8.433799,
-      "measuredRendererMs": 0.476502,
-      "entityRendererMs": 0.397499,
-      "blockEntityRendererMs": 0.079003,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.476502
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1793,
-          "p95Ms": 0.1793,
-          "peakMs": 0.1793,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.7909297,
-      "frameMs": 8.313799,
-      "measuredRendererMs": 0.774401,
-      "entityRendererMs": 0.6485,
-      "blockEntityRendererMs": 0.125901,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.774401
-      },
-      "worstInstance": {
-        "registryId": "minecraft:villager",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.344801,
-          "p95Ms": 0.344801,
-          "peakMs": 0.344801,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 528.0,
-          "estimatedBytesPerFrame": 19008.0,
-          "instances": 1,
-          "renderTypes": [
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.9416654,
-      "frameMs": 8.857299,
-      "measuredRendererMs": 0.340198,
-      "entityRendererMs": 0.275998,
-      "blockEntityRendererMs": 0.0642,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.340198
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1018,
-          "p95Ms": 0.1018,
-          "peakMs": 0.1018,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 2.97627,
-      "frameMs": 8.805999,
-      "measuredRendererMs": 0.4086,
-      "entityRendererMs": 0.327399,
-      "blockEntityRendererMs": 0.081201,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.4086
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1132,
-          "p95Ms": 0.1132,
-          "peakMs": 0.1132,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.1439924,
-      "frameMs": 8.250399,
-      "measuredRendererMs": 0.5143,
-      "entityRendererMs": 0.442399,
-      "blockEntityRendererMs": 0.071901,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.5143
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.198099,
-          "p95Ms": 0.198099,
-          "peakMs": 0.198099,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.178303,
-      "frameMs": 9.049399,
-      "measuredRendererMs": 0.347501,
-      "entityRendererMs": 0.274801,
-      "blockEntityRendererMs": 0.0727,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.347501
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1056,
-          "p95Ms": 0.1056,
-          "peakMs": 0.1056,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.288283,
-      "frameMs": 9.119001,
-      "measuredRendererMs": 0.5834,
-      "entityRendererMs": 0.480601,
-      "blockEntityRendererMs": 0.102799,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.5834
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2112,
-          "p95Ms": 0.2112,
-          "peakMs": 0.2112,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.389508399,
-      "frameMs": 8.358,
-      "measuredRendererMs": 0.479202,
-      "entityRendererMs": 0.385301,
-      "blockEntityRendererMs": 0.093901,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.479202
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.16,
-          "p95Ms": 0.16,
-          "peakMs": 0.16,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.498852899,
-      "frameMs": 8.395,
-      "measuredRendererMs": 0.559797,
-      "entityRendererMs": 0.452399,
-      "blockEntityRendererMs": 0.107398,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.559797
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1645,
-          "p95Ms": 0.1645,
-          "peakMs": 0.1645,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.6581134,
-      "frameMs": 8.573599,
-      "measuredRendererMs": 0.314301,
-      "entityRendererMs": 0.250801,
-      "blockEntityRendererMs": 0.0635,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.314301
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.098101,
-          "p95Ms": 0.098101,
-          "peakMs": 0.098101,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.6916907,
-      "frameMs": 8.416101,
-      "measuredRendererMs": 0.500301,
-      "entityRendererMs": 0.373499,
-      "blockEntityRendererMs": 0.126802,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.500301
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2122,
-          "p95Ms": 0.2122,
-          "peakMs": 0.2122,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.859293199,
-      "frameMs": 8.5179,
-      "measuredRendererMs": 0.487001,
-      "entityRendererMs": 0.398499,
-      "blockEntityRendererMs": 0.088502,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.487001
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1468,
-          "p95Ms": 0.1468,
-          "peakMs": 0.1468,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 3.9179212,
-      "frameMs": 8.262701,
-      "measuredRendererMs": 0.378298,
-      "entityRendererMs": 0.315601,
-      "blockEntityRendererMs": 0.062697,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.378298
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1665,
-          "p95Ms": 0.1665,
-          "peakMs": 0.1665,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 4.0369291,
-      "frameMs": 9.1021,
-      "measuredRendererMs": 0.487401,
-      "entityRendererMs": 0.408201,
-      "blockEntityRendererMs": 0.0792,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.487401
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1772,
-          "p95Ms": 0.1772,
-          "peakMs": 0.1772,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 4.1219577,
-      "frameMs": 8.990499,
-      "measuredRendererMs": 0.598503,
-      "entityRendererMs": 0.505101,
-      "blockEntityRendererMs": 0.093402,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.598503
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.2251,
-          "p95Ms": 0.2251,
-          "peakMs": 0.2251,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 4.2397566,
-      "frameMs": 8.5682,
-      "measuredRendererMs": 0.545303,
-      "entityRendererMs": 0.480101,
-      "blockEntityRendererMs": 0.065202,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.545303
+        "minecraft": 0.4703
       },
       "worstInstance": {
         "registryId": "minecraft:sheep",
@@ -2160,9 +1881,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1688,
-          "p95Ms": 0.1688,
-          "peakMs": 0.1688,
+          "averageMs": 0.1311,
+          "p95Ms": 0.1311,
+          "peakMs": 0.1311,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2177,81 +1898,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.31575,
-      "frameMs": 8.5014,
-      "measuredRendererMs": 0.444198,
-      "entityRendererMs": 0.3672,
-      "blockEntityRendererMs": 0.076998,
+      "secondsFromTimelineStart": 3.4960039,
+      "frameMs": 8.4065,
+      "measuredRendererMs": 0.5697,
+      "entityRendererMs": 0.4642,
+      "blockEntityRendererMs": 0.1055,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.444198
-      },
-      "worstInstance": {
-        "registryId": "minecraft:villager",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1318,
-          "p95Ms": 0.1318,
-          "peakMs": 0.1318,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 528.0,
-          "estimatedBytesPerFrame": 19008.0,
-          "instances": 1,
-          "renderTypes": [
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 4.3742438,
-      "frameMs": 8.348401,
-      "measuredRendererMs": 0.5565,
-      "entityRendererMs": 0.480599,
-      "blockEntityRendererMs": 0.075901,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.5565
-      },
-      "worstInstance": {
-        "registryId": "minecraft:armor_stand",
-        "kind": "ENTITY",
-        "registryOwner": "minecraft",
-        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
-        "rendererOwner": "minecraft",
-        "statistics": {
-          "averageMs": 0.1826,
-          "p95Ms": 0.1826,
-          "peakMs": 0.1826,
-          "cpuMs": 0.0,
-          "callsPerFrame": 1.0,
-          "calls": 1,
-          "failures": 0,
-          "verticesPerFrame": 480.0,
-          "estimatedBytesPerFrame": 17280.0,
-          "instances": 1,
-          "renderTypes": [
-            "armor_cutout_no_cull",
-            "entity_cutout_no_cull"
-          ]
-        }
-      }
-    },
-    {
-      "secondsFromTimelineStart": 4.5674455,
-      "frameMs": 9.2379,
-      "measuredRendererMs": 0.7061,
-      "entityRendererMs": 0.628202,
-      "blockEntityRendererMs": 0.077898,
-      "spike": false,
-      "topModsMs": {
-        "minecraft": 0.7061
+        "minecraft": 0.5697
       },
       "worstInstance": {
         "registryId": "minecraft:sheep",
@@ -2260,9 +1914,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.3293,
-          "p95Ms": 0.3293,
-          "peakMs": 0.3293,
+          "averageMs": 0.1466,
+          "p95Ms": 0.1466,
+          "peakMs": 0.1466,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2277,14 +1931,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.5844758,
-      "frameMs": 8.5655,
-      "measuredRendererMs": 0.383597,
-      "entityRendererMs": 0.326199,
-      "blockEntityRendererMs": 0.057398,
+      "secondsFromTimelineStart": 3.6635628,
+      "frameMs": 8.2836,
+      "measuredRendererMs": 0.3941,
+      "entityRendererMs": 0.29,
+      "blockEntityRendererMs": 0.1041,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.383597
+        "minecraft": 0.3941
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -2293,9 +1947,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.1024,
-          "p95Ms": 0.1024,
-          "peakMs": 0.1024,
+          "averageMs": 0.1096,
+          "p95Ms": 0.1096,
+          "peakMs": 0.1096,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2311,14 +1965,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.6933823,
-      "frameMs": 8.383599,
-      "measuredRendererMs": 0.539603,
-      "entityRendererMs": 0.446201,
-      "blockEntityRendererMs": 0.093402,
+      "secondsFromTimelineStart": 3.6719833,
+      "frameMs": 8.27,
+      "measuredRendererMs": 0.368,
+      "entityRendererMs": 0.2956,
+      "blockEntityRendererMs": 0.0724,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.539603
+        "minecraft": 0.368
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -2327,9 +1981,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.170401,
-          "p95Ms": 0.170401,
-          "peakMs": 0.170401,
+          "averageMs": 0.1055,
+          "p95Ms": 0.1055,
+          "peakMs": 0.1055,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2345,14 +1999,47 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.777967199,
-      "frameMs": 9.098801,
-      "measuredRendererMs": 0.448098,
-      "entityRendererMs": 0.371599,
-      "blockEntityRendererMs": 0.076499,
+      "secondsFromTimelineStart": 3.7806343,
+      "frameMs": 8.3552,
+      "measuredRendererMs": 0.6397,
+      "entityRendererMs": 0.5607,
+      "blockEntityRendererMs": 0.079,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.448098
+        "minecraft": 0.6397
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1921,
+          "p95Ms": 0.1921,
+          "peakMs": 0.1921,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.95591,
+      "frameMs": 8.3126,
+      "measuredRendererMs": 0.4811,
+      "entityRendererMs": 0.3916,
+      "blockEntityRendererMs": 0.0895,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4811
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -2361,9 +2048,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.209099,
-          "p95Ms": 0.209099,
-          "peakMs": 0.209099,
+          "averageMs": 0.1789,
+          "p95Ms": 0.1789,
+          "peakMs": 0.1789,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2379,14 +2066,47 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.887040199,
-      "frameMs": 8.8768,
-      "measuredRendererMs": 0.412903,
-      "entityRendererMs": 0.338301,
-      "blockEntityRendererMs": 0.074602,
+      "secondsFromTimelineStart": 3.9813544,
+      "frameMs": 8.582,
+      "measuredRendererMs": 0.5326,
+      "entityRendererMs": 0.4368,
+      "blockEntityRendererMs": 0.0958,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.412903
+        "minecraft": 0.5326
+      },
+      "worstInstance": {
+        "registryId": "minecraft:villager",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.VillagerRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.147,
+          "p95Ms": 0.147,
+          "peakMs": 0.147,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 528.0,
+          "estimatedBytesPerFrame": 19008.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.1566517,
+      "frameMs": 8.1829,
+      "measuredRendererMs": 0.753,
+      "entityRendererMs": 0.6305,
+      "blockEntityRendererMs": 0.1225,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.753
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -2395,9 +2115,9 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.165201,
-          "p95Ms": 0.165201,
-          "peakMs": 0.165201,
+          "averageMs": 0.2387,
+          "p95Ms": 0.2387,
+          "peakMs": 0.2387,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,
@@ -2413,14 +2133,14 @@
       }
     },
     {
-      "secondsFromTimelineStart": 4.9715948,
-      "frameMs": 8.4843,
-      "measuredRendererMs": 0.560498,
-      "entityRendererMs": 0.474598,
-      "blockEntityRendererMs": 0.0859,
+      "secondsFromTimelineStart": 4.2158684,
+      "frameMs": 8.6568,
+      "measuredRendererMs": 0.664,
+      "entityRendererMs": 0.5296,
+      "blockEntityRendererMs": 0.1344,
       "spike": false,
       "topModsMs": {
-        "minecraft": 0.560498
+        "minecraft": 0.664
       },
       "worstInstance": {
         "registryId": "minecraft:armor_stand",
@@ -2429,9 +2149,280 @@
         "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
         "rendererOwner": "minecraft",
         "statistics": {
-          "averageMs": 0.2316,
-          "p95Ms": 0.2316,
-          "peakMs": 0.2316,
+          "averageMs": 0.2675,
+          "p95Ms": 0.2675,
+          "peakMs": 0.2675,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.2998373,
+      "frameMs": 8.6473,
+      "measuredRendererMs": 0.4745,
+      "entityRendererMs": 0.3668,
+      "blockEntityRendererMs": 0.1077,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4745
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1489,
+          "p95Ms": 0.1489,
+          "peakMs": 0.1489,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.4252198,
+      "frameMs": 16.8034,
+      "measuredRendererMs": 0.7433,
+      "entityRendererMs": 0.4937,
+      "blockEntityRendererMs": 0.2496,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.7433
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2305,
+          "p95Ms": 0.2305,
+          "peakMs": 0.2305,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.5352925,
+      "frameMs": 9.1051,
+      "measuredRendererMs": 0.3546,
+      "entityRendererMs": 0.2695,
+      "blockEntityRendererMs": 0.0851,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.3546
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0968,
+          "p95Ms": 0.0968,
+          "peakMs": 0.0968,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.6274686,
+      "frameMs": 8.41,
+      "measuredRendererMs": 0.485,
+      "entityRendererMs": 0.378,
+      "blockEntityRendererMs": 0.107,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.485
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1199,
+          "p95Ms": 0.1199,
+          "peakMs": 0.1199,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.7360713,
+      "frameMs": 8.2801,
+      "measuredRendererMs": 0.6498,
+      "entityRendererMs": 0.5839,
+      "blockEntityRendererMs": 0.0659,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.6498
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.274,
+          "p95Ms": 0.274,
+          "peakMs": 0.274,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.86221,
+      "frameMs": 8.8092,
+      "measuredRendererMs": 0.5458,
+      "entityRendererMs": 0.4509,
+      "blockEntityRendererMs": 0.0949,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.5458
+      },
+      "worstInstance": {
+        "registryId": "minecraft:sheep",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.SheepRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1716,
+          "p95Ms": 0.1716,
+          "peakMs": 0.1716,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 288.0,
+          "estimatedBytesPerFrame": 10368.0,
+          "instances": 1,
+          "renderTypes": [
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.887599,
+      "frameMs": 8.5615,
+      "measuredRendererMs": 0.6066,
+      "entityRendererMs": 0.523,
+      "blockEntityRendererMs": 0.0836,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.6066
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.2253,
+          "p95Ms": 0.2253,
+          "peakMs": 0.2253,
+          "cpuMs": 0.0,
+          "callsPerFrame": 1.0,
+          "calls": 1,
+          "failures": 0,
+          "verticesPerFrame": 480.0,
+          "estimatedBytesPerFrame": 17280.0,
+          "instances": 1,
+          "renderTypes": [
+            "armor_cutout_no_cull",
+            "entity_cutout_no_cull"
+          ]
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.9714467,
+      "frameMs": 8.1813,
+      "measuredRendererMs": 0.4961,
+      "entityRendererMs": 0.4103,
+      "blockEntityRendererMs": 0.0858,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.4961
+      },
+      "worstInstance": {
+        "registryId": "minecraft:armor_stand",
+        "kind": "ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.entity.ArmorStandRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.1542,
+          "p95Ms": 0.1542,
+          "peakMs": 0.1542,
           "cpuMs": 0.0,
           "callsPerFrame": 1.0,
           "calls": 1,

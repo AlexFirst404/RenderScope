@@ -13,18 +13,24 @@ import java.util.Set;
 /** Render thread scope. Consumers and renderer arguments are never wrapped or retained. */
 public final class RenderHooks {
     private static final ThreadLocal<Scope> ACTIVE = new ThreadLocal<>();
+    private static final DeferredContexts DEFERRED = new DeferredContexts(4096);
     private static volatile boolean geometryEnabled;
     private static boolean worldPass;
     private static boolean frameOpen;
     private static long frameStarted;
     private static Object worldSession;
     private static String dimensionSession;
+    private static long measuredDeferredCalls;
+    private static long queuedDeferredCalls;
+    private static long renderedDeferredCalls;
 
     private RenderHooks() { }
     public static void setGeometryEnabled(boolean enabled) { geometryEnabled = enabled; }
     public static void worldPass(boolean active) { worldPass = active; }
 
     public static void beginFrame() {
+        ACTIVE.remove();
+        DEFERRED.clear();
         var runtime = ClientRuntime.current();
         if (runtime == null) return;
         var level = Minecraft.getInstance().level;
@@ -34,6 +40,9 @@ public final class RenderHooks {
             runtime.overlay().clear();
             worldSession = level;
             dimensionSession = dimension;
+            measuredDeferredCalls = 0;
+            queuedDeferredCalls = 0;
+            renderedDeferredCalls = 0;
         }
         worldPass = false;
         frameOpen = level != null;
@@ -50,6 +59,7 @@ public final class RenderHooks {
         }
         worldPass = false;
         ACTIVE.remove();
+        DEFERRED.clear();
     }
 
     public static Scope begin(Entity entity, Object renderer) {
@@ -82,11 +92,46 @@ public final class RenderHooks {
 
     private static Bounds bounds(AABB b) { return new Bounds(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ); }
     private static Scope begin(ClientRuntime runtime, SampleContext context) {
-        Scope scope = new Scope(runtime.profiler(), ACTIVE.get(), geometryEnabled);
+        Scope scope = new Scope(runtime.profiler(), ACTIVE.get(), geometryEnabled, context);
         scope.token = runtime.profiler().beginCall(context);
         if (scope.token == null) return null;
         ACTIVE.set(scope);
         return scope;
+    }
+
+    /** Optional integrations call this while a measured renderer queues deferred world work. */
+    public static void rememberDeferred(Object task, String renderType) {
+        if (!frameOpen || !worldPass) return;
+        queuedDeferredCalls++;
+        Scope scope = ACTIVE.get();
+        if (scope == null) return;
+        if (!DEFERRED.remember(task, scope.context, geometryEnabled ? renderType : null)) {
+            scope.profiler.recordDroppedMeasurement();
+        }
+    }
+
+    /** Only callbacks associated with a real current-frame renderer acquire a measurement. */
+    public static Scope beginDeferred(Object task) {
+        var runtime = ClientRuntime.current();
+        if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
+        DeferredContexts.Entry entry = DEFERRED.find(task);
+        if (entry == null) return null;
+        Scope scope = begin(runtime, entry.context());
+        if (scope != null) {
+            scope.deferred = true;
+            if (scope.types != null) scope.types.addAll(entry.renderTypes());
+        }
+        return scope;
+    }
+
+    /** Real completed deferred invocations in this world session, for compatibility diagnostics. */
+    public static long measuredDeferredCalls() { return measuredDeferredCalls; }
+    public static long queuedDeferredCalls() { return queuedDeferredCalls; }
+    public static long renderedDeferredCalls() { return renderedDeferredCalls; }
+
+    public static void endDeferred(Scope scope, boolean failed) {
+        if (frameOpen && worldPass) renderedDeferredCalls++;
+        end(scope, failed);
     }
 
     public static void end(Scope scope, boolean failed) {
@@ -95,6 +140,7 @@ public final class RenderHooks {
         scope.profiler.endCall(scope.token, scope.vertices, scope.bytes,
                 scope.types == null ? Set.of() : scope.types, failed);
         if (scope.parent != null) scope.profiler.excludeNestedCall(scope.parent.token, scope.token);
+        if (scope.deferred) measuredDeferredCalls++;
     }
 
     public static void vertex(int formatBytes) {
@@ -120,11 +166,14 @@ public final class RenderHooks {
         private final Scope parent;
         private final boolean geometry;
         private final Set<String> types;
+        private final SampleContext context;
         private RenderProfiler.CallToken token;
         private long vertices, bytes;
-        private Scope(RenderProfiler profiler, Scope parent, boolean geometry) {
+        private boolean deferred;
+        private Scope(RenderProfiler profiler, Scope parent, boolean geometry, SampleContext context) {
             this.profiler = profiler; this.parent = parent; this.geometry = geometry;
             this.types = geometry ? new HashSet<>() : null;
+            this.context = context;
         }
     }
 }

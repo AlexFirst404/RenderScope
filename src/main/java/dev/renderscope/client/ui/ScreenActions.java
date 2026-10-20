@@ -9,6 +9,8 @@ public interface ScreenActions {
 
     String modDisplayName(String namespace);
 
+    default boolean hasInstancedRenderer() { return false; }
+
     /** Persist settings and apply the measurement/window options to the profiler. */
     void saveSettings();
 

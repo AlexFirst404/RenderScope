@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publicationStatus": "prepared_locally",
+  "publicationStatus": "private_modrinth_alpha_version_uploaded_curseforge_author_draft",
   "project": {
     "name": "RenderScope",
     "slug": "renderscope",
@@ -57,7 +57,7 @@
     "galleryDirectory": "gallery"
   },
   "measurementScope": {
-    "timing": "CPU-side renderer wall time, not GPU execution time",
+    "timing": "Exclusive CPU-side renderer wall time, including attributed Mekanism deferred callbacks; not GPU execution time",
     "categories": [
       "entities",
       "block entities"
@@ -71,7 +71,11 @@
     ],
     "manualCapture": true,
     "positionsInReportsByDefault": false,
-    "automaticReportUpload": false
+    "automaticReportUpload": false,
+    "optionalMekanismDeferredRendererCallbacks": true,
+    "mekanismDeferredTargetArtifact": "Mekanism-1.20.1-10.4.16.80.jar",
+    "flywheelInstancedPerObjectAttribution": false,
+    "createContraptionVirtualBlockEntityInstances": false
   },
   "notes": [
     "This file is local release preparation metadata, not a platform API submission or proof of publication.",
@@ -79,5 +83,181 @@
     "Use the primary bundled JAR, not the slim or sources JAR.",
     "No server installation is required.",
     "This Forge artifact is separate from the preserved NeoForge 47.1.106 build. Install only one RenderScope artifact in each matching loader profile."
-  ]
+  ],
+  "platformDrafts": {
+    "curseforge": {
+      "projectId": 1756581,
+      "authorUrl": "https://authors.curseforge.com/#/projects/1756581/files",
+      "status": "new_unapproved_author_only",
+      "logoUploaded": true,
+      "descriptionSaved": true,
+      "galleryImagesUploaded": 4,
+      "jarUploaded": false,
+      "moderationRequested": false,
+      "publicReleasePerformed": false,
+      "jarUploadOnHold": true,
+      "reasonFileWithheld": "The first JAR upload triggers project moderation; unlisted access by direct link is not a private release.",
+      "fullSizeDescriptionImagesSaved": true
+    },
+    "modrinth": {
+      "status": "private_alpha_version_uploaded_not_submitted_for_review",
+      "twoFactorAuthentication": "completed_by_owner",
+      "projectCreated": true,
+      "projectUrl": "https://modrinth.com/project/renderscope",
+      "settingsUrl": "https://modrinth.com/project/renderscope/settings",
+      "visibility": "private",
+      "iconUploaded": true,
+      "descriptionSaved": true,
+      "jarUploaded": true,
+      "publicReleasePerformed": false,
+      "privateVisibilityVerified": true,
+      "visibleToProjectMembersOnly": true,
+      "versionId": "YzYFQvOb",
+      "versionUrl": "https://modrinth.com/mod/renderscope/version/YzYFQvOb",
+      "versionNumber": "0.1.0+mc1.20.1",
+      "versionType": "alpha",
+      "gameVersions": [
+        "1.20.1"
+      ],
+      "loaders": [
+        "forge"
+      ],
+      "clientSide": "required",
+      "serverSide": "unsupported",
+      "uploadedArtifact": "renderscope-forge-0.1.0+mc1.20.1.jar",
+      "sourceJarSha256": "42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309",
+      "reviewSubmitted": false,
+      "additionalMediaUpload": "completed",
+      "galleryImagesUploaded": 5,
+      "gallery": [
+        {
+          "title": "RenderScope · Find the render cost in your world",
+          "url": "https://cdn.modrinth.com/data/LyIIxCef/images/36b5402eb735486355a338f9f5e28e8acbf52e96.png"
+        },
+        {
+          "title": "Live heatmap · recorded gameplay",
+          "url": "https://cdn.modrinth.com/data/LyIIxCef/images/0e3856072ce207eb697813b5e68e3482baeab616.gif"
+        },
+        {
+          "title": "Create and Mekanism · measured costs",
+          "url": "https://cdn.modrinth.com/data/LyIIxCef/images/391f5c9f98eab9ad67d1713f68449957b2d0720b.png"
+        },
+        {
+          "title": "Create and Mekanism · world heatmap",
+          "url": "https://cdn.modrinth.com/data/LyIIxCef/images/b70dc45d237f27698c023d0e78f0e0f0f827cd7e.png"
+        },
+        {
+          "title": "Highlight the exact Mekanism instance",
+          "url": "https://cdn.modrinth.com/data/LyIIxCef/images/5c4b170797d514f3ed4cdcbb4b27e209513e5e9a.png"
+        }
+      ],
+      "featuredGalleryImageUrl": "https://cdn.modrinth.com/data/LyIIxCef/images/36b5402eb735486355a338f9f5e28e8acbf52e96.png",
+      "fullSizeDescriptionImagesSaved": true,
+      "remoteJarHashVerified": true,
+      "downloadedJarSha256": "42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309"
+    }
+  },
+  "compatibilityValidation": {
+    "status": "development_and_installed_production_passed_for_selected_scene",
+    "loader": "Forge",
+    "loaderVersion": "47.4.10",
+    "minecraftVersion": "1.20.1",
+    "targets": [
+      {
+        "id": "create",
+        "artifact": "create-1.20.1-6.0.8.jar",
+        "version": "6.0.8"
+      },
+      {
+        "id": "flywheel",
+        "version": "1.0.5",
+        "bundledWith": "create"
+      },
+      {
+        "id": "ponder",
+        "version": "1.0.91",
+        "bundledWith": "create"
+      },
+      {
+        "id": "mekanism",
+        "artifact": "Mekanism-1.20.1-10.4.16.80.jar",
+        "version": "10.4.16.80"
+      }
+    ],
+    "unitAndPrivacyTests": {
+      "tests": 22,
+      "failures": 0,
+      "errors": 0
+    },
+    "developmentClient": "passed",
+    "installedProductionClient": "passed",
+    "scenarios": [
+      "real filled Create and Mekanism fluid tanks",
+      "real powered Create kinetics with the active Flywheel backend",
+      "charged Mekanism energy cube with queued/rendered/attributed deferred callbacks",
+      "Timing Only without geometry counters",
+      "temporary Flywheel-off fallback geometry and backend restoration",
+      "object selection, world highlights, capture and private export"
+    ],
+    "knownLimitations": [
+      "Flywheel visual/instanced/batched work outside dispatcher calls is not attributed per object or reported as GPU time.",
+      "Virtual child block entities inside Create contraptions are not separately attributed or highlighted at world block positions.",
+      "Passing a selected scene is not a general shader/renderer compatibility matrix."
+    ],
+    "developmentEvidence": {
+      "result": "compatibility/compat-result.json",
+      "capture": "compatibility/compat-capture-example.json",
+      "completedAt": "2026-10-20T20:13:22.565733800Z",
+      "defaultFlywheelBackend": "flywheel:indirect",
+      "fallbackFlywheelBackend": "flywheel:off",
+      "observedCreateShaftRpm": 32.0,
+      "fallbackKineticVerticesPerFrame": 216.0,
+      "fullDeferred": {
+        "queued": 673,
+        "rendered": 673,
+        "measured": 673
+      },
+      "timingOnlyDeferred": {
+        "queued": 506,
+        "rendered": 506,
+        "measured": 506
+      },
+      "captureFrames": 594,
+      "captureDurationSeconds": 5.0049888,
+      "screenshots": 7,
+      "exportMetadataAndPrivacy": true
+    },
+    "installedEvidence": {
+      "result": "compatibility-installed/compat-result.json",
+      "capture": "compatibility-installed/compat-capture-example.json",
+      "launcher": "compatibility-installed/installed-launch.json",
+      "verification": "compatibility-installed/installed-verification.json",
+      "environment": "installed-production",
+      "developmentClasspath": false,
+      "primaryJarSha256": "42b8b37b3e5f79a2695ab6c448cca47b587c65abf54d8345f26e0b1caf61a309",
+      "compatibilityResultSha256": "ad98bf54d4d19c0094eb1ba45ad2508306a494a8333c1cf7dc8bd6ae8438c75d",
+      "completedAt": "2026-10-20T20:18:16.860913Z",
+      "verifiedAt": "2026-10-20T20:18:24.070426+00:00",
+      "defaultFlywheelBackend": "flywheel:indirect",
+      "fallbackFlywheelBackend": "flywheel:off",
+      "fullDeferred": {
+        "queued": 649,
+        "rendered": 649,
+        "measured": 649
+      },
+      "timingOnlyDeferred": {
+        "queued": 504,
+        "rendered": 504,
+        "measured": 504
+      },
+      "createSelectedInstanceBoxAndLabel": true,
+      "mekanismSelectedInstanceBoxAndLabel": true,
+      "combinedHeatmapBoxes": 5,
+      "captureFrames": 594,
+      "captureDurationSeconds": 5.0036182,
+      "screenshots": 7,
+      "exportMetadataAndPrivacy": true
+    },
+    "baselineWithoutMekanism": "Forge vanilla smoke passed with 22 unit/privacy tests"
+  }
 }

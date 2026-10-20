@@ -40,7 +40,7 @@ try {
     }
     $artifactDirectory = Join-Path $projectRoot "build/$Loader/libs"
     $jars = @(Get-ChildItem -LiteralPath $artifactDirectory -Filter "renderscope-$Loader-*.jar" |
-        Where-Object { $_.Name -notmatch '-(slim|sources)\.jar$' })
+        Where-Object { $_.Name -notmatch '-(slim|sources|compat-harness)\.jar$' })
     if ($jars.Count -ne 1) { throw "Expected exactly one bundled $Loader release jar in $artifactDirectory; found $($jars.Count)." }
     New-Item -ItemType Directory -Force -Path $destination | Out-Null
     Copy-Item -LiteralPath $jars[0].FullName -Destination $destination -Force

@@ -26,6 +26,10 @@ sourceSets {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
     }
+    compat {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
 }
 minecraft {
     mappings channel: 'official', version: minecraft_version
@@ -55,10 +59,24 @@ minecraft {
                 renderscope_smoke { source sourceSets.smoke }
             }
         }
+        compatClient {
+            parent minecraft.runs.client
+            workingDirectory project.file('run-compat-forge')
+            property 'renderscope.compat.output', file('distribution/forge/compatibility').absolutePath
+            args '--width', '1280', '--height', '720', '--username', 'RenderScopeQA'
+            mods {
+                renderscope { source sourceSets.main }
+                renderscope_compat { source sourceSets.compat }
+            }
+        }
     }
 }
 repositories {
     mavenCentral()
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
     maven { url = 'https://maven.neoforged.net/releases/' }
     maven {
         url = 'https://repo.spongepowered.org/repository/maven-public/'
@@ -77,6 +95,8 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    compatRuntimeOnly fg.deobf('maven.modrinth:create:8amzvn9x')
+    compatRuntimeOnly fg.deobf('maven.modrinth:mekanism:uxe1WQp4')
 }
 mixin {
     add sourceSets.main, 'renderscope.refmap.json'
@@ -107,3 +127,32 @@ tasks.named('jarJar') {
     finalizedBy 'reobfJarJar'
 }
 tasks.named('build') { dependsOn 'jarJar' }
+
+// Test fixtures are a separate artifact, never included in the client distribution.
+tasks.register('compatJar', Jar) {
+    from sourceSets.compat.output
+    archiveClassifier = 'compat-harness'
+}
+reobf { compatJar {} }
+tasks.named('compatJar') { finalizedBy 'reobfCompatJar' }
+
+// A renderer assertion can stop Minecraft with exit code zero. Require fresh harness evidence too.
+['runSmokeClient': ['smoke-result.json', targetDistribution],
+ 'runCompatClient': ['compat-result.json', file('distribution/forge/compatibility')]].each { taskName, evidence ->
+    tasks.matching { it.name == taskName }.configureEach {
+        def launchedAt
+        doFirst {
+            if (taskName == 'runCompatClient' && targetLoader != 'forge')
+                throw new GradleException('The pinned Create/Mekanism compatibility suite targets Forge. Use -Ploader=forge.')
+            launchedAt = System.currentTimeMillis()
+        }
+        doLast {
+            def resultFile = new File(evidence[1] as File, evidence[0] as String)
+            if (!resultFile.isFile() || resultFile.lastModified() < launchedAt)
+                throw new GradleException("${taskName} did not produce fresh ${evidence[0]}")
+            def result = new groovy.json.JsonSlurper().parse(resultFile)
+            if (result.success != true || result.loader != targetLoaderName || result.loaderVersion != targetLoaderVersion)
+                throw new GradleException("${taskName} failed: ${result.error ?: 'unexpected loader or failed checks'}")
+        }
+    }
+}

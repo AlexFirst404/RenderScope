@@ -67,7 +67,7 @@ version = artifact_match.group(1)
 package_name = f"renderscope-forge-{version}-publication.zip" if loader == "forge" else f"renderscope-{version}-publication.zip"
 destination = distribution / package_name
 files = [path for path in distribution.rglob("*") if path.is_file() and path.suffix.lower() != ".zip"
-         and path.relative_to(distribution).parts[0] not in ("forge", "neoforge")]
+         and path.relative_to(distribution).parts[0] not in ("forge", "neoforge", "platforms")]
 for path in files:
     assert path.suffix.lower() != ".jar" or path == artifact, f"Unexpected other artifact in {loader_name} materials: {path.name}"
 with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
