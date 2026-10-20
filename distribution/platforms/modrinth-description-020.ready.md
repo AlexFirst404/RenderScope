@@ -4,7 +4,7 @@
 
 **Find the render cost. Follow it into your world.**
 
-**Minecraft 1.20.1 · Forge 47.4.10 · Java 21 · Client-side**
+**Minecraft 1.20.1 · Forge 47.4.10 / NeoForge 47.1.106 · Java 21 · Client-side**
 
 RenderScope connects measured rendering work to a mod, an object type and a specific instance in your world. Investigate a costly renderer, select its entity or block entity, and see exactly where that object is.
 
@@ -20,7 +20,7 @@ Open **F8** or **Esc → RenderScope**. Choose a mod in **Mods**, inspect a type
 
 **Highlight** draws the selected bounding box. **Track** adds direction and distance. The **heatmap** compares nearby measured instances with relative colors; **Inspect** reads the object under your crosshair. Filters control categories, distance, cost, labels and through-wall display.
 
-![Real Create mechanism animation with the selected instance highlighted](https://raw.githubusercontent.com/AlexFirst404/RenderScope/main/distribution/forge/presentation/create-shaft-live.gif)
+![Real Create mechanism animation with the selected instance highlighted in the Forge test](https://raw.githubusercontent.com/AlexFirst404/RenderScope/main/distribution/forge/presentation/create-shaft-live.gif)
 
 ## Keep a useful report
 
@@ -32,9 +32,10 @@ Reports stay local. **Positions and dimensions are off by default.** Player name
 
 ## Install and start
 
-1. Use **Minecraft 1.20.1**, **Forge 47.4.10** and **Java 21**.
-2. Put `renderscope-forge-0.2.0+mc1.20.1.jar` into the client profile's `mods` folder. Keep one RenderScope JAR matching your loader; MixinExtras is bundled.
-3. Open a world and press **F8**. Rebind it under **Options → Controls → RenderScope**.
+1. Use **Minecraft 1.20.1** and **Java 21** with **Forge 47.4.10** or **NeoForge 47.1.106**.
+2. Choose the separate build matching your loader: **Forge** — `renderscope-forge-0.2.0+mc1.20.1.jar`; **NeoForge** — `renderscope-neoforge-0.2.0+mc1.20.1.jar`.
+3. Put **only that one RenderScope JAR** into the client profile's `mods` folder. Do not install both builds together. MixinExtras is bundled.
+4. Open a world and press **F8**. Rebind it under **Options → Controls → RenderScope**.
 
 **The server does not need RenderScope.** English and Russian UI are included. Profiling continues with the screen closed.
 
@@ -48,15 +49,19 @@ The optional visual integration targets **Flywheel 1.0.5**. Virtual contraption 
 
 The installed Forge production JAR was tested with **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80**: real rotating mechanisms, an animated press, filled tanks and deferred energy-cube rendering. This is a pinned scene, not a general shader/renderer compatibility matrix.
 
+**All Create/Mekanism screenshots and animations shown here were recorded on Forge.** The NeoForge build passed a separate vanilla-client baseline; the Create/Mekanism compatibility scene was not tested on NeoForge.
+
 ---
 
 ## Русский
 
 **Найдите конкретный объект с дорогим рендером.** Откройте **F8 → Mods → Objects**, выберите экземпляр и нажмите **Highlight** или **Track**. Теплокарта сравнивает измеренную стоимость объектов, **Inspect** показывает данные под прицелом.
 
-Нужны **Minecraft 1.20.1, Forge 47.4.10, Java 21**. Мод устанавливается только на клиент. Интерфейс доступен на русском. **Capture** записывает 5/10/30 секунд или до ручной остановки; JSON сохраняется локально, координаты и dimension по умолчанию выключены.
+Нужны **Minecraft 1.20.1, Java 21** и **Forge 47.4.10** либо **NeoForge 47.1.106**. Скачайте отдельный JAR для своего загрузчика и положите только его в клиентскую папку `mods`: сборки Forge и NeoForge нельзя устанавливать вместе. Мод устанавливается только на клиент. Интерфейс доступен на русском. **Capture** записывает 5/10/30 секунд или до ручной остановки; JSON сохраняется локально, координаты и dimension по умолчанию выключены.
 
 Измеряются реальные CPU-вызовы рендереров и поддерживаемые visual-задачи. Общая Flywheel GPU-сводка в Full показывается отдельно; её время и инстансированная геометрия не распределяются между объектами.
+
+Скриншоты и анимации Create/Mekanism сняты на **Forge**. Для **NeoForge** проверен отдельный базовый сценарий с ванильными объектами; сцена совместимости с Create/Mekanism на нём не тестировалась.
 
 ## Source and license
 
