@@ -3,6 +3,8 @@ package dev.renderscope.client.ui;
 import dev.renderscope.client.ProfilerSettings;
 import dev.renderscope.core.AggregateMetric;
 import dev.renderscope.core.CaptureReport;
+import dev.renderscope.core.DiagnosticEngine;
+import dev.renderscope.core.DiagnosticReport;
 import dev.renderscope.core.FramePoint;
 import dev.renderscope.core.InstanceKey;
 import dev.renderscope.core.InstanceMetric;
@@ -16,9 +18,12 @@ import dev.renderscope.core.MeasurementSource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +46,7 @@ public final class RenderScopeScreen extends Screen {
     private final RenderProfiler profiler;
     private final ScreenActions actions;
     private ProfilerSnapshot snapshot;
+    private DiagnosticReport diagnosis;
     private Tab tab = Tab.OVERVIEW;
     private EditBox search;
     private String query = "";
@@ -64,6 +70,9 @@ public final class RenderScopeScreen extends Screen {
     private Consumer<TableRow> rowAction;
     private Button captureButton;
     private Button exportButton;
+    private Button findObjectButton;
+    private Button showWorldButton;
+    private Button quickCaptureButton;
     private String status = "";
     private long statusUntil;
     private List<Component> hoverText;
@@ -75,6 +84,7 @@ public final class RenderScopeScreen extends Screen {
         this.profiler = profiler;
         this.actions = actions;
         this.snapshot = profiler.snapshot();
+        this.diagnosis = DiagnosticEngine.analyze(snapshot);
     }
 
     private enum Tab { OVERVIEW, MODS, OBJECTS, TIMELINE, HEATMAP, CAPTURE, SETTINGS }
@@ -88,29 +98,37 @@ public final class RenderScopeScreen extends Screen {
 
     @Override
     protected void init() {
-        snapshot = profiler.snapshot();
+        refreshSnapshot();
         contentTop = 64;
         contentBottom = height - 35;
         captureButton = null;
         exportButton = null;
         search = null;
+        findObjectButton = null;
+        showWorldButton = null;
+        quickCaptureButton = null;
         int tabWidth = Math.max(1, (width - 16) / 6);
         for (int i = 0; i < 6; i++) {
             Tab value = Tab.values()[i];
             Button button = button(8 + i * tabWidth, 36, i == 5 ? width - 8 - (8 + i * tabWidth) : tabWidth - 2,
                     tr("tab." + value.name().toLowerCase(Locale.ROOT)), () -> changeTab(value));
             button.active = tab != value;
+            button.setTooltip(Tooltip.create(component("help.tab." + value.name().toLowerCase(Locale.ROOT))));
         }
         captureButton = button(8, height - 27, Math.min(132, Math.max(92, width / 3)), captureLabel(), () -> {
             if (snapshot.capture().active()) actions.stopCapture();
             else actions.startCapture(actions.settings().captureDurationSeconds);
-            snapshot = profiler.snapshot();
+            refreshSnapshot();
             rebuild();
         });
-        button(width - 158, height - 27, 84, tr("tab.settings"), () -> changeTab(Tab.SETTINGS));
+        captureButton.setTooltip(Tooltip.create(component("help.capture")));
+        button(width - 158, height - 27, 84, tr("tab.settings"), () -> changeTab(Tab.SETTINGS))
+                .setTooltip(Tooltip.create(component("help.settings")));
         button(width - 70, height - 27, 62, tr("done"), this::onClose);
 
-        if (tab == Tab.MODS || tab == Tab.OBJECTS) {
+        if (tab == Tab.OVERVIEW) {
+            makeOverviewControls();
+        } else if (tab == Tab.MODS || tab == Tab.OBJECTS) {
             boolean detail = selectedMod != null || selectedObject != null || selectedInstance != null;
             if (detail) {
                 button(8, contentTop, 66, tr("back"), this::back);
@@ -156,6 +174,78 @@ public final class RenderScopeScreen extends Screen {
         }
     }
 
+    /** Fixed native actions stay reachable even when the summary is scrolled on a small GUI. */
+    private void makeOverviewControls() {
+        int cell = (width - 20) / 3;
+        findObjectButton = button(8, contentTop, cell - 1, tr("overview.find"), this::openDiagnosticObject);
+        showWorldButton = button(10 + cell, contentTop, cell - 1, tr(width < 440 ? "overview.show_short" : "overview.show"), this::showDiagnosticObject);
+        quickCaptureButton = button(12 + cell * 2, contentTop, width - 20 - cell * 2, "", () -> {
+            if (!snapshot.enabled()) {
+                actions.settings().profiling = true;
+                actions.saveSettings();
+                refreshSnapshot();
+                updateOverviewControls();
+                return;
+            }
+            if (snapshot.capture().active()) actions.stopCapture();
+            else actions.startCapture(10);
+            changeTab(Tab.CAPTURE);
+        });
+        updateOverviewControls();
+        contentTop += 26;
+    }
+
+    private void updateOverviewControls() {
+        if (findObjectButton == null) return;
+        boolean candidate = diagnosticCandidateAvailable();
+        findObjectButton.active = candidate;
+        findObjectButton.setTooltip(Tooltip.create(component(!candidate ? "help.no_candidate"
+                : diagnosis.ready() ? "help.find" : "help.find_preliminary")));
+        boolean inWorld = candidate && diagnosis.worstInstance().filter(this::inCurrentWorld).isPresent();
+        showWorldButton.active = inWorld;
+        showWorldButton.setTooltip(Tooltip.create(component(!inWorld ? "help.wait_for_instance"
+                : diagnosis.ready() ? "help.show_world" : "help.show_preliminary")));
+        quickCaptureButton.setMessage(component(!snapshot.enabled() ? "overview.resume"
+                : snapshot.capture().active() ? "stop_capture" : "overview.capture"));
+        quickCaptureButton.active = minecraft.level != null || !snapshot.enabled() || snapshot.capture().active();
+        quickCaptureButton.setTooltip(Tooltip.create(component(!snapshot.enabled() ? "help.resume" : "help.quick_capture")));
+    }
+
+    private boolean diagnosticCandidateAvailable() {
+        return minecraft.level != null && snapshot.enabled() && diagnosis.worstObject().isPresent()
+                && (diagnosis.ready() || diagnosis.readiness() == DiagnosticReport.Readiness.COLLECTING);
+    }
+
+    private boolean inCurrentWorld(InstanceMetric instance) {
+        return minecraft.level != null && minecraft.level.dimension().location().toString().equals(instance.context().key().dimension());
+    }
+
+    private void openDiagnosticObject() {
+        if (!diagnosticCandidateAvailable()) return;
+        diagnosis.worstObject().ifPresent(object -> {
+            tab = Tab.OBJECTS;
+            selectedMod = null;
+            selectedObject = object;
+            selectedInstance = diagnosis.worstInstance().orElse(null);
+            objectKind = object.kind();
+            query = "";
+            sortColumn = 2;
+            sortAscending = false;
+            scroll = 0;
+            rebuild();
+        });
+    }
+
+    private void showDiagnosticObject() {
+        if (!diagnosticCandidateAvailable()) return;
+        diagnosis.worstInstance().filter(this::inCurrentWorld).ifPresent(instance -> {
+            InstanceKey key = instance.context().key();
+            if (!actions.isHighlighted(key)) actions.toggleHighlight(key);
+            if (!actions.isTracked(key)) actions.toggleTrack(key);
+            minecraft.setScreen(null);
+        });
+    }
+
     private void makeHeatmapControls() {
         ProfilerSettings s = actions.settings();
         int half = (width - 20) / 2;
@@ -168,7 +258,7 @@ public final class RenderScopeScreen extends Screen {
         settingButton(8, y, half, () -> tr("max_distance") + ": " + s.maximumDistance, () -> s.maximumDistance = next(s.maximumDistance, 16, 32, 64, 96, 128, 256));
         settingButton(12 + half, y, width - half - 20, () -> tr("max_objects") + ": " + s.maxHighlightedObjects, () -> s.maxHighlightedObjects = next(s.maxHighlightedObjects, 25, 50, 100, 200, 500));
         y += 24;
-        settingButton(8, y, half, () -> tr("min_cost") + ": " + decimal(s.minimumCostMs) + " ms", () -> s.minimumCostMs = nextDouble(s.minimumCostMs, 0, .01, .05, .1, .25, .5, 1));
+        settingButton(8, y, half, () -> tr("min_cost") + ": " + decimal(s.minimumCostMs) + " " + tr("unit_ms"), () -> s.minimumCostMs = nextDouble(s.minimumCostMs, 0, .01, .05, .1, .25, .5, 1));
         settingButton(12 + half, y, width - half - 20, () -> tr("labels") + ": " + onOff(s.showLabels), () -> s.showLabels = !s.showLabels);
         y += 24;
         settingButton(8, y, half, () -> tr("through_walls") + ": " + onOff(s.throughWalls), () -> s.throughWalls = !s.throughWalls);
@@ -193,7 +283,7 @@ public final class RenderScopeScreen extends Screen {
             settingButton(8, y, width - 16, () -> tr("measurement_mode") + ": " + modeName(), () -> {
                 s.mode = s.mode == ProfilerSettings.MeasurementMode.TIMING_ONLY
                         ? ProfilerSettings.MeasurementMode.FULL : ProfilerSettings.MeasurementMode.TIMING_ONLY;
-            });
+            }, "help.measurement_mode");
             y += 24;
             settingButton(8, y, half, () -> tr("sample_window") + ": " + s.sampleWindowSeconds + " s",
                     () -> s.sampleWindowSeconds = next(s.sampleWindowSeconds, 1, 2, 3, 5, 10, 15, 30));
@@ -230,20 +320,29 @@ public final class RenderScopeScreen extends Screen {
         button(78, y, cell - 2, tr("highlight") + (actions.isHighlighted(key) ? " ✓" : ""), () -> {
             actions.toggleHighlight(key);
             rebuild();
-        });
+        }).setTooltip(Tooltip.create(component("help.highlight")));
         button(78 + cell, y, cell - 2, tr("track") + (actions.isTracked(key) ? " ✓" : ""), () -> {
             actions.toggleTrack(key);
             rebuild();
-        });
+        }).setTooltip(Tooltip.create(component("help.track")));
         button(78 + 2 * cell, y, width - 8 - (78 + 2 * cell), tr("copy_position"), () -> {
             minecraft.keyboardHandler.setClipboard(position(selectedInstance.context().position()));
             setStatus(tr("copied"));
-        });
+        }).setTooltip(Tooltip.create(component("help.copy_position")));
+    }
+
+    private void refreshSnapshot() {
+        ProfilerSnapshot next = profiler.snapshot();
+        if (snapshot != next) {
+            snapshot = next;
+            diagnosis = DiagnosticEngine.analyze(next);
+        }
     }
 
     @Override
     public void tick() {
-        snapshot = profiler.snapshot();
+        refreshSnapshot();
+        updateOverviewControls();
         if (search != null) search.tick();
         if (captureButton != null) captureButton.setMessage(Component.literal(captureLabel()));
         if (exportButton != null) exportButton.active = profiler.lastCapture() != null;
@@ -293,7 +392,11 @@ public final class RenderScopeScreen extends Screen {
             g.drawString(font, value, x, height - 43, GREEN);
             if (mouseY >= height - 48 && mouseY <= height - 31) hoverText = List.of(Component.literal(status));
         }
-        if (hoverText != null && !hoverText.isEmpty()) g.renderComponentTooltip(font, hoverText, mouseX, mouseY);
+        if (hoverText != null && !hoverText.isEmpty()) {
+            List<FormattedCharSequence> lines = new ArrayList<>();
+            for (Component component : hoverText) lines.addAll(font.split(component, Math.max(80, Math.min(340, width - 24))));
+            g.renderTooltip(font, lines, mouseX, mouseY);
+        }
     }
 
     private void drawHeader(GuiGraphics g) {
@@ -308,35 +411,63 @@ public final class RenderScopeScreen extends Screen {
 
     private void renderOverview(GuiGraphics g, int mx, int my) {
         Performance p = snapshot.performance();
-        int y = contentTop + 6 - (int) scroll;
-        y = heading(g, tr("performance") + " · " + integer(snapshot.windowSeconds()) + " s", y);
-        y = pair(g, tr("fps"), integer(p.fps()), tr("frame"), ms(p.currentFrameMs()), y, mx, my);
-        y = pair(g, tr("average_frame"), ms(p.averageFrameMs()), tr("low_fps"), integer(p.onePercentLowFps()) + " FPS", y, mx, my);
-        y = pair(g, "P50", ms(p.p50FrameMs()), "P95", ms(p.p95FrameMs()), y, mx, my);
-        y = pair(g, "P99", ms(p.p99FrameMs()), tr("worst_frame"), ms(p.worstFrameMs()), y, mx, my);
-        y += 8;
-        y = heading(g, tr("scene"), y);
-        y = pair(g, tr("entities"), decimal(p.renderedEntitiesPerFrame()), tr("block_entities"), decimal(p.renderedBlockEntitiesPerFrame()), y, mx, my);
-        y = pair(g, tr("calls"), decimal(p.rendererCallsPerFrame()) + "/f", tr("measured_objects"), integer(p.measuredObjects()), y, mx, my);
-        y = pair(g, tr("vertices"), geometry(p.verticesPerFrame()), tr("vertex_data"), geometryBytes(p.estimatedBytesPerFrame()), y, mx, my);
-        y += 8;
-        y = heading(g, tr("offenders"), y);
-        if (snapshot.mods().isEmpty()) y = line(g, tr(minecraft.level == null ? "no_world" : "no_data"), y, MUTED, mx, my);
-        else {
-            for (AggregateMetric mod : snapshot.mods().stream().limit(8).toList()) {
-                int rowY = y;
-                if (hovered(mx, my, 12, y, width - 24, 18)) g.fill(10, y - 3, width - 10, y + 15, 0x553e4e5c);
-                drawTruncated(g, actions.modDisplayName(mod.id()), 14, y, width * 2 / 3 - 20, TEXT, mx, my);
-                g.drawString(font, ms(mod.stats().averageMs()), width * 2 / 3, y, ACCENT);
-                hits.add(new Hit(10, rowY - 3, width - 20, 18, () -> { tab = Tab.MODS; selectedMod = mod.id(); scroll = 0; rebuild(); }));
-                y += 19;
+        int y = contentTop + 5 - (int) scroll;
+        y = heading(g, tr("overview.result"), y);
+        y = renderDiagnosticCard(g, y, mx, my);
+        y = wrapped(g, tr("overview.scope"), 14, y + 6, width - 30, MUTED);
+        if (diagnosis.reasons().contains(DiagnosticReport.Reason.LOW_MEASURED_SLICE))
+            y = wrapped(g, tr("overview.small_slice"), 14, y + 3, width - 30, 0xffffce80);
+        if (diagnosis.measurementsDropped())
+            y = wrapped(g, tr("overview.dropped"), 14, y + 3, width - 30, 0xffffce80);
+
+        y = heading(g, tr("overview.top_mods"), y + 11);
+        y = wrapped(g, tr("overview.mod_help"), 14, y, width - 30, MUTED);
+        if (diagnosis.rankedMods().isEmpty()) {
+            y = wrapped(g, tr(minecraft.level == null ? "no_world" : "no_data"), 14, y + 4, width - 30, MUTED);
+        } else {
+            for (var impact : diagnosis.rankedMods().stream().limit(5).toList()) {
+                AggregateMetric mod = impact.mod();
+                int rowY = y + 2;
+                boolean over = hovered(mx, my, 10, rowY, width - 20, 27);
+                g.fill(10, rowY, width - 10, rowY + 26, over ? 0xaa425262 : 0x56323b45);
+                int valueWidth = Math.min(width / 2, 166);
+                drawTruncated(g, actions.modDisplayName(mod.id()), 16, rowY + 5, width - valueWidth - 34, TEXT, mx, my);
+                String value = tr("overview.mod_value", ms(mod.stats().averageMs()), integer(impact.measuredCpuShare() * 100));
+                drawTruncated(g, value, width - valueWidth - 14, rowY + 5, valueWidth, 0xffffb3ad, mx, my);
+                g.fill(16, rowY + 19, width - 16, rowY + 22, 0xff222a33);
+                int barWidth = (int) ((width - 32) * Math.max(0, Math.min(1, impact.measuredCpuShare())));
+                g.fill(16, rowY + 19, 16 + barWidth, rowY + 22, 0xffd96d65);
+                if (over) hoverText = List.of(Component.literal(tr("overview.mod_tooltip", actions.modDisplayName(mod.id()),
+                        ms(mod.stats().averageMs()), decimal(impact.measuredCpuShare() * 100))), component("help.open_mod"));
+                hits.add(new Hit(10, rowY, width - 20, 26, () -> {
+                    tab = Tab.MODS;
+                    selectedMod = mod.id();
+                    selectedObject = null;
+                    selectedInstance = null;
+                    scroll = 0;
+                    rebuild();
+                }));
+                y = rowY + 29;
             }
         }
-        y += 7;
-        y = line(g, tr("cpu_note"), y, MUTED, mx, my);
-        y = line(g, tr("geometry_note"), y, MUTED, mx, my);
+
+        y = heading(g, tr("overview.next_steps"), y + 11);
+        y = wrapped(g, tr("overview.step_world"), 14, y, width - 30, TEXT);
+        y = wrapped(g, tr("overview.step_capture"), 14, y + 4, width - 30, MUTED);
+        y = heading(g, tr("overview.smoothness"), y + 13);
+        y = pair(g, tr("fps"), integer(p.fps()), tr("frame"), ms(p.currentFrameMs()), y, mx, my);
+        y = pair(g, tr("average_frame"), ms(p.averageFrameMs()), tr("low_fps"), integer(p.onePercentLowFps()) + " FPS", y, mx, my);
+        y = pair(g, tr("overview.frame_typical"), ms(p.p50FrameMs()), tr("overview.frame_95"), ms(p.p95FrameMs()), y, mx, my);
+        y = pair(g, tr("overview.frame_99"), ms(p.p99FrameMs()), tr("worst_frame"), ms(p.worstFrameMs()), y, mx, my);
+        y = heading(g, tr("overview.measurements") + " · " + integer(snapshot.windowSeconds()) + " s", y + 10);
+        y = pair(g, tr("overview.object_cpu"), ms(diagnosis.measuredCpuMs()), tr("measured_objects"), integer(p.measuredObjects()), y, mx, my);
+        y = pair(g, tr("entities"), decimal(p.renderedEntitiesPerFrame()), tr("block_entities"), decimal(p.renderedBlockEntitiesPerFrame()), y, mx, my);
+        y = pair(g, tr("calls"), decimal(p.rendererCallsPerFrame()) + "/f", tr("overview.sampled_frames"), integer(p.frames()), y, mx, my);
+        y = pair(g, tr("vertices"), geometry(p.verticesPerFrame()), tr("vertex_data"), geometryBytes(p.estimatedBytesPerFrame()), y, mx, my);
+        y = wrapped(g, tr(actions.settings().mode == ProfilerSettings.MeasurementMode.FULL
+                ? "overview.geometry_scope" : "geometry_note"), 14, y + 5, width - 30, MUTED);
         if (actions.hasInstancedRenderer()) {
-            y = heading(g, tr("flywheel_shared"), y + 8);
+            y = heading(g, tr("flywheel_shared"), y + 11);
             for (var phase : snapshot.phases())
                 y = pair(g, tr("batch_cpu"), ms(phase.stats().averageMs()) + "/f",
                         tr("calls"), decimal(phase.stats().callsPerFrame()) + "/f", y, mx, my);
@@ -346,10 +477,71 @@ public final class RenderScopeScreen extends Screen {
                 y = pair(g, tr("gpu_sampled_frames"), integer(gpu.sampledFrames()),
                         tr("gpu_pending"), integer(gpu.pendingBatches()), y, mx, my);
             } else y = line(g, tr("batch_gpu") + ": " + tr("gpu_" + gpu.status()), y, MUTED, mx, my);
-            y = line(g, tr("gpu_shared_note"), y, MUTED, mx, my);
-            y = line(g, tr("parallel_note"), y, MUTED, mx, my);
+            y = wrapped(g, tr("gpu_shared_note"), 14, y + 3, width - 30, MUTED);
         }
-        contentHeight = y + (int) scroll - contentTop;
+        if (diagnosis.parallelSources()) y = wrapped(g, tr("parallel_note"), 14, y + 5, width - 30, MUTED);
+        contentHeight = y + (int) scroll - contentTop + 8;
+    }
+
+    private int renderDiagnosticCard(GuiGraphics g, int y, int mx, int my) {
+        String headline;
+        String detail;
+        int color = 0xffffb3ad;
+        if (minecraft.level == null) {
+            headline = tr("overview.no_world_title");
+            detail = tr("overview.no_world_detail");
+            color = MUTED;
+        } else if (!snapshot.enabled()) {
+            headline = tr("overview.paused_title");
+            detail = tr("overview.paused_detail");
+            color = 0xffffce80;
+        } else if (diagnosis.topMod().isEmpty()) {
+            headline = tr("overview.wait_title");
+            detail = tr(diagnosis.frames() == 0 ? "overview.wait_detail" : "overview.no_object_detail");
+            color = MUTED;
+        } else {
+            var top = diagnosis.topMod().orElseThrow();
+            String name = actions.modDisplayName(top.mod().id());
+            headline = tr(diagnosis.ready() ? "overview.leader" : "overview.preliminary", name);
+            detail = tr("overview.evidence", ms(top.mod().stats().averageMs()), integer(top.measuredCpuShare() * 100));
+            if (!diagnosis.ready()) color = 0xffffce80;
+        }
+        String object = diagnosticCandidateAvailable() ? diagnosis.worstInstance().map(instance -> tr("overview.instance",
+                objectName(instance.context().registryId(), instance.context().key().kind()), ms(instance.stats().averageMs())))
+                .orElseGet(() -> diagnosis.worstObject().map(metric -> tr("overview.type", objectName(metric.id(), metric.kind()), ms(metric.stats().averageMs()))).orElse("")) : "";
+        int cardHeight = wrappedHeight(headline, width - 42) + wrappedHeight(detail, width - 42) + 19;
+        if (!object.isEmpty()) cardHeight += wrappedHeight(object, width - 42) + 4;
+        g.fill(10, y, width - 10, y + cardHeight, 0xcc1b2631);
+        g.fill(10, y, 13, y + cardHeight, color);
+        int textY = wrapped(g, headline, 20, y + 8, width - 42, color);
+        textY = wrapped(g, detail, 20, textY + 3, width - 42, TEXT);
+        if (!object.isEmpty()) wrapped(g, object, 20, textY + 4, width - 42, 0xffffc2ba);
+        if (hovered(mx, my, 10, y, width - 20, cardHeight)) {
+            List<Component> help = new ArrayList<>();
+            help.add(component("help.diagnostic"));
+            if (!diagnosis.ready()) help.add(Component.literal(tr("overview.sample_progress", integer(diagnosis.frames()), integer(diagnosis.measuredCalls()), decimal(diagnosis.observedSeconds()),
+                    integer(diagnosis.minimumFrames()), integer(diagnosis.minimumCalls()), decimal(diagnosis.minimumSeconds()))));
+            diagnosis.worstInstance().ifPresent(instance -> help.add(Component.literal(instance.context().registryId() + " · " + position(instance.context().position()))));
+            hoverText = help;
+        }
+        return y + cardHeight;
+    }
+
+    private int wrappedHeight(String value, int available) {
+        return Math.max(1, font.split(Component.literal(value), Math.max(1, available)).size()) * (font.lineHeight + 2);
+    }
+
+    private int wrapped(GuiGraphics g, String value, int x, int y, int available, int color) {
+        for (FormattedCharSequence line : font.split(Component.literal(value), Math.max(1, available))) {
+            if (y + font.lineHeight >= contentTop && y < contentBottom) g.drawString(font, line, x, y, color);
+            y += font.lineHeight + 2;
+        }
+        return y;
+    }
+
+    private String objectName(String registryId, ObjectKind kind) {
+        String key = (kind == ObjectKind.ENTITY ? "entity." : "block.") + registryId.replace(':', '.').replace('/', '.');
+        return I18n.exists(key) ? Component.translatable(key).getString() : registryId;
     }
 
     private void renderMods(GuiGraphics g, int mx, int my) {
@@ -408,6 +600,7 @@ public final class RenderScopeScreen extends Screen {
         for (int i = 0; i < headers.size(); i++) {
             String label = headers.get(i) + (i == sortColumn ? sortAscending ? " ↑" : " ↓" : "");
             drawTruncated(g, label, x + 2, tableTop + 6, tableWidths[i] - 6, i == sortColumn ? 0xffffb3ad : TEXT, mx, my);
+            metricTooltip(headers.get(i), tr("overview.click_sort"), mx, my, x + 2, tableTop + 6, tableWidths[i] - 6);
             x += tableWidths[i];
         }
         int rowsTop = tableTop + ROW_HEIGHT;
@@ -440,6 +633,7 @@ public final class RenderScopeScreen extends Screen {
         AggregateMetric mod = snapshot.mods().stream().filter(value -> value.id().equals(selectedMod)).findFirst().orElse(null);
         int y = contentTop + 5 - (int) scroll;
         y = heading(g, actions.modDisplayName(selectedMod), y);
+        y = wrapped(g, tr("overview.mod_detail_help"), 14, y, width - 30, MUTED);
         if (mod != null) y = statistics(g, mod.stats(), y, mx, my);
         AggregateMetric renderer = snapshot.renderers().stream().filter(value -> value.registryOwner().equals(selectedMod)).findFirst().orElse(null);
         y = line(g, tr("worst_renderer") + ": " + (renderer == null ? "—" : renderer.id()), y + 4, TEXT, mx, my);
@@ -460,7 +654,9 @@ public final class RenderScopeScreen extends Screen {
     private void renderObjectDetail(GuiGraphics g, int mx, int my) {
         AggregateMetric object = snapshot.objects().stream().filter(value -> value.id().equals(selectedObject.id()) && value.kind() == selectedObject.kind()).findFirst().orElse(selectedObject);
         int y = contentTop + 5 - (int) scroll;
-        y = heading(g, object.id(), y);
+        y = heading(g, objectName(object.id(), object.kind()), y);
+        y = line(g, object.id(), y, MUTED, mx, my);
+        y = wrapped(g, tr("overview.type_help"), 14, y + 2, width - 30, MUTED);
         y = statistics(g, object.stats(), y, mx, my);
         y = line(g, tr("registry_owner") + ": " + actions.modDisplayName(object.registryOwner()), y + 3, TEXT, mx, my);
         y = line(g, tr("renderer") + ": " + object.rendererClass(), y, TEXT, mx, my);
@@ -498,7 +694,8 @@ public final class RenderScopeScreen extends Screen {
 
     private void renderInstanceDetail(GuiGraphics g, int mx, int my) {
         int y = contentTop + 5 - (int) scroll;
-        y = heading(g, selectedInstance.context().registryId(), y);
+        y = heading(g, objectName(selectedInstance.context().registryId(), selectedInstance.context().key().kind()), y);
+        y = line(g, selectedInstance.context().registryId(), y, MUTED, mx, my);
         y = line(g, tr("position") + ": " + position(selectedInstance.context().position()), y, 0xffffb3ad, mx, my);
         y = line(g, tr("dimension") + ": " + selectedInstance.context().key().dimension(), y, MUTED, mx, my);
         y = statistics(g, selectedInstance.stats(), y + 7, mx, my);
@@ -511,7 +708,7 @@ public final class RenderScopeScreen extends Screen {
     }
 
     private int statistics(GuiGraphics g, Statistics s, int y, int mx, int my) {
-        boolean visualOnly = !s.sources().isEmpty() && !s.sources().containsKey(MeasurementSource.RENDERER);
+        boolean visualOnly = !s.sources().isEmpty() && s.sources().keySet().stream().allMatch(MeasurementSource::visualWork);
         y = pair(g, tr("average"), ms(s.averageMs()) + "/f", tr("p95"), ms(s.p95Ms()), y, mx, my);
         y = pair(g, tr("peak"), ms(s.peakMs()), tr("calls"), decimal(s.callsPerFrame()) + "/f", y, mx, my);
         y = pair(g, tr("rolling_calls"), integer(s.calls()), tr("instances"), integer(s.instances()), y, mx, my);
@@ -524,8 +721,10 @@ public final class RenderScopeScreen extends Screen {
                 if (metric != null) y = pair(g, tr("source." + source.name().toLowerCase(Locale.ROOT)),
                         ms(metric.averageMs()) + "/f", tr("calls"), decimal(metric.callsPerFrame()) + "/f", y, mx, my);
             }
-            y = line(g, tr("parallel_note"), y, MUTED, mx, my);
-            y = line(g, tr("flywheel_geometry_note"), y, MUTED, mx, my);
+            if (s.sources().keySet().stream().anyMatch(MeasurementSource::visualWork)) {
+                y = line(g, tr("parallel_note"), y, MUTED, mx, my);
+                y = line(g, tr("flywheel_geometry_note"), y, MUTED, mx, my);
+            }
         }
         return y;
     }
@@ -671,7 +870,33 @@ public final class RenderScopeScreen extends Screen {
         int half = (width - 24) / 2;
         drawTruncated(g, leftLabel + ": " + leftValue, 13, y, half - 5, TEXT, mx, my);
         drawTruncated(g, rightLabel + ": " + rightValue, 13 + half, y, half - 5, TEXT, mx, my);
+        metricTooltip(leftLabel, leftValue, mx, my, 13, y, half - 5);
+        metricTooltip(rightLabel, rightValue, mx, my, 13 + half, y, half - 5);
         return y + 15;
+    }
+
+    private void metricTooltip(String label, String value, int mx, int my, int x, int y, int available) {
+        if (y + font.lineHeight < contentTop || y >= contentBottom || !hovered(mx, my, x, y - 2, available, 13)) return;
+        String key = metricHelpKey(label);
+        if (key != null) hoverText = List.of(Component.literal(label + ": " + value), component("help." + key));
+    }
+
+    private String metricHelpKey(String label) {
+        if (label.equals(tr("fps"))) return "fps";
+        if (label.equals(tr("frame"))) return "frame";
+        if (label.equals(tr("average_frame"))) return "average_frame";
+        if (label.equals(tr("low_fps"))) return "low_fps";
+        if (label.equals("P50") || label.equals(tr("overview.frame_typical"))) return "p50";
+        if (label.equals("P95") || label.equals(tr("p95")) || label.equals(tr("overview.frame_95"))) return "p95";
+        if (label.equals("P99") || label.equals(tr("overview.frame_99"))) return "p99";
+        if (label.equals(tr("worst_frame"))) return "worst_frame";
+        if (label.equals(tr("average")) || label.equals(tr("render_ms")) || label.equals(tr("overview.object_cpu"))) return "cpu_average";
+        if (label.equals(tr("render_percent"))) return "cpu_percent";
+        if (label.equals(tr("calls")) || label.equals(tr("calls_per_frame"))) return "calls";
+        if (label.equals(tr("instances")) || label.equals(tr("measured_objects"))) return "instances";
+        if (label.equals(tr("vertices"))) return "vertices";
+        if (label.equals(tr("vertex_data"))) return "vertex_data";
+        return null;
     }
 
     private void drawTruncated(GuiGraphics g, String value, int x, int y, int available, int color, int mx, int my) {
@@ -769,6 +994,14 @@ public final class RenderScopeScreen extends Screen {
         });
     }
 
+    private void settingButton(int x, int y, int buttonWidth, Supplier<String> label, Runnable mutation, String help) {
+        button(x, y, buttonWidth, label.get(), () -> {
+            mutation.run();
+            actions.saveSettings();
+            rebuild();
+        }).setTooltip(Tooltip.create(component(help)));
+    }
+
     private int[] columnWidths(int[] weights) {
         int[] values = new int[weights.length];
         int total = width - 20;
@@ -818,12 +1051,12 @@ public final class RenderScopeScreen extends Screen {
     }
 
     private static boolean hovered(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
-    private static String tr(String key) { return component(key).getString(); }
-    private static Component component(String key) { return Component.translatable("renderscope." + key); }
+    private static String tr(String key, Object... args) { return Component.translatable("renderscope." + key, args).getString(); }
+    private static Component component(String key, Object... args) { return Component.translatable("renderscope." + key, args); }
     private static String onOff(boolean value) { return tr(value ? "on" : "off"); }
     private static String decimal(double value) { return String.format(Locale.ROOT, "%.2f", value); }
     private static String integer(double value) { return String.format(Locale.ROOT, "%.0f", value); }
-    private static String ms(double value) { return (value > 0 && value < .01 ? "<0.01" : decimal(value)) + " ms"; }
+    private static String ms(double value) { return (value > 0 && value < .01 ? "<0.01" : decimal(value)) + " " + tr("unit_ms"); }
     private static String coordinate(double value) { return Math.abs(value - Math.rint(value)) < .01 ? integer(value) : String.format(Locale.ROOT, "%.1f", value); }
     private static String position(Position p) { return coordinate(p.x()) + " " + coordinate(p.y()) + " " + coordinate(p.z()); }
     private static String renderTypes(Statistics stats) { return stats.renderTypes().isEmpty() ? "—" : String.join(", ", stats.renderTypes()); }

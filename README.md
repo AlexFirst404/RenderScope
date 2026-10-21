@@ -4,7 +4,13 @@
 
 ![RenderScope — live profiling inside Minecraft](distribution/forge/presentation/cover.png)
 
-**Minecraft 1.20.1 · Forge / NeoForge · Java 21 · Client-side**
+**RenderScope 0.3.0 · Minecraft 1.20.1–26.3 · Fabric / Forge / NeoForge · Client-side**
+
+Choose the JAR for your **exact Minecraft version and loader** in the [build and game-test matrix](docs/compatibility/SUPPORT-MATRIX.md). It records actual build results and the exact hashes tested in Minecraft. Forge has no upstream release for Minecraft 1.20.5 or 1.21.2. Minecraft 26.x requires Java 25; earlier targets use Java 21.
+
+The new **Start** page explains which mod has the most measured object-render CPU work, shows its heaviest instance and offers **Find object**, **Show in world**, and **Record 10 s**. Preliminary measurements are labelled while more samples accumulate. The screen also explains when the measured objects account for too little work to explain the rest of a slow frame.
+
+Native Sodium / Embeddium / Rubidium counters, Iris / Oculus shadow handling and Mekanism Extras attribution have explicit version gates. Read the [exact optional-renderer coverage](docs/OPTIONAL-RENDERER-COMPATIBILITY.md) before combining them with Create. Unknown native rendering APIs retain available dispatcher timing and show partial coverage.
 
 [Features](#follow-the-cost) · [Install](#install) · [Русский](#русский) · [Development](#development)
 
@@ -40,14 +46,16 @@ Filters cover distance, object categories, minimum cost, object limits, labels a
 
 ## Install
 
-Use **Minecraft 1.20.1** and **Java 21**, then place one matching main JAR in your client profile's `mods` folder:
+Place one main JAR matching your **exact Minecraft version and loader** in your client profile's `mods` folder. Fabric also requires the matching Fabric API. See the [0.3.0 matrix](docs/compatibility/SUPPORT-MATRIX.md) for individual build and world-test results.
+
+The previous published **0.2.0 / Minecraft 1.20.1** artifacts remain available:
 
 | Loader | RenderScope 0.2.0 |
 | --- | --- |
 | Forge 47.4.10 | [Download Forge JAR](distribution/forge/renderscope-forge-0.2.0+mc1.20.1.jar) |
 | NeoForge 47.1.106 | [Download NeoForge JAR](distribution/renderscope-neoforge-0.2.0+mc1.20.1.jar) |
 
-Open a world, wait a few seconds, and press **F8**. Rebind it under **Options → Controls → RenderScope**. MixinExtras is bundled. **The server does not need RenderScope.** English and Russian UI are included.
+Open a world, wait a few seconds, and press **F8**. Rebind it under **Options → Controls → RenderScope**. Runtime integration dependencies come from the matching JAR or its loader. **The server does not need RenderScope.** English and Russian UI are included.
 
 ## What the numbers mean
 
@@ -72,9 +80,11 @@ Reports stay in your profile's `renderscope-reports` folder. They include versio
 
 **Найдите конкретный объект, на рендер которого уходит время.** RenderScope связывает измерения с модом, типом объекта и отдельным экземпляром мира.
 
-1. Установите подходящий JAR из таблицы выше: **Minecraft 1.20.1, Forge 47.4.10 либо NeoForge 47.1.106, Java 21**. На сервер мод не нужен.
-2. Откройте **F8** или **Esc → RenderScope**. В **Mods** выберите мод, в **Objects** — тип и экземпляр.
-3. Нажмите **Highlight**, чтобы подсветить объект, **Track** — чтобы отслеживать его, или **Copy Position**, чтобы скопировать координаты.
+1. Выберите JAR **строго под свою версию Minecraft и загрузчик** в [матрице 0.3.0](docs/compatibility/SUPPORT-MATRIX.md). Для Fabric нужен Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21. На сервер мод не нужен.
+2. Откройте **F8** или **Esc → RenderScope**. На стартовой странице сразу виден мод с самой дорогой измеренной работой отрисовки и конкретный объект.
+3. **Найти объект** откроет подробности; **Показать в мире** включит подсветку и направление. **Записать 10 с** сохранит захват для дальнейшего анализа. Подробные таблицы, теплокарта и инспектор остаются доступны.
+
+Процент сравнивает измеренную CPU-работу объектов. Он не выдаётся за долю всей видеокарты и не обещает прирост FPS после удаления мода. Если измерений мало или основные затраты находятся вне профилируемых объектов, интерфейс прямо об этом сообщает. Для Sodium/Iris/Embeddium/Rubidium и Mekanism Extras указаны [точные версии и результаты совместимости](docs/OPTIONAL-RENDERER-COMPATIBILITY.md).
 
 **Теплокарта** сравнивает стоимость объектов цветом, **Inspect** показывает объект под прицелом. **Timeline** хранит около 30 секунд истории, **Capture** записывает 5/10/30 секунд или до ручной остановки. Интерфейс доступен на русском и английском.
 
@@ -90,6 +100,18 @@ JSON сохраняется локально, без автоматическо�
 <summary>Build, test evidence and architecture</summary>
 
 Use **JDK 21**. The bundled Gradle wrapper is 8.8; output uses Java 17 bytecode for these Minecraft 1.20.1 loaders.
+
+Build an exact 0.3.0 adapter with Python 3.11+ and the JDK requested by its target manifest:
+
+```powershell
+python scripts/build-all.py --minecraft 1.20.1 --loader fabric
+python scripts/build-all.py --minecraft 26.3 --loader neoforge --java25 /path/to/jdk25
+python scripts/build-all.py --all --java21 /path/to/jdk21 --java25 /path/to/jdk25
+```
+
+With no arguments, the script lists the configured targets. It runs their actual Gradle builds and tests, then audits loader/Minecraft metadata, bytecode, Mixin refmaps and bundled legal notices. `--audit-only --package` copies verified main artifacts to `distribution/0.3.0`; separate test harnesses are excluded. `python scripts/generate-support-matrix.py` regenerates the evidence table without treating an upstream version listing as tested compatibility.
+
+The modules separate shared profiler/diagnostics from loader hooks and Minecraft API families: `fabric/`, `mc20/`, `mc21/`, `modern/`, `forge20/`, `neo20/`, `loader21/`, `loader-mapped/` and `loader26/`. The original 1.20.1 Forge/NeoForge commands remain:
 
 ```powershell
 .\scripts\build.ps1 -Loader forge

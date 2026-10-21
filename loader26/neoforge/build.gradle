@@ -1,0 +1,86 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+def sharedProperties = new Properties()
+file('../../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('26.3').get()
+def neoVersions = ['26.1':'26.1.0.19-beta','26.1.1':'26.1.1.15-beta','26.1.2':'26.1.2.122',
+    '26.2':'26.2.0.93','26.3':'26.3.0.95']
+if (!neoVersions.containsKey(mcVersion)) throw new GradleException("No NeoForge adapter selection for ${mcVersion}")
+def neoVersion = neoVersions[mcVersion]
+def oldLevel = mcVersion.startsWith('26.1')
+def inputAdapter = mcVersion == '26.3' ? 'sdl' : oldLevel ? 'glfw-level' : 'glfw-extractor'
+def worldAdapter = oldLevel ? 'level-extractor' : 'state-extractor'
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-neoforge' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', '../../modern/src/main/java', "../../modern/src/${inputAdapter}/java",
+            "../../modern/src/${worldAdapter}/java", '../../src/main/java']
+        java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**',
+            'dev/renderscope/client/ProfilerSettings.java', 'dev/renderscope/client/LoaderInfo.java',
+            'dev/renderscope/client/ModOwnership.java', 'dev/renderscope/client/platform/PlatformAccess.java',
+            'dev/renderscope/client/platform/PlatformServices.java', 'dev/renderscope/client/platform/NeoForgePlatform.java',
+            'dev/renderscope/client/integration/ShaderPasses.java'
+        java.exclude 'dev/renderscope/modern/RenderScopeModern.java'
+        resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources']
+        resources.exclude 'fabric.mod.json'
+    }
+    test {
+        java.srcDirs = ['../../src/test/java/dev/renderscope/core', '../../modern/src/test/java']
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+apply from: '../smoke/native-smoke.gradle'
+['compileClasspath', 'smokeCompileClasspath', 'runtimeClasspath', 'smokeRuntimeClasspath'].each { name ->
+    configurations.named(name) { attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25) }
+}
+neoForge {
+    enable { version = neoVersion; disableRecompilation = true }
+    addModdingDependenciesTo sourceSets.smoke
+    mods { renderscope { sourceSet(sourceSets.main) }; renderscope_native_smoke { sourceSet(sourceSets.smoke) } }
+    runs {
+        client { client(); gameDirectory = file("../../run-neoforge-${mcVersion}"); loadedMods = [mods.renderscope] }
+        smokeClient {
+            client(); gameDirectory = file("../../run-smoke-neoforge-${mcVersion}")
+            sourceSet = sourceSets.smoke
+            loadedMods = [mods.renderscope, mods.renderscope_native_smoke]
+            systemProperty 'renderscope.modern.smoke.output', file("../../distribution/neoforge/${mcVersion}/development").absolutePath
+            systemProperty 'renderscope.modern.smoke.artifact', tasks.named('jar').flatMap { it.archiveFile }.get().asFile.absolutePath
+        }
+    }
+}
+repositories { mavenCentral() }
+dependencies {
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+// JDK 25 reads Minecraft's classes; Java 21 mod bytecode remains compatible
+// with the official loader's Sponge Mixin language level.
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = name == 'compileTestJava' ? 25 : 21; options.compilerArgs += ['-proc:none'] }
+tasks.withType(Jar).configureEach {
+    from('../../LICENSE') { into 'META-INF' }
+    from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title':'RenderScope', 'Implementation-Version':project.version,
+        'RenderScope-Loader':'neoforge', 'RenderScope-Loader-Version':neoVersion)
+}
+tasks.named('processResources') {
+    def props = [version: project.version, minecraft_version: mcVersion, neo_version: neoVersion]
+    inputs.properties props
+    filesMatching('META-INF/neoforge.mods.toml') { expand props }
+    filesMatching('renderscope.modern.mixins.json') {
+        expand worldMixins: oldLevel ? '"LegacyLevelRendererMixin"' : '"LevelExtractorMixin", "LevelRendererMixin"'
+        filter { line -> line.replace('"JAVA_25"', '"JAVA_21"') }
+    }
+    from('../../src/main/resources/assets/renderscope/textures/gui/logo.png') { into 'assets/renderscope/textures/gui' }
+    from('../../src/main/resources/renderscope-logo.png') { into 'assets/renderscope' }
+}
+tasks.named('test') { useJUnitPlatform() }

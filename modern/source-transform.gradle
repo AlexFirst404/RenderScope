@@ -1,0 +1,21 @@
+// Only names whose actual API boundary was inspected in the selected Minecraft JAR are translated.
+ext.transformRenderScopeSource = { String fileName, String original, String mcVersion ->
+    boolean identifiers = mcVersion == '1.21.11'
+    String content = original.replace('GuiGraphicsExtractor','GuiGraphics')
+        .replace('net.minecraft.client.renderer.state.level.CameraRenderState','net.minecraft.client.renderer.state.CameraRenderState')
+        .replace('net/minecraft/client/renderer/state/level/CameraRenderState','net/minecraft/client/renderer/state/CameraRenderState')
+        .replace('.centeredText(','.drawCenteredString(').replace('.textWithWordWrap(','.drawWordWrap(').replace('.text(','.drawString(')
+        .replace('net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper','net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper')
+        .replace('KeyMappingHelper.registerKeyMapping','KeyBindingHelper.registerKeyBinding').replace('Screens.getWidgets(', 'Screens.getButtons(')
+    if (fileName == 'RenderScopeScreen.java') content = content.replace('void extractRenderState(', 'void render(')
+        .replace('super.extractRenderState(', 'super.render(').replace('void extractContent(', 'void renderContent(')
+    if (!identifiers) {
+        content = content.replace('Identifier','ResourceLocation').replace('.identifier()', '.location()')
+            .replace('net.minecraft.gizmos.', 'dev.renderscope.modern.draw.')
+        if (fileName == 'ModernOverlay.java') {
+            content = content.replaceAll('GizmoStyle\\.strokeAndFill\\(color, selected \\? 3 : 2,\\s*\\(color & 0xffffff\\) \\| 0x14000000\\)', 'GizmoStyle.stroke(color)')
+            if (content.contains('strokeAndFill')) throw new GradleException('Outline adapter source contract changed')
+        }
+    }
+    content
+}

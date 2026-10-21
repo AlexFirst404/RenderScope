@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+ext.minecraftTarget=providers.gradleProperty('minecraft_version').get()
+def targets=['1.21.9':'59.0.5','1.21.10':'60.1.0']
+def embedMixinExtras=minecraftTarget=='1.21.9'
+if(!targets.containsKey(minecraftTarget))throw new GradleException("Use the Forge7 project for 1.21.11")
+ext.targetLoader='forge'
+ext.targetLoaderVersion=targets[minecraftTarget]
+apply from:'../adapter-sources.gradle'
+apply from:'../smoke/native-smoke.gradle'
+minecraft {
+    mappings channel:'official',version:minecraftTarget
+    reobf=false
+    accessTransformer=file('../src/pipeline-forge/resources/META-INF/accesstransformer.cfg')
+    runs { client { workingDirectory project.file("../../run-forge-${minecraftTarget}");mods { renderscope { source sourceSets.main } };arg '-mixin.config=renderscope.modern.mixins.json' } }
+    if (providers.gradleProperty('native_smoke').isPresent()) runs.client {
+        workingDirectory project.file("../../run-smoke-forge-${minecraftTarget}")
+        mods { renderscope_native_smoke { source sourceSets.smoke } }
+        arg '-mixin.config=renderscope.native-smoke.mixins.json'
+        systemProperty 'renderscope.modern.smoke.output', file("../../distribution/forge/${minecraftTarget}/development").absolutePath
+        systemProperty 'renderscope.modern.smoke.artifact', layout.buildDirectory.file("libs/${base.archivesName.get()}-${project.version}.jar").get().asFile.absolutePath
+    }
+}
+repositories {
+    maven { name='Forge';url='https://maven.minecraftforge.net/' }
+    maven { name='Minecraft libraries';url='https://libraries.minecraft.net/' }
+    maven { url='https://repo.spongepowered.org/repository/maven-public/';content { includeGroup 'org.spongepowered' } }
+}
+if (embedMixinExtras) jarJar.enable()
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraftTarget}-${targetLoaderVersion}"
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    if (embedMixinExtras) {
+        runtimeOnly 'io.github.llamalad7:mixinextras-forge:0.4.1'
+        jarJar('io.github.llamalad7:mixinextras-forge:0.4.1') { jarJar.ranged(it,'[0.4.1,)') }
+    }
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
+}
+tasks.named('jar') { archiveClassifier=embedMixinExtras?'slim':'' }
+if (embedMixinExtras) {
+    tasks.named('jarJar') { archiveClassifier='' }
+    tasks.named('build') { dependsOn tasks.named('jarJar') }
+}
+if (providers.gradleProperty('native_smoke').isPresent()) tasks.named('runClient') { dependsOn embedMixinExtras?'jarJar':'jar' }

@@ -138,7 +138,7 @@ public final class FlywheelHooks {
     /** Shared upload/cull/draw submission CPU and asynchronous GPU queries stay outside objects. */
     public static BatchCall beginBatch() {
         var runtime = ClientRuntime.current();
-        if (runtime == null) return null;
+        if (runtime == null || ShaderPasses.isShadowPass()) return null;
         RenderProfiler.PhaseToken cpu = runtime.profiler().beginPhase("flywheel:batch_submit", MeasurementSource.FLYWHEEL_BATCH_SUBMIT);
         return new BatchCall(runtime.profiler(), cpu, FlywheelGpuTimers.begin(), SESSION.get());
     }

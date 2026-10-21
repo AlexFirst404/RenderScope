@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '7.0.40'
+}
+def sharedProperties = new Properties()
+file('../../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('26.3').get()
+def forgeVersions = ['26.1':'62.0.9','26.1.1':'63.0.2','26.1.2':'64.1.0','26.2':'65.1.0','26.3':'66.0.13']
+if (!forgeVersions.containsKey(mcVersion)) throw new GradleException("No Forge adapter selection for ${mcVersion}")
+def forgeVersion = forgeVersions[mcVersion]
+def oldLevel = mcVersion.startsWith('26.1')
+def inputAdapter = mcVersion == '26.3' ? 'sdl' : oldLevel ? 'glfw-level' : 'glfw-extractor'
+def worldAdapter = oldLevel ? 'level-extractor' : 'state-extractor'
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-forge' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', '../../modern/src/main/java', "../../modern/src/${inputAdapter}/java",
+            "../../modern/src/${worldAdapter}/java", '../../src/main/java']
+        java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**',
+            'dev/renderscope/client/ProfilerSettings.java', 'dev/renderscope/client/LoaderInfo.java',
+            'dev/renderscope/client/ModOwnership.java', 'dev/renderscope/client/platform/PlatformAccess.java',
+            'dev/renderscope/client/integration/ShaderPasses.java',
+            'dev/renderscope/client/platform/PlatformServices.java', 'dev/renderscope/client/platform/ForgePlatform.java'
+        java.exclude 'dev/renderscope/modern/RenderScopeModern.java'
+        java.exclude { entry -> entry.file.toPath().startsWith(file('../../src/main/java').canonicalFile.toPath()) && entry.path.replace('\\', '/') == 'dev/renderscope/client/platform/ForgePlatform.java' }
+        resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources']
+        resources.exclude 'fabric.mod.json'
+    }
+    test {
+        java.srcDirs = ['../../src/test/java/dev/renderscope/core', '../../modern/src/test/java']
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+apply from: '../smoke/native-smoke.gradle'
+// The application and compiler run on Java 25 even though our own classfiles
+// use Mixin's Java 21 language level. Minecraft itself still requires Java 25.
+['compileClasspath', 'smokeCompileClasspath', 'runtimeClasspath', 'smokeRuntimeClasspath'].each { name ->
+    configurations.named(name) { attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25) }
+}
+minecraft {
+    runs {
+        register('client') { workingDir = layout.projectDirectory.dir("../../run-forge-${mcVersion}") }
+        if (providers.gradleProperty('native_smoke').isPresent()) named('client') {
+            workingDir = layout.projectDirectory.dir("../../run-smoke-forge-${mcVersion}")
+            mods { renderscope { source sourceSets.main }; renderscope_native_smoke { source sourceSets.smoke } }
+            systemProperty 'renderscope.modern.smoke.output', file("../../distribution/forge/${mcVersion}/development").absolutePath
+            systemProperty 'renderscope.modern.smoke.artifact', tasks.named('jar').flatMap { it.archiveFile }.get().asFile.absolutePath
+        }
+    }
+}
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${mcVersion}-${forgeVersion}")
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+// The official Forge runtime still supplies Sponge Mixin's Java 21 language
+// level. Compile against Minecraft with JDK 25, using Java 21 mod bytecode.
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = name == 'compileTestJava' ? 25 : 21 }
+tasks.withType(Jar).configureEach {
+    from('../../LICENSE') { into 'META-INF' }
+    from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('MixinConfigs':'renderscope.modern.mixins.json', 'Implementation-Title':'RenderScope',
+        'Implementation-Version':project.version, 'RenderScope-Loader':'forge', 'RenderScope-Loader-Version':forgeVersion)
+}
+tasks.named('processResources') {
+    def props = [version: project.version, minecraft_version: mcVersion, forge_version: forgeVersion,
+        forge_major: forgeVersion.tokenize('.')[0]]
+    inputs.properties props
+    filesMatching('META-INF/mods.toml') { expand props }
+    filesMatching('renderscope.modern.mixins.json') {
+        expand worldMixins: oldLevel ? '"LegacyLevelRendererMixin"' : '"LevelExtractorMixin", "LevelRendererMixin"'
+        filter { line -> line.replace('"JAVA_25"', '"JAVA_21"') }
+    }
+    from('../../src/main/resources/assets/renderscope/textures/gui/logo.png') { into 'assets/renderscope/textures/gui' }
+    from('../../src/main/resources/renderscope-logo.png') { into 'assets/renderscope' }
+}
+tasks.named('test') { useJUnitPlatform() }

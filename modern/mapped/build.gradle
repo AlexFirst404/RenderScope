@@ -1,0 +1,111 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'java'
+}
+
+def properties = new Properties()
+file('../../gradle.properties').withInputStream { properties.load(it) }
+def apis = ['1.21.9':'0.134.1+1.21.9','1.21.10':'0.138.4+1.21.10','1.21.11':'0.141.6+1.21.11']
+if (!apis.containsKey(minecraft_version)) throw new GradleException("No inspected adapter for ${minecraft_version}")
+def identifiers = minecraft_version == '1.21.11'
+apply from: '../source-transform.gradle'
+layout.buildDirectory = file("build/${minecraft_version}")
+group = 'dev.renderscope'
+version = "${properties.mod_version}+mc${minecraft_version}"
+base { archivesName = 'renderscope-fabric' }
+repositories { mavenCentral() }
+if (file('../../.tools/fabric-maven').isDirectory()) {
+    def verifiedCache = repositories.maven { name = 'VerifiedFabricCache'; url = uri('../../.tools/fabric-maven') }
+    repositories.remove(verifiedCache)
+    repositories.addFirst(verifiedCache)
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${apis[minecraft_version]}"
+    include(modImplementation('io.github.llamalad7:mixinextras-fabric:0.4.1'))
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.withSourcesJar()
+def generated = layout.buildDirectory.dir('generated/modern-adapter')
+tasks.register('generateAdapterSources') {
+    inputs.dir '../src/main/java'
+    inputs.file '../source-transform.gradle'
+    inputs.property 'minecraft', minecraft_version
+    outputs.dir generated
+    doLast {
+        fileTree('../src/main/java').matching { include '**/*.java'; exclude '**/mixin/HudMixin.java' }.each { source ->
+            def relative = file('../src/main/java').toPath().relativize(source.toPath()).toString()
+            def target = generated.get().file(relative).asFile
+            target.parentFile.mkdirs()
+            def content = transformRenderScopeSource(source.name, source.getText('UTF-8'), minecraft_version)
+            target.setText(content, 'UTF-8')
+        }
+    }
+}
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', identifiers ? 'src/gizmos/java' : 'src/pipeline/java', generated, '../../src/main/java', '../../fabric/src/main/java']
+        java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**', 'dev/renderscope/client/ProfilerSettings.java',
+            'dev/renderscope/client/LoaderInfo.java', 'dev/renderscope/client/ModOwnership.java',
+            'dev/renderscope/client/platform/PlatformAccess.java','dev/renderscope/client/platform/PlatformServices.java',
+            'dev/renderscope/client/integration/ShaderPasses.java','dev/renderscope/fabric/FabricPlatform.java'
+    }
+    test { java.srcDirs = ['src/test/java','../src/test/java','../../src/test/java/dev/renderscope/core']; java.exclude '**/ModernVanillaTargetsTest.java' }
+}
+tasks.named('compileJava') { dependsOn tasks.named('generateAdapterSources') }
+tasks.named('sourcesJar') { dependsOn tasks.named('generateAdapterSources') }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = name == 'compileTestJava' ? 25 : 21 }
+tasks.named('test') { useJUnitPlatform() }
+loom {
+    if (!identifiers) accessWidenerPath = file('src/pipeline/resources/renderscope.accesswidener')
+    mixin { useLegacyMixinAp = true; defaultRefmapName = 'renderscope.modern.refmap.json' }
+    runs { client { client(); runDir "../../run-mapped-${minecraft_version}" } }
+}
+tasks.withType(Jar).configureEach {
+    from('../../LICENSE') { into 'META-INF' }
+    from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title':'RenderScope','Implementation-Version':project.version,
+        'RenderScope-Loader':'fabric','RenderScope-Loader-Version':loader_version,'RenderScope-Minecraft':minecraft_version)
+}
+tasks.named('processResources') {
+    inputs.properties version:project.version, minecraft_version:minecraft_version
+    filesMatching('fabric.mod.json') { expand version:project.version, minecraft_version:minecraft_version }
+    from('../src/main/resources/assets') { into 'assets' }
+    from('../../src/main/resources/renderscope-logo.png') { into 'assets/renderscope' }
+    from('../../src/main/resources/assets/renderscope/textures/gui/logo.png') { into 'assets/renderscope/textures/gui' }
+    if (!identifiers) {
+        from('src/pipeline/resources')
+        doLast {
+            def metadataFile = destinationDir.toPath().resolve('fabric.mod.json').toFile()
+            def metadata = new groovy.json.JsonSlurper().parse(metadataFile)
+            metadata.accessWidener = 'renderscope.accesswidener'
+            metadataFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(metadata)), 'UTF-8')
+        }
+    }
+}
+
+fabricApi.configureTests {
+    createSourceSet = true
+    modId = 'renderscope_modern_smoke'
+    enableGameTests = false
+    enableClientGameTests = true
+    clearRunDirectory = false
+    username = 'RenderScopeQA'
+}
+sourceSets.gametest {
+    java.srcDir '../src/gametest/java'
+    java.srcDir '../src/gametest-direct/java'
+    resources.srcDir '../src/gametest/resources'
+}
+loom.runs.named('clientGameTest') {
+    runDir "../../run-mapped-gametest-${minecraft_version}"
+    vmArg "-Drenderscope.modern.smoke.output=${file("validation/${minecraft_version}").absolutePath}"
+    vmArg "-Drenderscope.modern.smoke.artifact=${tasks.named('remapJar').get().archiveFile.get().asFile.absolutePath}"
+}
+tasks.named('runClientGameTest') { dependsOn tasks.named('remapJar') }

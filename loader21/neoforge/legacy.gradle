@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.0.116'
+}
+ext.minecraftTarget = providers.gradleProperty('minecraft_version').orElse('1.20.5').get()
+if (minecraftTarget != '1.20.5') throw new GradleException('This legacy loader configuration is only for Minecraft 1.20.5')
+ext.targetLoader = 'neoforge'
+ext.targetLoaderVersion = '20.5.21-beta'
+apply from: '../adapter-sources.gradle'
+runs {
+    configureEach { modSource sourceSets.main }
+    client { workingDirectory = file('../../run-neoforge-1.20.5') }
+    smokeClient {
+        configure('client')
+        modSource sourceSets.smoke
+        workingDirectory = file('../../run-smoke-neoforge-1.20.5')
+        systemProperty 'renderscope.expectedLoader', 'NeoForge'
+        systemProperty 'renderscope.expectedLoaderVersion', targetLoaderVersion
+        systemProperty 'renderscope.expectedMinecraft', minecraftTarget
+        systemProperty 'renderscope.smoke.output', file('../../distribution/neoforge/1.20.5/development').absolutePath
+    }
+}
+dependencies {
+    implementation "net.neoforged:neoforge:${targetLoaderVersion}"
+    implementation 'io.github.llamalad7:mixinextras-common:0.4.1'
+    jarJar('io.github.llamalad7:mixinextras-neoforge:0.4.1') { version { strictly '[0.4.1,)'; prefer '0.4.1' } }
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-proc:none'] }
+
+tasks.named('jar') { archiveClassifier = 'slim' }
+tasks.named('jarJar') { archiveClassifier = '' }
+tasks.named('build') { dependsOn 'jarJar' }

@@ -1,0 +1,33 @@
+// A separate QA mod. Nothing from this source set is placed in the production JAR.
+def generatedSmoke = layout.buildDirectory.dir('generated/native-smoke')
+sourceSets {
+    smoke {
+        java.srcDirs = [generatedSmoke, "../smoke/${targetLoader}/java"]
+        resources.srcDirs = ["../smoke/${targetLoader}/resources",'../smoke/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations.smokeImplementation.extendsFrom configurations.implementation
+configurations.smokeRuntimeOnly.extendsFrom configurations.runtimeOnly
+tasks.register('generateNativeSmoke', Exec) {
+    workingDir file('../..')
+    commandLine providers.gradleProperty('python').orElse('python').get(),
+        'loader-mapped/smoke/generate.py', '--minecraft', minecraftTarget,
+        '--output', generatedSmoke.get().asFile.absolutePath
+    inputs.file '../../modern/src/gametest/java/dev/renderscope/modern/smoke/ModernClientSmoke.java'
+    inputs.dir '../smoke/java'
+    inputs.file '../smoke/generate.py'
+    inputs.property 'minecraft', minecraftTarget
+    outputs.dir generatedSmoke
+}
+tasks.named('compileSmokeJava') { dependsOn 'generateNativeSmoke' }
+tasks.named('processSmokeResources') {
+    inputs.properties forge_major: targetLoaderVersion.tokenize('.')[0]
+    filesMatching('META-INF/mods.toml') { expand forge_major: targetLoaderVersion.tokenize('.')[0] }
+}
+tasks.register('smokeJar', Jar) {
+    archiveClassifier = 'native-smoke-harness'
+    from sourceSets.smoke.output
+    manifest.attributes('MixinConfigs':'renderscope.native-smoke.mixins.json')
+}

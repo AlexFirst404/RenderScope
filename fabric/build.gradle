@@ -1,0 +1,103 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+    id 'java'
+}
+
+def sharedProperties = new Properties()
+file('../gradle.properties').withInputStream { sharedProperties.load(it) }
+group = 'dev.renderscope'
+def mcVersion = '1.20.1'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-fabric' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', '../src/main/java']
+        java.exclude 'dev/renderscope/RenderScope.java', 'dev/renderscope/client/platform/Forge*.java'
+        resources.srcDirs = ['src/main/resources', '../src/main/resources']
+        resources.exclude 'META-INF/mods.toml', 'renderscope.mixins.json'
+    }
+    test {
+        java.srcDirs = ['../src/test/java']
+    }
+    smoke {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.createmod.net' }
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${mcVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation 'net.fabricmc:fabric-loader:0.19.5'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.92.12+1.20.1'
+    include(modImplementation('io.github.llamalad7:mixinextras-fabric:0.4.1'))
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+    compileOnly 'dev.engine-room.flywheel:flywheel-forge-1.20.1:1.0.5'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+loom {
+    mixin {
+        defaultRefmapName = 'renderscope.fabric.refmap.json'
+        add sourceSets.main, 'renderscope.fabric.refmap.json'
+        add sourceSets.smoke, 'renderscope.smoke.refmap.json'
+    }
+    runs {
+        client {
+            client()
+            runDir '../run-fabric-1.20.1'
+            vmArg '-Drenderscope.expectedLoader=Fabric'
+            vmArg '-Drenderscope.expectedLoaderVersion=0.19.5'
+        }
+        smokeClient {
+            inherit client
+            source sourceSets.smoke
+            runDir '../run-smoke-fabric'
+            vmArg "-Drenderscope.smoke.output=${file('../distribution/fabric').absolutePath}"
+            programArgs '--width', '1280', '--height', '720', '--username', 'RenderScopeQA'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 17 }
+tasks.withType(Jar).configureEach {
+    from('../LICENSE') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title': 'RenderScope', 'Implementation-Version': project.version,
+            'RenderScope-Loader': 'fabric', 'RenderScope-Loader-Version': '0.19.5')
+}
+tasks.named('processResources') {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+tasks.named('test') { useJUnitPlatform() }
+tasks.register('smokeJar', Jar) {
+    from sourceSets.smoke.output
+    archiveClassifier = 'smoke-harness-dev'
+}
+tasks.register('remapSmokeJar', net.fabricmc.loom.task.RemapJarTask) {
+    dependsOn tasks.named('smokeJar')
+    inputFile = tasks.named('smokeJar', Jar).flatMap { it.archiveFile }
+    archiveClassifier = 'smoke-harness'
+}
+tasks.named('runSmokeClient') {
+    def launchedAt
+    doFirst { launchedAt = System.currentTimeMillis() }
+    doLast {
+        def evidence = file('../distribution/fabric/smoke-result.json')
+        if (!evidence.isFile() || evidence.lastModified() < launchedAt)
+            throw new GradleException('Fabric client did not produce fresh smoke evidence.')
+        def result = new groovy.json.JsonSlurper().parse(evidence)
+        if (result.success != true || result.loader != 'Fabric' || result.loaderVersion != '0.19.5')
+            throw new GradleException("Fabric smoke failed: ${result.error ?: 'unexpected loader or failed checks'}")
+    }
+}

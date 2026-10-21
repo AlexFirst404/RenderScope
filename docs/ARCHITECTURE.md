@@ -1,11 +1,13 @@
-# Архитектура RenderScope 0.2.0
+# Архитектура RenderScope 0.3.0
 
-Релиз рассчитан на Minecraft **1.20.1** и имеет две отдельные цели сборки: **Forge 47.4.10** и исходную **NeoForge 47.1.106**. Выбор по умолчанию — `forge`; `-Ploader=neoforge` сохраняет исходный вариант. Упоминания API 1.21.1 в первоначальном задании не меняют целевую версию: точки вызовов, сигнатуры GUI и события проверяются для 1.20.1.
+Версия 0.3.0 содержит отдельные адаптеры для стабильных Minecraft **1.20.1–26.3** и доступных для них Fabric, Forge и NeoForge. [Матрица](compatibility/SUPPORT-MATRIX.md) связывает каждую цель с фактическим артефактом, тестами и игровым результатом по SHA-256. Отсутствующие upstream-выпуски Forge для 1.20.5 и 1.21.2 не подменяются соседними версиями.
+
+Корневой Gradle-проект сохраняет исходные цели **Minecraft 1.20.1**: **Forge 47.4.10** и **NeoForge 47.1.106**. Выбор по умолчанию — `forge`; `-Ploader=neoforge` выбирает исходный NeoForge. Следующая таблица относится к этим двум адаптерам.
 
 | Выбор | Зависимость Minecraft/loader | Каталог сборки | Дистрибутив |
 | --- | --- | --- | --- |
-| `forge` | `net.minecraftforge:forge:1.20.1-47.4.10` | `build/forge/` | `distribution/forge/renderscope-forge-0.2.0+mc1.20.1.jar` |
-| `neoforge` | `net.neoforged:forge:1.20.1-47.1.106` | `build/neoforge/` | `distribution/renderscope-neoforge-0.2.0+mc1.20.1.jar` |
+| `forge` | `net.minecraftforge:forge:1.20.1-47.4.10` | `build/forge/` | `distribution/0.3.0/forge/renderscope-forge-0.3.0+mc1.20.1.jar` |
+| `neoforge` | `net.neoforged:forge:1.20.1-47.1.106` | `build/neoforge/` | `distribution/0.3.0/neoforge/renderscope-neoforge-0.3.0+mc1.20.1.jar` |
 
 Forge 47.4.10 выбран из категории **Recommended** на [официальной странице Forge для 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html), проверенной 20 октября 2026 года. NeoForge остаётся на [исходном артефакте 47.1.106](https://maven.neoforged.net/releases/net/neoforged/forge/1.20.1-47.1.106/). Раздельные build/output каталоги изолируют классы, refmap, ресурсы, тестовые результаты и reobfuscation двух загрузчиков.
 
@@ -40,16 +42,29 @@ flowchart LR
 | `dev.renderscope.client.RenderHooks` | Преобразование игровых объектов в value records, границы кадра и renderer scope |
 | `client.integration.FlywheelHooks` | Weak visual associations, CPU task scopes, перенос frame handle в executors, общая batch-фаза |
 | `FlywheelGpuTimers` | Ограниченное асинхронное кольцо общих GPU timestamps; отдельная живая сводка |
-| `ClientRuntime` | Регистрация событий, key mapping, применение настроек и выполнение действий UI |
+| `ClientRuntime` | Применение настроек, состояние клиента и выполнение действий UI |
+| `client.platform` | Реальные сведения о загрузчике, модах, владельцах классов и каталогах через `PlatformAccess` |
+| `ForgeClientBootstrap` / Fabric bootstrap | Регистрация подходящих событий загрузчика и key mapping |
+| `DiagnosticEngine` | Интерпретация неизменяемого snapshot: дорогой мод, тип, экземпляр, готовность выборки и ограничения измерений |
 | `LoaderInfo` | Фактическое имя и версия загруженного Forge/NeoForge для логов, smoke-проверки и JSON |
 | `ModOwnership` | Разрешение имени мода и отдельного владельца класса рендерера |
 | `client.ui` | Native Minecraft Screen, таблицы, поиск, сортировка, подробности и управление |
 | `client.world` | Подсветка, отслеживание, теплокарта и HUD инспектора |
 | `client.report` | Экспорт по явному списку разрешённых полей |
 
-В `core` нет импортов Minecraft, Forge или NeoForge. Будущий адаптер Fabric может создавать те же `SampleContext`, вызывать границы кадра/вызова и читать те же snapshots. Это граница переносимости, а не заявление о наличии готовой Fabric-сборки.
+В `core` нет импортов Minecraft, Forge, NeoForge или Fabric. Все адаптеры создают одинаковые `SampleContext`, вызывают границы кадра/вызова и читают неизменяемые snapshots. GUI не владеет профилировщиком и не останавливает сбор при закрытии.
 
-## Точные точки измерения
+## Семейства API и загрузчики
+
+`fabric/` содержит Fabric 1.20.1, `mc20/` — следующие 1.20.x, `mc21/` — 1.20.5–1.21.8, `modern/` — render-state API 1.21.9–26.3. `forge20/`, `neo20/`, `loader21/`, `loader-mapped/` и `loader26/` добавляют соответствующие нативные загрузчики. Конкретные выборки исходников и преобразования ограничены точной версией; один универсальный Mixin не применяется к несовместимым сигнатурам.
+
+В render-state API подготовка состояния и отправка измеряются отдельно (`RENDER_EXTRACTION`, `RENDER_SUBMISSION`). Ограниченная weak identity-таблица связывает настоящий state с value-контекстом экземпляра в пределах кадра. Она не хранит сильные ссылки на сущности и очищается на границе кадра/мира. Недоступная геометрия и per-object GPU-стоимость явно остаются недоступными.
+
+Minecraft 26.x запускается на Java 25. Нативные Forge/NeoForge адаптеры компилируются JDK 25 в Java 21 bytecode, соответствующий языковому уровню официального Sponge Mixin; это не меняет Java 25 requirement игры. Fabric использует свой проверенный уровень. Подробности — в [loader26](../loader26/README.md).
+
+Отдельные QA-моды создают реальные миры, используют native widgets/input и проверяют фактически загруженный JAR. В production JAR нет QA-классов; пакеты и Mixin-конфигурация QA изолированы, включая JPMS-пакеты новых загрузчиков. Подготовленный клиент и успешная компиляция сами по себе не считаются игровым тестом.
+
+## Точные точки измерения Minecraft 1.20.1
 
 `EntityRenderDispatcherMixin` оборачивает `EntityRenderer.render(...)` внутри мирового `EntityRenderDispatcher.render`. `BlockEntityRenderDispatcherMixin` оборачивает `BlockEntityRenderer.render(...)` внутри `BlockEntityRenderDispatcher.setupAndRender`.
 

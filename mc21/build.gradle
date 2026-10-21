@@ -1,0 +1,185 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+    id 'java'
+}
+
+def sharedProperties = new Properties()
+file('../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('1.21.1').get()
+def apiVersions = ['1.21.1': '0.116.17+1.21.1', '1.21': '0.102.0+1.21', '1.20.6': '0.100.8+1.20.6', '1.20.5': '0.97.8+1.20.5',
+    '1.21.2': '0.106.1+1.21.2', '1.21.3': '0.114.1+1.21.3', '1.21.4': '0.119.4+1.21.4',
+    '1.21.5': '0.128.2+1.21.5', '1.21.6': '0.128.2+1.21.6', '1.21.7': '0.129.0+1.21.7', '1.21.8': '0.136.1+1.21.8']
+if (!apiVersions.containsKey(mcVersion)) throw new GradleException("This adapter has not been compiled for ${mcVersion}.")
+def loaderVersion = '0.19.5'
+def sharedJava = file('../src/main/java').canonicalFile.toPath()
+def sharedResources = file('../src/main/resources').canonicalFile.toPath()
+def pre121 = mcVersion.startsWith('1.20.')
+def patch = pre121 || mcVersion == '1.21' ? 0 : mcVersion.tokenize('.').last().toInteger()
+def renderStates = !pre121 && patch >= 2
+def pipelines = !pre121 && patch >= 5
+def extractedGui = !pre121 && patch >= 6
+def adapterDirs = []
+if (extractedGui) adapterDirs.add('src/gui/java')
+if (pipelines) adapterDirs.add('src/pipeline/java')
+if (renderStates) adapterDirs.add('src/state/java')
+if (pre121) adapterDirs.add('src/pre121/java')
+adapterDirs.add('src/main/java')
+adapterDirs.add('../src/main/java')
+def selectedSources = [:]
+adapterDirs.each { directory ->
+    fileTree(directory).matching { include '**/*.java' }.files.each { source ->
+        def path = file(directory).toPath().relativize(source.toPath()).toString().replace('\\', '/')
+        selectedSources.putIfAbsent(path, source.canonicalFile)
+    }
+}
+def packFormats = ['1.20.5':32, '1.20.6':32, '1.21':34, '1.21.1':34, '1.21.2':42, '1.21.3':42,
+    '1.21.4':46, '1.21.5':55, '1.21.6':63, '1.21.7':64, '1.21.8':64]
+def packFormat = packFormats[mcVersion]
+def optionalSources = [
+    'dev/renderscope/client/integration/FlywheelPlanAdapter.java',
+    'dev/renderscope/mixin/FastBufferBuilderMixin.java',
+    'dev/renderscope/mixin/IrisBufferSourceMixin.java',
+    'dev/renderscope/mixin/FlywheelBatchMixin.java',
+    'dev/renderscope/mixin/FlywheelLightUpdateMixin.java',
+    'dev/renderscope/mixin/FlywheelStorageMixin.java',
+    'dev/renderscope/mixin/FlywheelTaskExecutorMixin.java',
+    'dev/renderscope/mixin/MekanismDeferredRenderMixin.java',
+    'dev/renderscope/mixin/RenderScopeMixinPlugin.java'
+] as Set
+
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-fabric' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = adapterDirs
+        java.exclude { entry ->
+            if (entry.isDirectory()) return false
+            def path = entry.path.replace('\\', '/')
+            def chosen = selectedSources[path]
+            (chosen != null && entry.file.canonicalFile != chosen) || (entry.file.toPath().startsWith(sharedJava)
+                    && (optionalSources.contains(path) || path == 'dev/renderscope/RenderScope.java'
+                    || path.startsWith('dev/renderscope/client/platform/Forge')))
+        }
+        resources.srcDirs = pipelines ? ['src/pipeline/resources', 'src/main/resources', '../src/main/resources'] : ['src/main/resources', '../src/main/resources']
+        resources.exclude 'META-INF/mods.toml', 'renderscope.mixins.json'
+        resources.exclude { entry -> entry.file.toPath().startsWith(sharedResources) && entry.path == 'pack.mcmeta' }
+    }
+    test { java.srcDirs = ['src/test/java', '../src/test/java'] }
+    smoke {
+        java.srcDirs = [layout.buildDirectory.dir('generated/smokeJava')]
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+repositories { mavenCentral() }
+if (file('../.tools/fabric-maven').isDirectory()) {
+    def verifiedCache = repositories.maven { name = 'VerifiedFabricCache'; url = uri('../.tools/fabric-maven') }
+    repositories.remove(verifiedCache)
+    repositories.addFirst(verifiedCache)
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${mcVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loaderVersion}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${apiVersions[mcVersion]}"
+    include(modImplementation('io.github.llamalad7:mixinextras-fabric:0.4.1'))
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+loom {
+    if (pipelines) accessWidenerPath = file('src/pipeline/resources/renderscope.accesswidener')
+    mixin {
+        defaultRefmapName = 'renderscope.fabric.refmap.json'
+        add sourceSets.main, 'renderscope.fabric.refmap.json'
+        add sourceSets.smoke, 'renderscope.smoke.refmap.json'
+    }
+    runs {
+        client {
+            client()
+            runDir "../run-fabric-${mcVersion}"
+            vmArg '-Drenderscope.expectedLoader=Fabric'
+            vmArg "-Drenderscope.expectedLoaderVersion=${loaderVersion}"
+        }
+    }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }
+tasks.withType(Jar).configureEach {
+    from('../LICENSE') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title': 'RenderScope', 'Implementation-Version': project.version,
+            'RenderScope-Loader': 'fabric', 'RenderScope-Loader-Version': loaderVersion)
+}
+tasks.named('processResources') {
+    inputs.properties version: project.version, minecraft_version: mcVersion, pack_format: packFormat
+    filesMatching('fabric.mod.json') { expand version: project.version, minecraft_version: mcVersion }
+    filesMatching('pack.mcmeta') { expand pack_format: packFormat }
+    doLast {
+        if (pipelines) {
+            def metadataFile = destinationDir.toPath().resolve('fabric.mod.json').toFile()
+            def metadata = new groovy.json.JsonSlurper().parse(metadataFile)
+            metadata.accessWidener = 'renderscope.accesswidener'
+            metadataFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(metadata)), 'UTF-8')
+        }
+    }
+}
+tasks.named('test') { useJUnitPlatform() }
+
+tasks.register('generateSmokeSources') {
+    def original = file('../fabric/src/smoke/java')
+    def destination = layout.buildDirectory.dir('generated/smokeJava')
+    inputs.dir original
+    inputs.property 'minecraft_version', mcVersion
+    outputs.dir destination
+    doLast {
+        fileTree(original).matching { include '**/*.java' }.files.each { source ->
+            String text = source.getText('UTF-8')
+            text = text.replace('Real Minecraft 1.20.1', "Real Minecraft ${mcVersion}")
+            text = text.replace('mc.createWorldOpenFlows().loadLevel(mc.screen, WORLD);',
+                'mc.createWorldOpenFlows().openWorld(WORLD, () -> mc.setScreen(new TitleScreen()));')
+            text = text.replace('.getOrThrow(WorldPresets.FLAT).createWorldDimensions());',
+                '.getOrThrow(WorldPresets.FLAT).createWorldDimensions(), mc.screen);')
+            if (!pre121) {
+                text = text.replace('float partialTick, long started, boolean renderLevel, CallbackInfo ci',
+                    'net.minecraft.client.DeltaTracker partialTick, boolean renderLevel, CallbackInfo ci')
+            }
+            if (renderStates) {
+                text = text.replace('new GameRules()', 'new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures())')
+                text = text.replace('access.registryOrThrow(Registries.WORLD_PRESET)',
+                    'access.lookupOrThrow(Registries.WORLD_PRESET)')
+                text = text.replace('.getOrThrow(WorldPresets.FLAT).createWorldDimensions()',
+                    '.getOrThrow(WorldPresets.FLAT).value().createWorldDimensions()')
+                text = text.replace('mc.getToasts().clear();', 'mc.getToastManager().clear();')
+            }
+            if (extractedGui) {
+                text = text.replace('SharedConstants.getCurrentVersion().getName()',
+                    'SharedConstants.getCurrentVersion().name()')
+                text = text.replace('mc.getMainRenderTarget(), message ->',
+                    'mc.getMainRenderTarget(), 1, message ->')
+            }
+            def target = destination.get().file(original.toPath().relativize(source.toPath()).toString()).asFile
+            target.parentFile.mkdirs()
+            target.setText(text, 'UTF-8')
+        }
+    }
+}
+
+tasks.named('compileSmokeJava') { dependsOn 'generateSmokeSources' }
+
+tasks.named('processSmokeResources') {
+    inputs.property 'minecraft_version', mcVersion
+    filesMatching('fabric.mod.json') { expand minecraft_version: mcVersion }
+}
+
+tasks.register('smokeJar', Jar) { from sourceSets.smoke.output; archiveClassifier = 'smoke-harness-dev' }
+
+tasks.register('remapSmokeJar', net.fabricmc.loom.task.RemapJarTask) {
+    dependsOn tasks.named('smokeJar')
+    inputFile = tasks.named('smokeJar', Jar).flatMap { it.archiveFile }
+    archiveClassifier = 'smoke-harness'
+}

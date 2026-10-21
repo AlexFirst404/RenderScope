@@ -1,0 +1,30 @@
+sourceSets {
+    smoke {
+        java.srcDirs = ['src/smoke/java', '../smoke/java', '../build/generated/native-smoke',
+                        "../smoke/${providers.gradleProperty('minecraft_version').orElse('26.3').get().startsWith('26.1') ? 'glfw' : providers.gradleProperty('minecraft_version').orElse('26.3').get() == '26.2' ? 'extractor-glfw' : 'sdl'}"]
+        resources.srcDirs = ['src/smoke/resources', '../smoke/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations.smokeImplementation.extendsFrom configurations.implementation
+configurations.smokeRuntimeOnly.extendsFrom configurations.runtimeOnly
+tasks.register('generateNativeSmoke', Exec) {
+    workingDir file('../..')
+    commandLine providers.gradleProperty('python').orElse('python').get(), 'scripts/create-modern-native-smoke.py'
+    inputs.file '../../modern/src/gametest/java/dev/renderscope/modern/smoke/ModernClientSmoke.java'
+    inputs.file '../../scripts/create-modern-native-smoke.py'
+    outputs.file '../build/generated/native-smoke/dev/renderscope/modern/smoke/NativeModernSmoke.java'
+}
+tasks.named('compileSmokeJava') { dependsOn 'generateNativeSmoke' }
+tasks.named('processSmokeResources') {
+    def mc = providers.gradleProperty('minecraft_version').orElse('26.3').get()
+    inputs.property 'minecraft_version', mc
+    filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) { expand minecraft_version: mc }
+    filesMatching('renderscope.native-smoke.mixins.json') { expand mouse_mixin: mc == '26.3' ? '' : '"NativeMouseInvoker"' }
+}
+tasks.register('smokeJar', Jar) {
+    archiveClassifier = 'native-smoke-harness'
+    from sourceSets.smoke.output
+    doFirst { manifest.attributes('MixinConfigs': 'renderscope.native-smoke.mixins.json') }
+}

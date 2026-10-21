@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        if (new File(settingsDir, '../.tools/fabric-maven').isDirectory()) {
+            maven { url = uri('../.tools/fabric-maven') }
+        }
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'fabric-loom') {
+                def mc = providers.gradleProperty('minecraft_version').orElse('1.21.1').get()
+                if (mc.startsWith('1.21.') && mc.tokenize('.').last().toInteger() >= 5) useVersion('1.10.5')
+            }
+        }
+    }
+}
+rootProject.name = 'RenderScope-MC21'

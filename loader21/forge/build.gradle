@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+ext.minecraftTarget = providers.gradleProperty('minecraft_version').orElse('1.21.1').get()
+def inspectedVersions = ['1.20.6':'50.2.0', '1.21':'51.0.33', '1.21.1':'52.1.0',
+    '1.21.3':'53.1.0','1.21.4':'54.1.14','1.21.5':'55.1.0','1.21.6':'56.0.9','1.21.7':'57.0.3','1.21.8':'58.1.0']
+if (!inspectedVersions.containsKey(minecraftTarget)) throw new GradleException("No official Forge target configuration for ${minecraftTarget}")
+ext.targetLoader = 'forge'
+ext.targetLoaderVersion = inspectedVersions[minecraftTarget]
+apply from: '../adapter-sources.gradle'
+minecraft {
+    mappings channel:'official', version:minecraftTarget
+    if (pipelines) accessTransformer file('../pipeline/accesstransformer.cfg')
+    runs { client {
+        workingDirectory project.file("../../run-forge-${minecraftTarget}")
+        mods { renderscope { source sourceSets.main } }
+        arg '-mixin.config=renderscope.mixins.json'
+    }
+    smokeClient {
+        parent minecraft.runs.client
+        workingDirectory project.file("../../run-smoke-forge-${minecraftTarget}")
+        mods { renderscope { source sourceSets.main }; renderscope_smoke { source sourceSets.smoke } }
+        property 'renderscope.expectedLoader', 'Forge'
+        property 'renderscope.expectedLoaderVersion', targetLoaderVersion
+        property 'renderscope.expectedMinecraft', minecraftTarget
+        property 'renderscope.smoke.output', file("../../distribution/forge/${minecraftTarget}/development").absolutePath
+        arg '-mixin.config=renderscope.mixins.json'
+    } }
+}
+repositories { maven { url = 'https://repo.spongepowered.org/repository/maven-public/'; content { includeGroup 'org.spongepowered' } } }
+jarJar.enable()
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraftTarget}-${targetLoaderVersion}"
+    implementation 'io.github.llamalad7:mixinextras-common:0.4.1'
+    runtimeOnly 'io.github.llamalad7:mixinextras-forge:0.4.1'
+    jarJar('io.github.llamalad7:mixinextras-forge:0.4.1') { jarJar.ranged(it, '[0.4.1,)') }
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+// Forge 1.20.5+ uses the official runtime namespace; ForgeGradle intentionally creates no reobf task.
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-proc:none'] }
+tasks.named('jar') { archiveClassifier = 'slim' }
+tasks.named('jarJar') { archiveClassifier = '' }
+tasks.named('build') { dependsOn 'jarJar' }

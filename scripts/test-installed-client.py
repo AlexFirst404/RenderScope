@@ -196,8 +196,9 @@ def prepare_assets(vanilla: dict, install: Path) -> Path:
     descriptor = vanilla["assetIndex"]
     index_path = fetch(descriptor["url"], install / "assets/indexes" / (descriptor["id"] + ".json"), descriptor["sha1"])
     objects = read_json(index_path)["objects"]
-    gradle = Path(os.environ.get("GRADLE_USER_HOME", Path.home() / ".gradle")) / "caches/forge_gradle/assets"
-    roots = [gradle]
+    gradle_cache = Path(os.environ.get("GRADLE_USER_HOME", Path.home() / ".gradle")) / "caches"
+    roots = [gradle_cache / "forge_gradle/assets", gradle_cache / "fabric-loom/assets",
+             gradle_cache / "neoformruntime/assets"]
     if os.environ.get("APPDATA"):
         roots.append(Path(os.environ["APPDATA"]) / ".minecraft/assets")
     for cached in roots:
@@ -213,7 +214,9 @@ def prepare_assets(vanilla: dict, install: Path) -> Path:
         fetch(f"https://resources.download.minecraft.net/{sha[:2]}/{sha}", install / "assets" / relative,
               sha, [cached / relative for cached in roots])
     with ThreadPoolExecutor(max_workers=12) as pool:
-        list(pool.map(one, objects.values()))
+        # Several logical resource names can share one content hash. Schedule
+        # each destination once so Windows workers never replace the same file.
+        list(pool.map(one, {value["hash"]: value for value in objects.values()}.values()))
     return (install / "assets").resolve()
 
 
@@ -282,7 +285,28 @@ def prepare_native_libraries(libraries: list[dict], install: Path) -> Path:
     return natives
 
 
-def stage_mods(game: Path, renderscope: Path, harness: Path | None) -> list[dict]:
+def extra_profile(path: Path | None) -> dict:
+    if path is None:
+        return {"profile": "baseline", "mods": []}
+    value = read_json(path)
+    if value.get("loader") != "forge" or value.get("minecraftVersion") != MC:
+        raise RuntimeError("Extra-mod manifest must target Forge " + MC)
+    if not re.fullmatch(r"forge-[a-z0-9-]+", value.get("profile", "")):
+        raise RuntimeError("Unexpected compatibility profile name")
+    ids = [mod["id"] for mod in value["mods"]]
+    if len(ids) != len(set(ids)) or ("embeddium" in ids and "rubidium" in ids):
+        raise RuntimeError("Embeddium and the real Rubidium JAR must use separate test profiles")
+    for mod in value["mods"] + ([value["shaderPack"]] if "shaderPack" in value else []):
+        if Path(mod["file"]).name != mod["file"] or not re.fullmatch(r"[0-9a-f]{64}", mod["sha256"]):
+            raise RuntimeError("Invalid extra-mod filename/hash")
+        file = path.parent / mod["file"]
+        if not file.is_file() or digest(file, "sha256") != mod["sha256"] or digest(file) != mod["sha1"]:
+            raise RuntimeError("Extra vendor file hash mismatch: " + mod["file"])
+        mod["sourcePath"] = str(file.resolve())
+    return value
+
+
+def stage_mods(game: Path, renderscope: Path, harness: Path | None, profile: dict | None = None, scenario: str = "create-mekanism") -> list[dict]:
     mods = game / "mods"
     mods.mkdir(parents=True, exist_ok=True)
     if not renderscope.is_file():
@@ -295,7 +319,7 @@ def stage_mods(game: Path, renderscope: Path, harness: Path | None) -> list[dict
     files = [renderscope]
     source = ROOT / ".tools/compat-mods"
     source.mkdir(parents=True, exist_ok=True)
-    for filename, version_id, project_id, sha in MODS:
+    for filename, version_id, project_id, sha in MODS if scenario == "create-mekanism" else ():
         target = source / filename
         if not valid(target, sha):
             data = json.loads(request_bytes(f"https://api.modrinth.com/v2/version/{version_id}"))
@@ -306,13 +330,21 @@ def stage_mods(game: Path, renderscope: Path, harness: Path | None) -> list[dict
                 raise RuntimeError("Pinned mod hash changed for " + filename)
             fetch(descriptor["url"], target, sha)
         files.append(target)
+    for mod in (profile or {}).get("mods", []):
+        file = Path(mod["sourcePath"])
+        with zipfile.ZipFile(file) as archive:
+            metadata = archive.read("META-INF/mods.toml").decode()
+            if not re.search(r'modId\s*=\s*"' + re.escape(mod["id"]) + r'"', metadata):
+                raise RuntimeError("Extra JAR does not publish expected Forge mod ID: " + mod["id"])
+        files.append(file)
     if harness:
         if not harness.is_file():
             raise RuntimeError("Missing production/reobfuscated compatibility harness: " + str(harness))
         with zipfile.ZipFile(harness) as archive:
             metadata = archive.read("META-INF/mods.toml").decode()
-            if 'modId="renderscope_compat"' not in metadata:
-                raise RuntimeError("Expected the separate renderscope_compat test harness")
+            expected_id = 'renderscope_compat' if scenario == 'create-mekanism' else 'renderscope_smoke'
+            if 'modId="' + expected_id + '"' not in metadata:
+                raise RuntimeError("Expected the separate " + expected_id + " test harness")
         files.append(harness)
     expected = {file.name for file in files}
     extra = [file.name for file in mods.glob("*.jar") if file.name not in expected]
@@ -331,9 +363,9 @@ def java_argument(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def check_client_result(output: Path, game: Path, launched_ns: int, primary: dict) -> dict:
+def check_client_result(output: Path, game: Path, launched_ns: int, primary: dict, profile: dict | None = None, scenario: str = "create-mekanism") -> dict:
     """A normal Minecraft shutdown also has exit code zero after harness failure."""
-    path = output / "compat-result.json"
+    path = output / ("compat-result.json" if scenario == "create-mekanism" else "smoke-result.json")
     if not path.is_file() or path.stat().st_mtime_ns < launched_ns:
         raise RuntimeError("Installed client did not write a fresh compatibility result; see installed-client-console.log.")
     result = read_json(path)
@@ -353,8 +385,19 @@ def check_client_result(output: Path, game: Path, launched_ns: int, primary: dic
     versions = {entry["id"]: entry["version"] for entry in result.get("testedMods", [])}
     # Mekanism's build 80 JAR declares 10.4.16 in mods.toml; its exact build is
     # pinned separately by the vendor SHA-1 and staged SHA-256 above.
-    if versions.get("create") != "6.0.8" or versions.get("mekanism") != "10.4.16":
+    if scenario == "create-mekanism" and (versions.get("create") != "6.0.8" or versions.get("mekanism") != "10.4.16"):
         raise RuntimeError("Compatibility result did not load the pinned Create and Mekanism versions.")
+    if profile and profile["mods"]:
+        expected = {mod["id"]: mod["version"] for mod in profile["mods"]}
+        if result.get("compatibilityProfile") != profile["profile"] or result.get("expectedOptionalMods") != expected:
+            raise RuntimeError("Compatibility result did not validate the requested optional-renderer profile")
+        if "mekanism_extras" in expected and not (result.get("mekanismExtrasFull") and result.get("mekanismExtrasTimingOnly")):
+            raise RuntimeError("Mekanism Extras real fixture evidence is missing")
+        if "shaderPack" in profile and result.get("actualShaderShadowPassObserved") is not True:
+            raise RuntimeError("Active shader shadow-pass evidence is missing")
+        if scenario == "vanilla" and any(mod in expected for mod in ("rubidium", "sodium", "embeddium")):
+            if result.get("actualFastNativeBatchesMeasured") is not True or result.get("nativeGeometryStoppedInTimingOnly") is not True:
+                raise RuntimeError("Real fast batches and Timing Only evidence are required for the standalone backend")
     return {"success": True, "runtimeLoader": result["loader"], "runtimeLoaderVersion": result["loaderVersion"],
             "primaryJarSha256": primary["sha256"], "compatibilityResultSha256": digest(path, "sha256"),
             "verifiedAt": datetime.now(timezone.utc).isoformat()}
@@ -369,18 +412,29 @@ def main() -> None:
     parser.add_argument("--install-dir", type=Path, default=ROOT / ".tools/installed-forge-compat")
     parser.add_argument("--game-dir", type=Path, default=ROOT / "run-compat-installed")
     parser.add_argument("--output", type=Path, default=ROOT / "distribution/forge/compatibility-installed")
+    parser.add_argument("--extra-mod-manifest", type=Path, help="Checksum-verified isolated optional-renderer profile from prepare-renderer-compat.py")
+    parser.add_argument("--scenario", choices=["create-mekanism", "vanilla"], default="create-mekanism")
     args = parser.parse_args()
     if platform.system() != "Windows":
         parser.error("This installed-client QA launcher currently targets Windows.")
     if args.launch and not args.harness:
         parser.error("--launch requires --harness pointing to the separate reobfuscated compatibility JAR.")
     install, game, output = args.install_dir.resolve(), args.game_dir.resolve(), args.output.resolve()
+    profile = extra_profile(args.extra_mod_manifest.resolve() if args.extra_mod_manifest else None)
+    if args.extra_mod_manifest and (game == ROOT / "run-compat-installed" or output == ROOT / "distribution/forge/compatibility-installed"):
+        parser.error("Optional profiles require explicit isolated --game-dir and --output; preserve baseline evidence.")
     java = find_java(args.java)
     game.mkdir(parents=True, exist_ok=True)
     vanilla, forge, assets = prepare_installation(install, java)
     libraries = selected_libraries(vanilla, forge)
     natives = prepare_native_libraries(libraries, install)
-    mods = stage_mods(game, args.renderscope.resolve(), args.harness.resolve() if args.harness else None)
+    mods = stage_mods(game, args.renderscope.resolve(), args.harness.resolve() if args.harness else None, profile, args.scenario)
+    if "shaderPack" in profile:
+        pack = profile["shaderPack"]
+        (game / "shaderpacks").mkdir(exist_ok=True)
+        shutil.copy2(pack["sourcePath"], game / "shaderpacks" / pack["file"])
+        (game / "config").mkdir(exist_ok=True)
+        (game / "config/oculus.properties").write_text("enableShaders=true\nshaderPack=" + pack["file"] + "\n", encoding="utf-8")
     classpath = [install / "libraries" / library["downloads"]["artifact"]["path"] for library in libraries]
     vanilla_client = install / "versions" / MC / f"{MC}.jar"
     classpath.append(vanilla_client)
@@ -417,7 +471,15 @@ def main() -> None:
         # A drive-letter path is interpreted as URL scheme D by Log4j2.
         jvm.append(logging["argument"].replace("${path}", config.as_uri()))
     jvm = ["-Xms1G", "-Xmx5G", "-Drenderscope.expectedLoader=Forge", f"-Drenderscope.expectedLoaderVersion={FORGE}",
-           "-Drenderscope.compat.environment=installed-production", "-Drenderscope.compat.output=" + output.as_posix()] + jvm
+           "-Drenderscope.compat.environment=installed-production", "-Drenderscope.compat.output=" + output.as_posix(),
+           "-Drenderscope.smoke.environment=installed-production", "-Drenderscope.smoke.output=" + output.as_posix()] + jvm
+    if args.extra_mod_manifest:
+        expected = {mod["id"]: mod["version"] for mod in profile["mods"]}
+        jvm += ["-Drenderscope.compat.profile=" + profile["profile"],
+                "-Drenderscope.compat.expectedMods=" + json.dumps(expected, separators=(",", ":")),
+                "-Drenderscope.compat.presentation.output=" + (output / "presentation").as_posix()]
+        if "shaderPack" in profile:
+            jvm.append("-Drenderscope.compat.requireShaders=true")
     game_arguments = expand_arguments(vanilla["arguments"]["game"] + forge["arguments"]["game"], replacements)
     argfile = install / "launch.args"
     argfile.write_text("\n".join(java_argument(value) for value in jvm + [forge["mainClass"]] + game_arguments) + "\n", encoding="utf-8")
@@ -427,6 +489,11 @@ def main() -> None:
               "forgeInstallerSha1": INSTALLER_SHA1, "vanillaClientSha1": vanilla["downloads"]["client"]["sha1"],
               "javaRuntime": 21, "offlineTestIdentity": True, "mods": mods,
               "clientLaunched": False}
+    record["compatibilityProfile"] = profile["profile"]
+    record["testScenario"] = args.scenario
+    record["extraMods"] = [{key: value for key, value in mod.items() if key != "sourcePath"} for mod in profile["mods"]]
+    if "shaderPack" in profile:
+        record["shaderPack"] = {key: value for key, value in profile["shaderPack"].items() if key != "sourcePath"}
     write_json(install / "prepared-client.json", record)
     print("Installed production profile prepared. No Minecraft client or Gradle was launched.", flush=True)
     print("Launch after the final rebuild using this script with --harness <reobfuscated-compat.jar> --launch.", flush=True)
@@ -441,7 +508,7 @@ def main() -> None:
             result = subprocess.run([str(java), "@" + str(argfile)], cwd=game, stdout=log, stderr=subprocess.STDOUT)
         if result.returncode:
             raise RuntimeError(f"Installed client exited {result.returncode}; see {game / 'installed-client-console.log'}")
-        verification = check_client_result(output, game, launched_ns, mods[0])
+        verification = check_client_result(output, game, launched_ns, mods[0], profile, args.scenario)
         write_json(output / "installed-verification.json", verification)
         print("Installed production compatibility checks passed; runtime loader, fresh result, and measured JAR hash verified.", flush=True)
 
