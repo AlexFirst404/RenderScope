@@ -6,6 +6,7 @@ an asset, or changes the publication preparer's timestamps or trust rules.
 
 GitHub docs: https://cli.github.com/manual/gh_release_create
 https://docs.github.com/en/rest/releases/assets#get-a-release-asset
+https://docs.github.com/en/rest/releases/releases#list-releases
 """
 from __future__ import annotations
 import argparse
@@ -161,7 +162,21 @@ class GitHub:
         result = subprocess.run([self.executable, "api", "--hostname", "github.com", f"repos/{REPO}/releases/tags/{TAG}"], cwd=ROOT,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode and b"HTTP 404" in result.stderr:
-            return None
+            # The by-tag endpoint can hide an existing draft. Authenticated
+            # callers with push access can list drafts; exhaust every page
+            # before deciding absence so a retry cannot create another draft.
+            matches, page = [], 1
+            while True:
+                batch = json.loads(self.call("api", "--hostname", "github.com",
+                    f"repos/{REPO}/releases?per_page=100&page={page}"))
+                if not isinstance(batch, list) or any(not isinstance(entry, dict) for entry in batch):
+                    raise RuntimeError("GitHub release listing did not return a release array")
+                matches.extend(entry for entry in batch if entry.get("tag_name") == TAG)
+                if len(matches) > 1:
+                    raise RuntimeError("Multiple GitHub releases match the exact tag; refusing to create or modify a release")
+                if len(batch) < 100:
+                    return matches[0] if matches else None
+                page += 1
         if result.returncode:
             raise RuntimeError(result.stderr.decode("utf-8", errors="replace").strip())
         return json.loads(result.stdout)

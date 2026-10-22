@@ -3,6 +3,7 @@ import contextlib
 import copy
 import importlib.util
 import io
+import json
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -72,6 +73,94 @@ class FakeGitHub:
 
 
 class PublisherTest(unittest.TestCase):
+    def github_client(self):
+        with patch.object(p.shutil, "which", return_value="gh"):
+            return p.GitHub()
+
+    def api_result(self, value=None, status=0, stderr=b""):
+        return p.subprocess.CompletedProcess([], status, b"" if value is None else json.dumps(value).encode(), stderr)
+
+    def test_by_tag_404_discovers_the_existing_authenticated_draft(self):
+        draft = {"id": 421227848, "tag_name": p.TAG, "draft": True}
+        with patch.object(p.subprocess, "run", side_effect=[self.api_result(status=1, stderr=b"gh: Not Found (HTTP 404)"),
+                self.api_result([draft])]) as cli:
+            self.assertEqual(draft, self.github_client().release())
+        self.assertEqual(2, cli.call_count)
+        self.assertEqual(f"repos/{p.REPO}/releases?per_page=100&page=1", cli.call_args_list[1].args[0][-1])
+        self.assertEqual(("gh", "api", "--hostname", "github.com"), cli.call_args_list[1].args[0][:4])
+
+    def test_draft_discovery_exhausts_pages_even_after_finding_the_tag(self):
+        draft = {"id": 421227848, "tag_name": p.TAG, "draft": True}
+        first = [{"id": index, "tag_name": f"older-{index}"} for index in range(100)]
+        second = [draft] + [{"id": index + 100, "tag_name": f"older-next-{index}"} for index in range(99)]
+        with patch.object(p.subprocess, "run", side_effect=[self.api_result(status=1, stderr=b"HTTP 404"),
+                self.api_result(first), self.api_result(second), self.api_result([])]) as cli:
+            self.assertEqual(draft, self.github_client().release())
+        self.assertEqual(4, cli.call_count)
+        self.assertTrue(cli.call_args_list[-1].args[0][-1].endswith("page=3"))
+
+    def test_draft_absence_requires_all_pages_and_an_exact_case_sensitive_tag(self):
+        first = [{"id": index, "tag_name": f"older-{index}"} for index in range(100)]
+        similar = [{"id": 101, "tag_name": p.TAG + "-old"}, {"id": 102, "tag_name": "V0.3.0"}]
+        with patch.object(p.subprocess, "run", side_effect=[self.api_result(status=1, stderr=b"HTTP 404"),
+                self.api_result(first), self.api_result(similar)]) as cli:
+            self.assertIsNone(self.github_client().release())
+        self.assertEqual(3, cli.call_count)
+
+    def test_duplicate_exact_tags_on_different_pages_are_rejected(self):
+        draft = {"id": 421227848, "tag_name": p.TAG, "draft": True}
+        first = [draft] + [{"id": index, "tag_name": f"older-{index}"} for index in range(99)]
+        with patch.object(p.subprocess, "run", side_effect=[self.api_result(status=1, stderr=b"HTTP 404"),
+                self.api_result(first), self.api_result([dict(draft, id=421227849)])]) as cli:
+            with self.assertRaisesRegex(RuntimeError, "Multiple GitHub releases"):
+                self.github_client().release()
+        self.assertEqual(3, cli.call_count)
+        self.assertTrue(all(call.args[0][1] == "api" for call in cli.call_args_list))
+
+    def test_non_404_lookup_errors_never_fall_back_or_become_absence(self):
+        for status in (403, 500):
+            with self.subTest(status=status), patch.object(p.subprocess, "run",
+                    return_value=self.api_result(status=1, stderr=f"HTTP {status}".encode())) as cli:
+                with self.assertRaisesRegex(RuntimeError, f"HTTP {status}"):
+                    self.github_client().release()
+                self.assertEqual(1, cli.call_count)
+
+    def test_authenticated_listing_failure_does_not_authorize_a_new_draft(self):
+        with patch.object(p.subprocess, "run", side_effect=[self.api_result(status=1, stderr=b"HTTP 404"),
+                self.api_result(status=1, stderr=b"HTTP 403")]):
+            with self.assertRaisesRegex(RuntimeError, "HTTP 403"):
+                self.github_client().release()
+
+    def test_malformed_release_listing_is_not_treated_as_absence(self):
+        for invalid in ({"message": "not a release list"}, [None]):
+            with self.subTest(invalid=invalid), patch.object(p.subprocess, "run", side_effect=[
+                    self.api_result(status=1, stderr=b"HTTP 404"), self.api_result(invalid)]):
+                with self.assertRaisesRegex(RuntimeError, "release array"):
+                    self.github_client().release()
+
+    def test_discovered_complete_draft_is_resumed_without_creating_or_overwriting(self):
+        plan, _ = fixture()
+        github = self.github_client()
+        release = {"id": 421227848, "tag_name": p.TAG, "draft": True, "prerelease": False,
+                   "name": "RenderScope 0.3.0", "body": plan["notes"].decode(), "html_url": "https://example.invalid/release"}
+        commands = []
+        def call(*args):
+            commands.append(args)
+            if args[0] == "api":
+                return json.dumps([release]).encode()
+            self.assertEqual(("release", "edit"), args[:2])
+            release["draft"] = False
+            return b""
+        with patch.object(p.subprocess, "run", return_value=self.api_result(status=1, stderr=b"HTTP 404")), \
+                patch.object(github, "call", side_effect=call), \
+                patch.object(github, "assets", return_value=[remote(asset, index) for index, asset in enumerate(plan["assets"])]):
+            record = p.publish(plan, github)
+        self.assertEqual(421227848, record["releaseId"])
+        self.assertTrue(record["published"])
+        self.assertEqual(1, sum(command[:2] == ("release", "edit") for command in commands))
+        self.assertFalse(any(command[:2] in (("release", "create"), ("release", "upload")) for command in commands))
+        self.assertTrue(all("--clobber" not in command for command in commands))
+
     def test_numerical_ready_flag_cannot_replace_a_current_manual_visual_review(self):
         review = {"passed": True, "manifestSha256": "a" * 64, "screenshots": [{"sha256": "b" * 64}]}
         row = {"visuallyVerified": True, "manualVisualReview": review}
