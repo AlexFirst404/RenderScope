@@ -1,6 +1,7 @@
 """Verify the selected modern artifact; runtime proof is opt-in and never inferred from compilation."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import struct
 import xml.etree.ElementTree as ET
@@ -15,6 +16,39 @@ SUPPORTED = ("1.21.9", "1.21.10", "1.21.11", "26.1", "26.1.1", "26.1.2", "26.2",
 def require(condition, message):
     if not condition:
         raise SystemExit(message)
+
+
+def verify_runtime(target, artifact, runtime_support):
+    """Consume the same exact-identity, linked-hash proofs as the release gate."""
+    accepted = runtime_support.inspect_runtime(target, artifact["sha256"])
+    require(accepted, "No hash-matched world result for the selected artifact")
+    proof = accepted[0]
+    path = REPO / proof["path"]
+    runtime = json.loads(path.read_text(encoding="utf-8"))
+    if runtime.get("resultFile"):
+        path = path.parent / runtime["resultFile"]
+        runtime = json.loads(path.read_text(encoding="utf-8"))
+    require(runtime.get("artifactBytes") == artifact["bytes"], "Runtime artifact size differs")
+    for field in ("entityAndBlockEntityExtractionAndSubmission", "f8NativeScreen", "pauseNativeButton",
+                  "selectedGizmoBoxAndLabels", "realCrosshairInspector", "reportPrivacy", "disconnectClearsInstances",
+                  "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton"):
+        require(runtime.get(field) is True, f"Runtime assertion missing: {field}")
+    require(runtime.get("captureSeconds", 0) >= 5 and runtime.get("captureFrames", 0) > 20, "Runtime capture too short")
+    require(runtime.get("heatmapGizmoBoxes", 0) >= 3, "Runtime heatmap missing measured objects")
+    screenshots = runtime.get("screenshots", [])
+    require(len(screenshots) >= 13 and len(set(screenshots)) == len(screenshots), "Runtime screenshots incomplete or duplicated")
+    for name in screenshots:
+        require(isinstance(name, str) and Path(name).name == name and (path.parent / name).is_file(), f"Screenshot missing: {name}")
+    if proof["environment"] == "installed-production":
+        require(runtime.get("harness") == "modern-installed-v1", "Unknown installed Fabric harness")
+        require(runtime.get("actualPrimaryOriginVerified") is True and runtime.get("runtimeLoaderVerified") is True,
+                "Installed runtime did not verify the actual loaded primary origin and loader")
+        require(runtime.get("primaryJarBytes") == artifact["bytes"], "Installed primary origin size differs")
+        require(runtime.get("geometryAvailable") is False and runtime.get("gpuTimingAvailable") is False,
+                "Modern renderer-state CPU proof must not claim unavailable geometry or GPU measurements")
+        require(runtime.get("extractionScopes", 0) > 0 and runtime.get("submissionScopes", 0) > 0,
+                "Installed runtime did not observe real extraction and submission scopes")
+    return {"runtimeVerified": True, "runtimeScope": proof["environment"], "runtimeEvidence": proof}
 
 
 def main():
@@ -69,22 +103,12 @@ def main():
               "bytes": artifact.stat().st_size, "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
               "tests": tests, "runtimeVerified": False}
     if args.require_runtime:
-        evidence = project / "validation" / args.minecraft
-        runtime = json.loads((evidence / "smoke-result.json").read_text(encoding="utf-8"))
-        require(runtime.get("success") is True and runtime.get("minecraftVersion") == args.minecraft, "Matching runtime did not pass")
-        require(runtime.get("artifactSha256") == result["sha256"] and runtime.get("artifactBytes") == result["bytes"], "Runtime evidence belongs to another artifact")
-        require(runtime.get("environment") == "fabric-development-client", "Unknown runtime scope")
-        for field in ("entityAndBlockEntityExtractionAndSubmission", "f8NativeScreen", "pauseNativeButton",
-                      "selectedGizmoBoxAndLabels", "realCrosshairInspector", "reportPrivacy", "disconnectClearsInstances",
-                      "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton"):
-            require(runtime.get(field) is True, f"Runtime assertion missing: {field}")
-        require(runtime.get("captureSeconds", 0) >= 5 and runtime.get("captureFrames", 0) > 20, "Runtime capture too short")
-        require(runtime.get("heatmapGizmoBoxes", 0) >= 3, "Runtime heatmap missing measured objects")
-        require(len(runtime.get("screenshots", [])) >= 13, "Runtime screenshots incomplete")
-        for name in runtime["screenshots"]:
-            require(Path(name).name == name and (evidence / name).is_file(), f"Screenshot missing: {name}")
-        result["runtimeVerified"] = True
-        result["runtimeScope"] = "Fabric development-client real integrated world; not an installed-production test"
+        spec = importlib.util.spec_from_file_location("modern_verify_support", REPO / "scripts/generate-support-matrix.py")
+        runtime_support = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(runtime_support)
+        targets = json.loads((ROOT / "targets.json").read_text(encoding="utf-8"))["targets"]
+        target = next(target for target in targets if target["minecraft"] == args.minecraft)
+        result.update(verify_runtime(target, result, runtime_support))
     print(json.dumps(result, indent=2))
 
 

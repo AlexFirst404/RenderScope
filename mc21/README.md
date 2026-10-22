@@ -59,7 +59,7 @@ Add `remapSmokeJar` to the build command to create a separate, development-only 
 
 After a completed check, run `py -3 mc21/scripts/verify-artifacts.py <versions> --write --require-runtime`. The verifier also checks the actual exported capture, screenshot files and installed launch/result hashes. Optional third-party profiles are a separate compatibility check.
 
-For RenderScope 0.3.0, all eleven targets above passed 63 tests each and the installed production scenario with 28 screenshots per target. `port-status.json` records each actual JAR hash, capture hash, runtime version and evidence path; `targets.json` supplies the exact build and evidence paths for the repository's build matrix.
+For RenderScope 0.3.0, all eleven targets above passed 68 tests each, including registry-replacement/exporter regressions, and the installed production scenario with 28 fresh screenshots per target. These world proofs match the current registry-qualified JAR hashes. `port-status.json` records each actual JAR hash, capture hash, runtime version and evidence path; `targets.json` supplies the exact build and evidence paths for the repository's build matrix.
 
 The optional Flywheel, Mekanism deferred and alternative fast-vertex adapters inspected on Minecraft 1.20.1 are not enabled here. Their Minecraft-specific descriptors are omitted from this module's mixin configuration, and the shared integration whitelist checks the Minecraft version. Ordinary dispatcher CPU timing remains available; custom or instanced paths can bypass geometry counters. Per-object GPU attribution is not claimed.
 

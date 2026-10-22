@@ -210,12 +210,12 @@ def prepare_base(minecraft: str, loader: str, install: Path) -> tuple[dict, dict
     return vanilla, fabric, assets, classpath, natives, libraries
 
 
-def api_mod(minecraft: str, cache: Path) -> tuple[Path, dict]:
+def api_mod(minecraft: str, cache: Path, exact_version: str | None = None) -> tuple[Path, dict]:
     query = urllib.parse.urlencode({"game_versions": json.dumps([minecraft]), "loaders": '["fabric"]'})
     versions = json_url("https://api.modrinth.com/v2/project/P7dR8mSH/version?" + query)
-    version = next((entry for entry in versions if entry["version_type"] == "release"), None)
+    version = next((entry for entry in versions if entry["version_number"] == exact_version), None) if exact_version else next((entry for entry in versions if entry["version_type"] == "release"), None)
     if not version:
-        raise RuntimeError("No official Fabric API release is published for " + minecraft)
+        raise RuntimeError("No requested official Fabric API version is published for " + minecraft)
     file = next(entry for entry in version["files"] if entry.get("primary"))
     target = vendor.fetch(file["url"], cache / file["filename"], file["hashes"]["sha1"])
     return target, {"id": "fabric-api", "version": version["version_number"], "projectId": "P7dR8mSH", "versionId": version["id"], "sha1": file["hashes"]["sha1"]}
@@ -225,7 +225,8 @@ def stage_mods(args: argparse.Namespace, game: Path, install: Path, primary: dic
     files = [args.artifact.resolve()]
     extras = {"profile": "baseline", "mods": []}
     if "fabric-api" in primary.get("depends", {}):
-        file, _ = api_mod(args.minecraft, install / "mod-cache")
+        api_pin = getattr(args, "fabric_api_version", None)
+        file, _ = api_mod(args.minecraft, install / "mod-cache", api_pin) if api_pin else api_mod(args.minecraft, install / "mod-cache")
         files.append(file)
     if args.harness:
         harness = inspect_mod(args.harness, args.minecraft)
@@ -270,6 +271,8 @@ def stage_mods(args: argparse.Namespace, game: Path, install: Path, primary: dic
         if source.resolve() != destination.resolve():
             shutil.copy2(source, destination)
         metadata = inspect_mod(destination, args.minecraft)
+        if metadata["id"] == "fabric-api" and getattr(args, "fabric_api_version", None) and metadata["version"] != args.fabric_api_version:
+            raise RuntimeError("Staged Fabric API metadata differs from the requested exact version")
         proof.append({"file": destination.name, "id": metadata["id"], "version": metadata["version"], "sha256": vendor.digest(destination, "sha256")})
     return proof, extras
 
@@ -288,6 +291,25 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
         raise RuntimeError("Actual Minecraft/Fabric runtime does not match the requested versions")
     if result.get("environment") != "installed-production" or result.get("primaryJarSha256") != mods[0]["sha256"]:
         raise RuntimeError("Harness did not measure the staged production artifact")
+    if getattr(args, "modern_smoke", False):
+        if result.get("harness") != "modern-installed-v1":
+            raise RuntimeError("Requested modern installed harness did not produce this result")
+        for field in ("actualPrimaryOriginVerified", "runtimeLoaderVerified", "entityAndBlockEntityExtractionAndSubmission",
+                      "f8NativeScreen", "pauseNativeButton", "selectedGizmoBoxAndLabels", "realCrosshairInspector",
+                      "reportPrivacy", "disconnectClearsInstances", "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton"):
+            if result.get(field) is not True:
+                raise RuntimeError("Modern installed assertion is missing: " + field)
+        primary_bytes = (args.game_dir / "mods" / mods[0]["file"]).stat().st_size
+        if (result.get("artifactSha256") != mods[0]["sha256"] or result.get("artifactBytes") != primary_bytes
+                or result.get("primaryJarBytes") != primary_bytes or result.get("geometryAvailable") is not False
+                or result.get("gpuTimingAvailable") is not False or result.get("captureSeconds", 0) < 5
+                or result.get("captureFrames", 0) <= 20 or result.get("heatmapGizmoBoxes", 0) < 3
+                or result.get("extractionScopes", 0) <= 0 or result.get("submissionScopes", 0) <= 0):
+            raise RuntimeError("Modern installed measurements/capture/actual-origin assertions are incomplete")
+        screenshots = result.get("screenshots", [])
+        if (len(screenshots) < 13 or len(set(screenshots)) != len(screenshots)
+                or any(not isinstance(name, str) or Path(name).name != name or not (args.output / name).is_file() for name in screenshots)):
+            raise RuntimeError("Modern installed screenshot evidence is incomplete")
     if args.extra_mod_manifest:
         profile = vendor.read_json(args.extra_mod_manifest)
         expected = {entry["id"]: entry["version"] for entry in profile["mods"]}
@@ -324,10 +346,15 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
     for entry in mods:
         if vendor.digest(args.game_dir / "mods" / entry["file"], "sha256") != entry["sha256"]:
             raise RuntimeError("Staged mod changed during client run")
-    return {"success": True, "minecraftVersion": args.minecraft, "loader": "Fabric", "loaderVersion": args.loader,
+    verification = {"success": True, "minecraftVersion": args.minecraft, "loader": "Fabric", "loaderVersion": args.loader,
             "primaryJarSha256": mods[0]["sha256"], "resultFile": path.name, "resultSha256": vendor.digest(path, "sha256"),
             "geometryPolicy": qa_geometry_policy(args.minecraft, vendor.read_json(args.extra_mod_manifest)) if args.extra_mod_manifest else STRICT_GEOMETRY_POLICY,
             "verifiedAt": datetime.now(timezone.utc).isoformat()}
+    if getattr(args, "modern_smoke", False):
+        verification.update({"environment": "installed-production", "harness": "modern-installed-v1",
+                             "actualPrimaryOriginVerified": result["actualPrimaryOriginVerified"],
+                             "geometryPolicy": "modern-renderstate-cpu-v1-no-geometry-or-gpu"})
+    return verification
 
 
 def main() -> None:
@@ -337,6 +364,8 @@ def main() -> None:
     parser.add_argument("--java")
     parser.add_argument("--artifact", required=True, type=Path, help="Production remapped RenderScope Fabric JAR")
     parser.add_argument("--harness", type=Path)
+    parser.add_argument("--modern-smoke", action="store_true", help="Require the isolated modern installed-Fabric harness and all its strict assertions")
+    parser.add_argument("--fabric-api-version", help="Exact official Fabric API pin, including an upstream beta when explicitly selected")
     parser.add_argument("--game-dir", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--install-dir", type=Path)
@@ -344,6 +373,10 @@ def main() -> None:
     parser.add_argument("--launch", action="store_true")
     parser.add_argument("--timeout", type=int, default=600)
     args = parser.parse_args()
+    if args.modern_smoke and not args.harness:
+        parser.error("--modern-smoke requires its separate --harness JAR")
+    if args.modern_smoke and not args.fabric_api_version:
+        parser.error("--modern-smoke requires the explicit build-pinned --fabric-api-version")
     if platform.system() != "Windows":
         parser.error("This launcher currently validates Windows native libraries only")
     if not re.fullmatch(r"[A-Za-z0-9_.+-]+", args.minecraft) or not re.fullmatch(r"[0-9.]+", args.loader):
@@ -375,6 +408,11 @@ def main() -> None:
             "-Drenderscope.expectedMinecraft=" + args.minecraft, "-Drenderscope.smoke.environment=installed-production",
             "-Drenderscope.compat.environment=installed-production", "-Drenderscope.smoke.output=" + args.output.as_posix(),
             "-Drenderscope.compat.output=" + args.output.as_posix(), "-Drenderscope.compat.profile=" + extras["profile"]]
+    if args.modern_smoke:
+        staged_primary = args.game_dir / "mods" / mods[0]["file"]
+        jvm += ["-Drenderscope.modern.smoke.environment=installed-production",
+                "-Drenderscope.modern.smoke.output=" + args.output.as_posix(),
+                "-Drenderscope.modern.smoke.artifact=" + staged_primary.as_posix()]
     if extras["mods"]:
         expected = {entry["id"]: entry["version"] for entry in extras["mods"]}
         jvm.append("-Drenderscope.compat.expectedMods=" + json.dumps(expected, separators=(",", ":")))

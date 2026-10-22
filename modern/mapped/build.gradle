@@ -109,3 +109,5 @@ loom.runs.named('clientGameTest') {
     vmArg "-Drenderscope.modern.smoke.artifact=${tasks.named('remapJar').get().archiveFile.get().asFile.absolutePath}"
 }
 tasks.named('runClientGameTest') { dependsOn tasks.named('remapJar') }
+
+apply from: '../installed-smoke/installed-smoke.gradle'
