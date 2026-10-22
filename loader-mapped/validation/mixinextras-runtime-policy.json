@@ -1,0 +1,38 @@
+{
+  "scope": "Exact official Forge userdev config.json library declarations, checked against vendor SHA-1 sidecars",
+  "targets": [
+    {
+      "minecraft": "1.21.9",
+      "loader": "forge",
+      "loaderVersion": "59.0.5",
+      "vendorCoordinate": "net.minecraftforge:forge:1.21.9-59.0.5:userdev",
+      "vendorArtifact": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.21.9-59.0.5/forge-1.21.9-59.0.5-userdev.jar",
+      "vendorSha1Verified": true,
+      "vendorSha1": "ff4a0f5d1e16015b67275a0765ccac8e405b5a84",
+      "vendorSha256": "f2ed4294473a31a3f7d9fc47c54f780633f442923a900d74c3a1d9fddbdb10cc",
+      "declaredMixinExtrasLibraries": [],
+      "bundledByRenderScope": true,
+      "reason": "Only embed when the exact Forge userdev does not supply a runtime; do not impose an older nested version range on a newer loader runtime.",
+      "renderScopeEmbeddedRuntime": {
+        "artifactVersion": "0.4.1",
+        "range": "[0.4.1,)"
+      }
+    },
+    {
+      "minecraft": "1.21.10",
+      "loader": "forge",
+      "loaderVersion": "60.1.0",
+      "vendorCoordinate": "net.minecraftforge:forge:1.21.10-60.1.0:userdev",
+      "vendorArtifact": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.21.10-60.1.0/forge-1.21.10-60.1.0-userdev.jar",
+      "vendorSha1Verified": true,
+      "vendorSha1": "48d737093287faa3672965887742b8439027abe8",
+      "vendorSha256": "742e3a7a8c5e54972ca03b2f3404bba0d73fbd4e035876c57b2294bf390d0707",
+      "declaredMixinExtrasLibraries": [
+        "io.github.llamalad7:mixinextras-forge:0.5.0"
+      ],
+      "bundledByRenderScope": false,
+      "reason": "Only embed when the exact Forge userdev does not supply a runtime; do not impose an older nested version range on a newer loader runtime.",
+      "renderScopeEmbeddedRuntime": null
+    }
+  ]
+}

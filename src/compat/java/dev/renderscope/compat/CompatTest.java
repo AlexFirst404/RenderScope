@@ -12,6 +12,11 @@ import dev.renderscope.client.FlywheelGpuTimers;
 import dev.renderscope.client.ProfilerSettings;
 import dev.renderscope.client.RenderHooks;
 import dev.renderscope.client.integration.FlywheelHooks;
+import dev.renderscope.client.integration.FastVertexMetrics;
+import dev.renderscope.client.integration.IntegrationVersions;
+import dev.renderscope.client.integration.RenderingCompatibility;
+import dev.renderscope.client.integration.ShaderPasses;
+import dev.renderscope.client.integration.ShaderBufferMetrics;
 import dev.renderscope.client.ui.RenderScopeScreen;
 import dev.renderscope.core.AggregateMetric;
 import dev.renderscope.core.CaptureReport;
@@ -89,6 +94,8 @@ public final class CompatTest {
     private static final BlockPos PRESS = new BlockPos(-7, 66, 4);
     private static final Map<String, BlockPos> MECHANISMS = Map.of("motor", MOTOR, "shaft", SHAFT, "cogwheel", COGWHEEL, "press", PRESS);
     private static final BlockPos ENERGY_CUBE = new BlockPos(4, 64, -3);
+    private static final BlockPos EXTRA_CUBE = new BlockPos(9, 64, -3);
+    private static final BlockPos EXTRA_TANK = new BlockPos(9, 64, 1);
     private static final Map<String, BlockPos> TARGETS = Map.of("create", new BlockPos(-4, 64, 1), "mekanism", new BlockPos(4, 64, 1));
     private static final List<BlockPos> TANKS = List.of(TARGETS.get("create"), new BlockPos(-2, 64, 1), TARGETS.get("mekanism"), new BlockPos(6, 64, 1));
     private static final Map<String, String> FIXTURE_TYPES = new ConcurrentHashMap<>();
@@ -115,6 +122,9 @@ public final class CompatTest {
     private static Path output;
     private static LoaderInfo loader;
     private static InstanceKey selected;
+    private static SelectionRequest pendingSelection;
+    private static int selectionRequestedAt;
+    private record SelectionRequest(String mod, BlockPos position) { }
     private static String originalBackend;
     private static ForgeConfigSpec.ConfigValue<String> backendConfig;
     private static long deferredBeforeTiming;
@@ -129,11 +139,15 @@ public final class CompatTest {
     private static JsonArray motionTimes;
     private static Path motionDirectory;
     private static int motionPressChangesBefore;
+    private static long fastBatchesBeforeTiming;
+    private static long fastDelegateBeforeTiming;
+    private static long shaderRequestsBeforeTiming;
+    private static boolean shaderNativeFallback;
 
     private enum Phase {
         BOOT, WORLD, DEFAULT_FULL, DEFAULT_TIMING, FALLBACK_FULL, RESTORE_FULL, CAPTURE,
         MODS_SCREEN, CREATE_LIST, CREATE_DETAIL, MEKANISM_LIST, MEKANISM_DETAIL,
-        CREATE_SELECTION, MEKANISM_SELECTION, SHAFT_LIST, SHAFT_DETAIL, SHAFT_SELECTION,
+        CREATE_SELECTION, MEKANISM_SELECTION, EXTRAS_SELECTION, SHAFT_LIST, SHAFT_DETAIL, SHAFT_SELECTION,
         MOTOR_SELECTION, PRESS_SELECTION, HEATMAP, CAPTURE_SCREEN,
         REMOVE_SHAFT, RESTORE_SHAFT, SESSION_CLEANUP, FINISH
     }
@@ -173,6 +187,20 @@ public final class CompatTest {
                     catch (Throwable failure) { ERRORS.add(failure); }
                 });
             }
+            if (pendingSelection != null) {
+                var request = pendingSelection;
+                var measured = findFixture(runtime.profiler().snapshot(), request.mod(), request.position());
+                if (measured.isEmpty()) {
+                    require(ticks - selectionRequestedAt < 200,
+                            "Visible selected fixture produced no actual samples: " + request.mod() + " " + request.position());
+                    return;
+                }
+                selected = measured.get().context().key();
+                runtime.toggleHighlight(selected); runtime.toggleTrack(selected);
+                pendingSelection = null;
+                since = ticks;
+                return;
+            }
             switch (phase) {
                 case BOOT -> {
                     if (mc.screen == null || mc.getOverlay() != null) return;
@@ -180,14 +208,24 @@ public final class CompatTest {
                     require(loader.name().equals("Forge"), "Compatibility run must use ordinary Forge, got " + loader);
                     require(loader.version().equals(System.getProperty("renderscope.expectedLoaderVersion", loader.version())), "Wrong Forge version");
                     JsonArray installed = new JsonArray();
-                    for (String mod : MODS) {
+                    var testedMods = new java.util.ArrayList<>(MODS);
+                    if (hasExtras()) testedMods.add("mekanism_extras");
+                    for (String mod : testedMods) {
                         var info = ModList.get().getModContainerById(mod).orElseThrow(() -> new IllegalStateException("Missing required mod " + mod)).getModInfo();
                         JsonObject entry = new JsonObject();
                         entry.addProperty("id", mod); entry.addProperty("name", info.getDisplayName()); entry.addProperty("version", info.getVersion().toString());
                         installed.add(entry);
                     }
                     RESULT.add("testedMods", installed);
+                    RESULT.addProperty("compatibilityProfile", System.getProperty("renderscope.compat.profile", "baseline"));
+                    JsonObject expectedMods = JsonParser.parseString(System.getProperty("renderscope.compat.expectedMods", "{}")).getAsJsonObject();
+                    for (var expected : expectedMods.entrySet()) require(ModList.get().getModContainerById(expected.getKey())
+                            .map(mod -> mod.getModInfo().getVersion().toString().equals(expected.getValue().getAsString())).orElse(false), "Missing/wrong optional mod " + expected.getKey());
+                    RESULT.add("expectedOptionalMods", expectedMods);
                     RESULT.addProperty("loader", loader.name()); RESULT.addProperty("loaderVersion", loader.version());
+                    String minecraftVersion = net.minecraft.SharedConstants.getCurrentVersion().getName();
+                    require("1.20.1".equals(minecraftVersion), "Compatibility fixture loaded the wrong Minecraft version");
+                    RESULT.addProperty("minecraftVersion", minecraftVersion);
                     String environment = System.getProperty("renderscope.compat.environment", "development");
                     RESULT.addProperty("environment", environment);
                     Path primaryArtifact = ModList.get().getModFileById("renderscope").getFile().getFilePath();
@@ -240,11 +278,43 @@ public final class CompatTest {
                     if (!ready(snapshot, true) && age() < 600) return;
                     require(serverShaftRpm != 0 && clientShaftSpeed(mc) != 0, "Create fixture is not actually rotating");
                     require(animationUpdates >= 3, "Fluid levels did not update in the real world");
-                    require(flywheelOn(), "Default Flywheel backend is not enabled on this GPU");
+                    RESULT.add("shaderStateBeforeValidation", GSON.toJsonTree(ShaderPasses.state()));
+                    RESULT.addProperty("shadowPassObservedDuringWarmup", ShaderPasses.observedShadowPass());
+                    shaderNativeFallback = Boolean.getBoolean("renderscope.compat.requireShaders") && !flywheelOn();
+                    require(flywheelOn() || shaderNativeFallback, "Default Flywheel backend is not enabled on this GPU");
+                    if (shaderNativeFallback) {
+                        require(ShaderPasses.state().shaderPackEnabled() && ShaderPasses.state().shadowDetectionAvailable()
+                                && ShaderPasses.observedShadowPass(), "Native shader fallback requires an actually active shader and shadow pass");
+                        RESULT.addProperty("shaderNativeRendererFallback", true);
+                        RESULT.addProperty("instancedVisualMeasurementAvailable", false);
+                        RESULT.addProperty("shaderFallbackReason", "Active shaders selected the disabled Flywheel backend; this run measures native Create renderer work");
+                        require(snapshot.instances().stream().anyMatch(value -> value.context().key().kind() == ObjectKind.ENTITY
+                                        && value.context().registryId().equals("minecraft:cow") && value.stats().calls() > 0),
+                                "Real shader-shadow entity fixture was not rendered");
+                        RESULT.addProperty("realShaderEntityFixtureRendered", true);
+                    }
                     RESULT.addProperty("defaultFlywheelBackend", backendName());
                     RESULT.addProperty("observedCreateShaftRpm", serverShaftRpm);
                     RESULT.addProperty("realFluidAnimationUpdates", animationUpdates);
                     RESULT.add("defaultFull", checkMeasurements(snapshot, true));
+                    if (hasExtras()) RESULT.add("mekanismExtrasFull", checkExtras(snapshot, true));
+                    RESULT.add("renderingCompatibilityFull", GSON.toJsonTree(RenderingCompatibility.snapshot()));
+                    if (IntegrationVersions.supportsFastVertices(IntegrationVersions.installed()))
+                        require(FastVertexMetrics.observedBatchCalls() > 0, "Installed fast-vertex adapter observed no real native batch writes");
+                    fastBatchesBeforeTiming = FastVertexMetrics.observedBatchCalls();
+                    fastDelegateBeforeTiming = FastVertexMetrics.observedDelegateVertices();
+                    shaderRequestsBeforeTiming = ShaderBufferMetrics.observedRequests();
+                    if (Boolean.getBoolean("renderscope.compat.requireShaders")) {
+                        require(ShaderPasses.state().shaderPackEnabled() && ShaderPasses.state().shadowDetectionAvailable()
+                                && ShaderPasses.observedShadowPass(), "Active shader/shadow-pass exclusion was not exercised");
+                        RESULT.addProperty("actualShaderShadowPassObserved", true);
+                        require(ShaderBufferMetrics.observedRequests() > 0, "No actual shader buffer RenderType requests were measured");
+                        RESULT.addProperty("actualShaderBufferRequestsMeasured", true);
+                    }
+                    if (shaderNativeFallback) {
+                        RESULT.add("shaderNativeMechanismsFull", checkNativeMechanisms(snapshot, true));
+                        checkNoInstancedShaderWork(snapshot);
+                    } else {
                     RESULT.add("defaultInstancedVisualsFull", checkVisualMeasurements(snapshot, true));
                     checkSharedFlywheelPhases(snapshot);
                     FlywheelGpuTimers.Snapshot gpu = FlywheelGpuTimers.snapshot();
@@ -261,6 +331,7 @@ public final class CompatTest {
                             "Actual Flywheel visual frame/tick callbacks were not measured");
                     visualFrameBeforeTiming = FlywheelHooks.measuredFrameCalls();
                     visualTickBeforeTiming = FlywheelHooks.measuredTickCalls();
+                    }
                     require(pressHeadOffsetChanges >= 3 && shaftSpeedChanges >= 2, "Native Create mechanism animations did not update on the client");
                     RESULT.addProperty("realPressHeadOffsetChanges", pressHeadOffsetChanges);
                     RESULT.addProperty("realShaftSpeedChanges", shaftSpeedChanges);
@@ -284,16 +355,28 @@ public final class CompatTest {
                     if (age() < 85) return;
                     ProfilerSnapshot snapshot = runtime.profiler().snapshot();
                     RESULT.add("defaultTimingOnly", checkMeasurements(snapshot, false));
-                    RESULT.add("defaultInstancedVisualsTimingOnly", checkVisualMeasurements(snapshot, false));
-                    checkSharedFlywheelPhases(snapshot);
+                    if (hasExtras()) RESULT.add("mekanismExtrasTimingOnly", checkExtras(snapshot, false));
+                    require(FastVertexMetrics.observedBatchCalls() == fastBatchesBeforeTiming && FastVertexMetrics.observedDelegateVertices() == fastDelegateBeforeTiming
+                                    && ShaderBufferMetrics.observedRequests() == shaderRequestsBeforeTiming,
+                            "Timing Only continued to collect native vertex geometry");
+                    RESULT.add("renderingCompatibilityTimingOnly", GSON.toJsonTree(RenderingCompatibility.snapshot()));
+                    if (shaderNativeFallback) {
+                        RESULT.add("shaderNativeMechanismsTimingOnly", checkNativeMechanisms(snapshot, false));
+                        checkNoInstancedShaderWork(snapshot);
+                    } else {
+                        RESULT.add("defaultInstancedVisualsTimingOnly", checkVisualMeasurements(snapshot, false));
+                        checkSharedFlywheelPhases(snapshot);
+                    }
                     FlywheelGpuTimers.Snapshot gpu = FlywheelGpuTimers.snapshot();
                     require(gpu.status().equals("disabled") && gpu.completedBatches() == 0 && gpu.pendingBatches() == 0,
                             "Timing Only retained GPU query work");
                     RESULT.add("defaultFlywheelGpuTimingOnly", GSON.toJsonTree(gpu));
+                    if (!shaderNativeFallback) {
                     require(FlywheelHooks.measuredFrameCalls() > visualFrameBeforeTiming && FlywheelHooks.measuredTickCalls() > visualTickBeforeTiming,
                             "Timing Only stopped actual Flywheel visual frame/tick CPU measurements");
                     RESULT.addProperty("timingOnlyFlywheelVisualFrameCalls", FlywheelHooks.measuredFrameCalls() - visualFrameBeforeTiming);
                     RESULT.addProperty("timingOnlyFlywheelVisualTickCalls", FlywheelHooks.measuredTickCalls() - visualTickBeforeTiming);
+                    }
                     require(RenderHooks.measuredDeferredCalls() > deferredBeforeTiming, "Timing Only stopped measuring Mekanism deferred callbacks");
                     require(RenderHooks.queuedDeferredCalls() > queuedBeforeTiming && RenderHooks.renderedDeferredCalls() > renderedBeforeTiming,
                             "Mekanism deferred queue stopped in Timing Only");
@@ -319,9 +402,10 @@ public final class CompatTest {
                 }
                 case RESTORE_FULL -> {
                     if (age() < 85) return;
-                    require(flywheelOn(), "Default Flywheel backend was not restored");
+                    require(shaderNativeFallback ? !flywheelOn() : flywheelOn(), "Restored backend differs from the actual default mode");
                     checkMeasurements(runtime.profiler().snapshot(), true);
-                    checkVisualMeasurements(runtime.profiler().snapshot(), true);
+                    if (shaderNativeFallback) checkNativeMechanisms(runtime.profiler().snapshot(), true);
+                    else checkVisualMeasurements(runtime.profiler().snapshot(), true);
                     runtime.startCapture(5);
                     advance(Phase.CAPTURE);
                 }
@@ -330,6 +414,7 @@ public final class CompatTest {
                     CaptureReport capture = runtime.profiler().lastCapture();
                     require(capture != null && capture.frames() > 0 && capture.durationSeconds() >= 4.8, "Capture did not finish normally");
                     for (String mod : MODS) require(capture.mods().stream().anyMatch(value -> value.id().equals(mod) && value.stats().calls() > 0), "Capture omitted " + mod);
+                    if (hasExtras()) require(capture.mods().stream().anyMatch(value -> value.id().equals("mekanism_extras") && value.stats().calls() > 0), "Capture omitted Mekanism Extras");
                     verifyExport(mc, runtime);
                     RESULT.addProperty("captureFrames", capture.frames()); RESULT.addProperty("captureDurationSeconds", capture.durationSeconds());
                     runtime.open(null); clickTab("mods");
@@ -369,11 +454,27 @@ public final class CompatTest {
                 case MEKANISM_SELECTION -> {
                     if (age() < 35) return;
                     checkSelection(runtime, "mekanism");
-                    image("05-mekanism-selected-instance.png", () -> openObject("shaft"));
+                    image("05-mekanism-selected-instance.png", () -> {
+                        if (hasExtras()) selectInstance("mekanism_extras", EXTRA_CUBE);
+                        else openObject("shaft");
+                    });
+                    advance(hasExtras() ? Phase.EXTRAS_SELECTION : Phase.SHAFT_LIST);
+                }
+                case EXTRAS_SELECTION -> {
+                    if (age() < 35) return;
+                    checkSelection(runtime, "mekanismExtras");
+                    Path path = output.resolve("addons/mekanism-extras-selected-instance.png");
+                    Files.createDirectories(path.getParent());
+                    IMAGE_QUEUE.add(new CaptureImage(path, "mekanism-extras-selected-instance.png", false, () -> openObject("shaft"), null, 0));
+                    RESULT.addProperty("mekanismExtrasScreenshot", "addons/mekanism-extras-selected-instance.png");
                     advance(Phase.SHAFT_LIST);
                 }
                 case SHAFT_LIST -> {
                     if (age() < 16) return;
+                    boolean measuredShaft = runtime.profiler().snapshot().objects().stream()
+                            .anyMatch(value -> value.id().equals(FIXTURE_TYPES.get("shaft")) && value.stats().calls() > 0);
+                    if (!measuredShaft && age() < 200) return;
+                    require(measuredShaft, "Visible Create shaft did not produce real samples after camera warmup");
                     require(mc.screen.mouseClicked(30, 119, 0), "Create shaft object row did not open");
                     advance(Phase.SHAFT_DETAIL);
                 }
@@ -411,7 +512,7 @@ public final class CompatTest {
                         require(runtime.overlay().renderedWorldBox(key), "Heatmap omitted instanced Create " + mechanism.getKey());
                         included.addProperty(mechanism.getKey(), true);
                     }
-                    RESULT.add("instancedMechanismsInHeatmap", included);
+                    RESULT.add(shaderNativeFallback ? "nativeMechanismsInHeatmap" : "instancedMechanismsInHeatmap", included);
                     RESULT.addProperty("combinedHeatmapBoxes", runtime.overlay().renderedWorldBoxes());
                     image("06-create-mekanism-heatmap.png", () -> { runtime.open(null); clickTab("capture"); });
                     advance(Phase.CAPTURE_SCREEN);
@@ -430,7 +531,7 @@ public final class CompatTest {
                     require(mc.level.getBlockEntity(SHAFT) == null, "Removed shaft still exists on client");
                     require(runtime.profiler().snapshot().instances().stream().noneMatch(value -> value.context().key().equals(selected)), "Deleted Flywheel visual retained stale instance measurements");
                     require(!runtime.overlay().renderedWorldBox(selected) && !runtime.overlay().renderedWorldLabel(selected), "Deleted shaft retained a stale world overlay");
-                    RESULT.addProperty("removedVisualExpiredAndOverlayCleared", true);
+                    RESULT.addProperty(shaderNativeFallback ? "removedNativeInstanceExpiredAndOverlayCleared" : "removedVisualExpiredAndOverlayCleared", true);
                     MinecraftServer server = mc.getSingleplayerServer();
                     server.execute(() -> { command(server, "setblock -7 64 -3 create:shaft[axis=x]"); shaftRemoved = false; shaftRestored = true; });
                     advance(Phase.RESTORE_SHAFT);
@@ -440,7 +541,7 @@ public final class CompatTest {
                     InstanceMetric shaft = fixtureInstanceAt(runtime.profiler().snapshot(), "create", SHAFT);
                     require(shaft.stats().calls() > 0 && shaft.stats().averageMs() > 0, "Recreated shaft has no new real visual measurements");
                     require(runtime.overlay().renderedWorldBox(shaft.context().key()), "Recreated selected shaft did not regain its world box");
-                    RESULT.addProperty("recreatedVisualMeasured", true);
+                    RESULT.addProperty(shaderNativeFallback ? "recreatedNativeInstanceMeasured" : "recreatedVisualMeasured", true);
                     sceneReady = false;
                     advance(Phase.SESSION_CLEANUP);
                     // Match vanilla PauseScreen: close the connection before clearLevel waits
@@ -485,7 +586,16 @@ public final class CompatTest {
                 "setblock 4 64 1 mekanism:basic_fluid_tank", "setblock 6 64 1 mekanism:advanced_fluid_tank",
                 "setblock 4 64 -3 mekanism:basic_energy_cube",
                 "gamemode creative @a", "tp @a 0.5 64 15 180 9", "effect give @a minecraft:night_vision infinite 0 true")) command(server, text);
+        if (Boolean.getBoolean("renderscope.compat.requireShaders")) {
+            // An ordinary visible entity ensures the pack exercises entity shadows even when it skips BE shadows.
+            command(server, "summon minecraft:cow 0.5 64 -4.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
+        }
         ServerLevel level = server.overworld();
+        if (hasExtras()) {
+            command(server, "setblock 9 64 -3 mekanism_extras:absolute_energy_cube");
+            command(server, "setblock 9 64 1 mekanism_extras:absolute_fluid_tank");
+            require(level.getBlockEntity(EXTRA_CUBE) != null && level.getBlockEntity(EXTRA_TANK) != null, "Mekanism Extras fixtures were not placed");
+        }
         setMotorSpeed(level, MOTOR, 32);
         setMotorSpeed(level, PRESS_MOTOR, 32);
         for (String mod : MODS) {
@@ -512,7 +622,9 @@ public final class CompatTest {
             Class<?> mode = Class.forName("com.simibubi.create.content.kinetics.press.PressingBehaviour$Mode");
             behaviour.getClass().getMethod("start", mode).invoke(behaviour, mode.getField("WORLD").get(null));
         }
-        for (BlockPos pos : TANKS) {
+        var tanks = new java.util.ArrayList<>(TANKS);
+        if (hasExtras()) tanks.add(EXTRA_TANK);
+        for (BlockPos pos : tanks) {
             BlockEntity tank = level.getBlockEntity(pos);
             require(tank != null, "Fixture tank disappeared");
             IFluidHandler handler = tank.getCapability(ForgeCapabilities.FLUID_HANDLER, Direction.UP).resolve()
@@ -527,7 +639,7 @@ public final class CompatTest {
             outputHandler.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
             int requested = (int) (capacity * (high ? 0.7 : 0.35));
             int accepted = handler.fill(new FluidStack(Fluids.WATER, requested), IFluidHandler.FluidAction.EXECUTE);
-            if (accepted <= 0 && BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()).getNamespace().equals("mekanism")) {
+            if (accepted <= 0 && Set.of("mekanism", "mekanism_extras").contains(BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()).getNamespace())) {
                 // A tank's configured side modes can reject automation. Its public native tank API
                 // still provides an exact, real world fixture and invokes normal contents listeners.
                 Object inventory = tank.getClass().getField("fluidTank").get(tank);
@@ -553,6 +665,15 @@ public final class CompatTest {
         Object charge = maximum.getClass().getMethod("multiply", double.class).invoke(maximum, high ? 0.8 : 0.4);
         energyContainer.getClass().getMethod("setEnergy", Class.forName("mekanism.api.math.FloatingLong")).invoke(energyContainer, charge);
         cube.getClass().getMethod("sendUpdatePacket").invoke(cube);
+        if (hasExtras()) {
+            BlockEntity extra = level.getBlockEntity(EXTRA_CUBE);
+            require(extra != null, "Mekanism Extras cube disappeared");
+            Object container = extra.getClass().getMethod("getEnergyContainer").invoke(extra);
+            Object maximumExtra = container.getClass().getMethod("getMaxEnergy").invoke(container);
+            Object chargeExtra = maximumExtra.getClass().getMethod("multiply", double.class).invoke(maximumExtra, high ? 0.8 : 0.4);
+            container.getClass().getMethod("setEnergy", Class.forName("mekanism.api.math.FloatingLong")).invoke(container, chargeExtra);
+            extra.getClass().getMethod("sendUpdatePacket").invoke(extra);
+        }
         animationUpdates++;
     }
 
@@ -580,6 +701,26 @@ public final class CompatTest {
     private static float clientShaftSpeed(Minecraft mc) throws Exception {
         BlockEntity shaft = mc.level.getBlockEntity(SHAFT);
         return shaft == null ? 0 : ((Number) shaft.getClass().getMethod("getSpeed").invoke(shaft)).floatValue();
+    }
+
+    private static boolean hasExtras() { return ModList.get().isLoaded("mekanism_extras"); }
+
+    private static JsonObject checkExtras(ProfilerSnapshot snapshot, boolean full) {
+        JsonObject evidence = new JsonObject();
+        for (var fixture : Map.of("energyCube", EXTRA_CUBE, "fluidTank", EXTRA_TANK).entrySet()) {
+            InstanceMetric instance = fixtureInstanceAt(snapshot, "mekanism_extras", fixture.getValue());
+            require(instance.context().registryOwner().equals("mekanism_extras") && instance.context().rendererOwner().equals("mekanism_extras"), "Mekanism Extras registry/renderer owner mismatch");
+            require(instance.context().rendererClass().startsWith("com.jerry.mekanism_extras."), "Mekanism Extras implementation attribution was lost");
+            Statistics stats = instance.stats();
+            require(stats.calls() > 0 && stats.averageMs() > 0 && stats.failures() == 0, "No real successful Mekanism Extras renderer timing");
+            if (full) require(stats.verticesPerFrame() > 0 && !stats.renderTypes().isEmpty(), "No real Mekanism Extras geometry; charged cube deferred callback must be attributed");
+            else require(stats.verticesPerFrame() == 0 && stats.estimatedBytesPerFrame() == 0 && stats.renderTypes().isEmpty(), "Timing Only retained Mekanism Extras geometry");
+            JsonObject row = new JsonObject();
+            row.addProperty("registryId", instance.context().registryId()); row.addProperty("registryOwner", instance.context().registryOwner());
+            row.addProperty("rendererClass", instance.context().rendererClass()); row.addProperty("rendererOwner", instance.context().rendererOwner());
+            row.add("statistics", GSON.toJsonTree(stats)); evidence.add(fixture.getKey(), row);
+        }
+        return evidence;
     }
 
     private static boolean ready(ProfilerSnapshot snapshot, boolean full) {
@@ -654,6 +795,47 @@ public final class CompatTest {
         return result;
     }
 
+    private static JsonObject checkNativeMechanisms(ProfilerSnapshot snapshot, boolean full) throws Exception {
+        require(shaderNativeFallback && !flywheelOn(), "Native shader checks require the actual disabled instancing backend");
+        JsonObject result = new JsonObject();
+        for (var entry : MECHANISMS.entrySet()) {
+            InstanceMetric instance = fixtureInstanceAt(snapshot, "create", entry.getValue());
+            require(instance.context().registryId().equals(FIXTURE_TYPES.get(entry.getKey())), "Wrong native Create mechanism type");
+            require(instance.context().registryOwner().equals("create") && instance.context().rendererOwner().equals("create"),
+                    "Wrong registry/renderer attribution for native " + entry.getKey());
+            Statistics stats = instance.stats();
+            var source = stats.sources().get(MeasurementSource.RENDERER);
+            require(source != null && source.calls() > 0 && source.averageMs() > 0 && source.failures() == 0,
+                    "No actual native renderer CPU measurements for " + entry.getKey());
+            require(stats.sources().entrySet().stream().noneMatch(value -> value.getKey().name().startsWith("FLYWHEEL_VISUAL") && value.getValue().calls() > 0),
+                    "Disabled shader backend retained instanced visual samples for " + entry.getKey());
+            if (full) require(stats.verticesPerFrame() > 0 && stats.estimatedBytesPerFrame() > 0 && !stats.renderTypes().isEmpty(),
+                    "Native shader mechanism Full geometry is missing for " + entry.getKey());
+            else require(stats.verticesPerFrame() == 0 && stats.estimatedBytesPerFrame() == 0 && stats.renderTypes().isEmpty(),
+                    "Native shader mechanism retained geometry in Timing Only");
+            JsonObject row = new JsonObject();
+            row.addProperty("registryId", instance.context().registryId());
+            row.addProperty("registryOwner", instance.context().registryOwner());
+            row.addProperty("rendererClass", instance.context().rendererClass());
+            row.addProperty("rendererOwner", instance.context().rendererOwner());
+            row.addProperty("measurement", "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration");
+            row.add("statistics", GSON.toJsonTree(stats));
+            result.add(entry.getKey(), row);
+        }
+        return result;
+    }
+
+    private static void checkNoInstancedShaderWork(ProfilerSnapshot snapshot) {
+        require(snapshot.phases().stream().noneMatch(value -> value.stats().sources().containsKey(MeasurementSource.FLYWHEEL_BATCH_SUBMIT)
+                        && value.stats().sources().get(MeasurementSource.FLYWHEEL_BATCH_SUBMIT).calls() > 0),
+                "Disabled instancing backend retained shared Flywheel batch measurements");
+        FlywheelGpuTimers.Snapshot gpu = FlywheelGpuTimers.snapshot();
+        require(gpu.completedBatches() == 0 && gpu.pendingBatches() == 0, "Disabled instancing backend retained Flywheel GPU queries");
+        RESULT.addProperty("sharedFlywheelBatchMeasured", false);
+        RESULT.addProperty("flywheelGpuTimingMeasured", false);
+        RESULT.add("shaderFallbackFlywheelGpuState", GSON.toJsonTree(gpu));
+    }
+
     private static void checkSharedFlywheelPhases(ProfilerSnapshot snapshot) {
         var phase = snapshot.phases().stream().filter(value -> value.stats().sources().containsKey(MeasurementSource.FLYWHEEL_BATCH_SUBMIT))
                 .findFirst().orElseThrow(() -> new IllegalStateException("No shared Flywheel batch CPU phase"));
@@ -667,10 +849,15 @@ public final class CompatTest {
     }
 
     private static InstanceMetric fixtureInstanceAt(ProfilerSnapshot snapshot, String mod, BlockPos pos) {
+        return findFixture(snapshot, mod, pos)
+                .orElseThrow(() -> new IllegalStateException("No actual selected fixture instance for " + mod));
+    }
+
+    private static java.util.Optional<InstanceMetric> findFixture(ProfilerSnapshot snapshot, String mod, BlockPos pos) {
         return snapshot.instances().stream().filter(row -> row.context().key().kind() == ObjectKind.BLOCK_ENTITY
                 && row.context().registryOwner().equals(mod) && row.context().position().x() == pos.getX()
                 && row.context().position().y() == pos.getY() && row.context().position().z() == pos.getZ())
-                .findFirst().orElseThrow(() -> new IllegalStateException("No actual selected fixture instance for " + mod));
+                .findFirst();
     }
 
     private static void selectFixture(String mod) {
@@ -684,11 +871,14 @@ public final class CompatTest {
     private static void selectInstance(String mod, BlockPos pos) {
         Minecraft mc = Minecraft.getInstance(); ClientRuntime runtime = ClientRuntime.current();
         runtime.overlay().clear(); runtime.settings().heatmap = false; runtime.settings().inspect = false; runtime.saveSettings();
-        selected = fixtureInstanceAt(runtime.profiler().snapshot(), mod, pos).context().key();
-        runtime.toggleHighlight(selected); runtime.toggleTrack(selected); mc.setScreen(null);
+        mc.setScreen(null);
         MinecraftServer server = mc.getSingleplayerServer();
         int pitch = 12 - (pos.getY() - 64) * 10;
         server.execute(() -> command(server, String.format(Locale.ROOT, "tp @a %.1f 64 %.1f 180 %d", pos.getX() + 0.5, pos.getZ() + 6.5, pitch)));
+        // Native renderers only sample visible objects; warm the real camera
+        // before selecting a target that has expired from the rolling window.
+        pendingSelection = new SelectionRequest(mod, pos);
+        selectionRequestedAt = ticks;
     }
 
     private static void checkSelection(ClientRuntime runtime, String mod) {
@@ -749,6 +939,13 @@ public final class CompatTest {
     }
 
     private static void openObject(String mod) {
+        if (mod.equals("shaft")) {
+            // Native renderers only measure visible objects. The preceding
+            // Extras selection looks away from this shaft for longer than the
+            // rolling window; return the actual camera before searching it.
+            Minecraft.getInstance().getSingleplayerServer().execute(() -> command(
+                    Minecraft.getInstance().getSingleplayerServer(), "tp @a -6.5 64 3.5 180 12"));
+        }
         ClientRuntime.current().open(null); clickTab("objects");
         for (var child : Minecraft.getInstance().screen.children()) if (child instanceof EditBox search) { search.setValue(FIXTURE_TYPES.get(mod)); return; }
         throw new IllegalStateException("No native object search box");
@@ -781,21 +978,24 @@ public final class CompatTest {
         } catch (Throwable failure) { fail(failure); }
     }
 
-    private static void image(String name, Runnable after) { IMAGE_QUEUE.add(new CaptureImage(output.resolve(name), name, true, after, null, 0)); }
+    private static void image(String name, Runnable after) {
+        if (shaderNativeFallback) name = name.replace("-instanced-", "-native-");
+        IMAGE_QUEUE.add(new CaptureImage(output.resolve(name), name, true, after, null, 0));
+    }
     private record CaptureImage(Path destination, String screenshotName, boolean gallery, Runnable after, JsonObject provenance, long originNanos) {}
 
     /** Additional publication footage; the eleven diagnostic screenshots remain a separate contract. */
     private static boolean captureMotion(String mechanism) throws Exception {
         long now = System.nanoTime();
         if (motionName == null) {
-            require(flywheelOn(), "Motion footage must show the real enabled Flywheel backend");
+            require(shaderNativeFallback ? !flywheelOn() : flywheelOn(), "Motion footage backend does not match its measured scenario");
             motionName = mechanism;
             motionStarted = motionNextFrame = now;
             motionFrames = 0;
             motionTimes = new JsonArray();
             motionPressChangesBefore = pressHeadOffsetChanges;
             Path presentation = Path.of(System.getProperty("renderscope.compat.presentation.output", output.getParent().resolve("presentation").toString()));
-            motionDirectory = presentation.resolve("media-frame-" + mechanism);
+            motionDirectory = presentation.resolve("media-frame-" + (shaderNativeFallback ? "native-" : "") + mechanism);
             Files.createDirectories(motionDirectory);
         }
         require(motionName.equals(mechanism), "Overlapping motion captures");
@@ -818,6 +1018,7 @@ public final class CompatTest {
         capture.addProperty("environment", RESULT.get("environment").getAsString());
         if (RESULT.has("primaryJarSha256")) capture.add("primaryJarSha256", RESULT.get("primaryJarSha256"));
         capture.addProperty("mechanism", mechanism); capture.addProperty("flywheelBackend", backendName());
+        capture.addProperty("renderingMode", shaderNativeFallback ? "Active shaders with native Create renderer fallback" : "Flywheel instanced visuals");
         capture.addProperty("frameCount", motionFrames); capture.addProperty("playbackFrameDurationMillis", 150);
         capture.addProperty("completedAt", Instant.now().toString()); capture.add("frames", motionTimes);
         Files.writeString(motionDirectory.resolve("capture.json"), GSON.toJson(capture), StandardCharsets.UTF_8);

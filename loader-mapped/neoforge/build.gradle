@@ -1,0 +1,31 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+ext.minecraftTarget=providers.gradleProperty('minecraft_version').get()
+def targets=['1.21.9':'21.9.16-beta','1.21.10':'21.10.64','1.21.11':'21.11.48']
+if(!targets.containsKey(minecraftTarget))throw new GradleException("No inspected NeoForge target ${minecraftTarget}")
+ext.targetLoader='neoforge'
+ext.targetLoaderVersion=targets[minecraftTarget]
+apply from:'../adapter-sources.gradle'
+apply from:'../smoke/native-smoke.gradle'
+neoForge {
+    version=targetLoaderVersion
+    addModdingDependenciesTo sourceSets.smoke
+    mods { renderscope { sourceSet(sourceSets.main) };renderscope_native_smoke { sourceSet(sourceSets.smoke) } }
+    runs {
+        client { client();gameDirectory=file("../../run-neoforge-${minecraftTarget}");loadedMods=[mods.renderscope] }
+        smokeClient {
+            client();gameDirectory=file("../../run-smoke-neoforge-${minecraftTarget}")
+            sourceSet=sourceSets.smoke
+            loadedMods=[mods.renderscope,mods.renderscope_native_smoke]
+            systemProperty 'renderscope.modern.smoke.output', file("../../distribution/neoforge/${minecraftTarget}/development").absolutePath
+            systemProperty 'renderscope.modern.smoke.artifact', tasks.named('jar').flatMap { it.archiveFile }.get().asFile.absolutePath
+        }
+    }
+    if(minecraftTarget!='1.21.11') accessTransformers.from(file('../src/pipeline/resources/META-INF/accesstransformer.cfg'))
+}
+dependencies {
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+}
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-proc:none'] }

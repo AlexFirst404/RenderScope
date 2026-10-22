@@ -1,0 +1,93 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.0.116'
+}
+def sharedProperties = new Properties()
+file('../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('1.20.4').get()
+def neoVersions = ['1.20.2':'20.2.93', '1.20.3':'20.3.8-beta', '1.20.4':'20.4.253']
+if (!neoVersions.containsKey(mcVersion)) throw new GradleException("No NeoForge adapter configuration for ${mcVersion}")
+def neoVersion = neoVersions[mcVersion]
+def sharedJava = file('../src/main/java').canonicalFile.toPath()
+def unsupportedOptional = [
+    'dev/renderscope/client/integration/FlywheelPlanAdapter.java',
+    'dev/renderscope/mixin/FastBufferBuilderMixin.java',
+    'dev/renderscope/mixin/IrisBufferSourceMixin.java',
+    'dev/renderscope/mixin/FlywheelBatchMixin.java',
+    'dev/renderscope/mixin/FlywheelLightUpdateMixin.java',
+    'dev/renderscope/mixin/FlywheelStorageMixin.java',
+    'dev/renderscope/mixin/FlywheelTaskExecutorMixin.java',
+    'dev/renderscope/mixin/MekanismDeferredRenderMixin.java',
+    'dev/renderscope/mixin/RenderScopeMixinPlugin.java'
+] as Set
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-neoforge' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', '../mc20/src/main/java', '../src/main/java']
+        java.exclude { entry ->
+            def path = entry.path.replace('\\', '/')
+            entry.file.toPath().startsWith(sharedJava) && (unsupportedOptional.contains(path)
+                || path == 'dev/renderscope/RenderScope.java' || path.startsWith('dev/renderscope/client/platform/Forge')
+                || path == 'dev/renderscope/client/ui/RenderScopeScreen.java')
+        }
+        resources.srcDirs = ['src/main/resources', '../src/main/resources']
+        resources.exclude { entry -> entry.file.toPath().startsWith(file('../src/main/resources').canonicalFile.toPath()) && entry.path in ['META-INF/mods.toml', 'pack.mcmeta', 'renderscope.mixins.json'] }
+    }
+    test {
+        java.srcDirs = ['../src/test/java']
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+runs {
+    configureEach { modSource sourceSets.main }
+    client { workingDirectory = file("../run-neoforge-${mcVersion}") }
+}
+repositories { mavenCentral() }
+dependencies {
+    implementation "net.neoforged:neoforge:${neoVersion}"
+    implementation 'io.github.llamalad7:mixinextras-common:0.4.1'
+    jarJar('io.github.llamalad7:mixinextras-neoforge:0.4.1') { version { strictly '[0.4.1,)'; prefer '0.4.1' } }
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+    // NeoForge runs named Minecraft; a Forge SRG refmap would remap to incorrect names.
+    options.compilerArgs += ['-proc:none']
+}
+tasks.withType(Jar).configureEach {
+    from('../LICENSE') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('MixinConfigs':'renderscope.mixins.json', 'Implementation-Version':project.version,
+            'Implementation-Title':'RenderScope', 'RenderScope-Loader':'neoforge', 'RenderScope-Loader-Version':neoVersion)
+}
+tasks.named('processResources') {
+    inputs.property 'dependencySchema', 'fml1-mandatory'
+    // FML 1.0.16 (NeoForge 1.20.2/1.20.3) predates the dependency type field.
+    filesMatching('META-INF/mods.toml') {
+        filter { line -> line.replace('type="required"', 'mandatory=true') }
+    }
+    def props = [version: project.version, minecraft_version: mcVersion, neo_version: neoVersion,
+        pack_format: mcVersion == '1.20.2' ? 18 : 22]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+}
+tasks.named('test') { useJUnitPlatform() }
+
+// NeoGradle otherwise leaves the distributable as '-all.jar' beside an unbundled JAR.
+tasks.named('jar') { archiveClassifier = 'slim' }
+tasks.named('jarJar') { archiveClassifier = '' }
+tasks.named('build') { dependsOn 'jarJar' }
+
+ext.smokeMinecraft = mcVersion
+ext.smokeLoader = 'neoforge'
+ext.smokeLoaderVersion = neoVersion
+apply from: '../loader21/older-smoke.gradle'

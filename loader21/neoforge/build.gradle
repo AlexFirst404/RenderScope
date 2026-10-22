@@ -1,0 +1,53 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+ext.minecraftTarget = providers.gradleProperty('minecraft_version').orElse('1.21.1').get()
+def inspectedVersions = ['1.20.5':'20.5.21-beta', '1.20.6':'20.6.144', '1.21':'21.0.167', '1.21.1':'21.1.264',
+    '1.21.2':'21.2.1-beta','1.21.3':'21.3.100','1.21.4':'21.4.161','1.21.5':'21.5.101',
+    '1.21.6':'21.6.20-beta','1.21.7':'21.7.25-beta','1.21.8':'21.8.57']
+if (!inspectedVersions.containsKey(minecraftTarget)) throw new GradleException("No compiled adapter configuration for ${minecraftTarget}")
+ext.targetLoader = 'neoforge'
+ext.targetLoaderVersion = inspectedVersions[minecraftTarget]
+def builtinMixinExtras = ['1.21.1':'0.5.5','1.21.3':'0.5.3','1.21.4':'0.5.3','1.21.5':'0.5.3','1.21.8':'0.5.3']
+apply from: '../adapter-sources.gradle'
+neoForge {
+    version = targetLoaderVersion
+    if (pipelines) accessTransformers.from file('../pipeline/accesstransformer.cfg')
+    addModdingDependenciesTo sourceSets.smoke
+    mods {
+        renderscope { sourceSet(sourceSets.main) }
+        renderscope_smoke { sourceSet(sourceSets.smoke) }
+    }
+    runs {
+        client { client(); gameDirectory = file("../../run-neoforge-${minecraftTarget}"); loadedMods = [mods.renderscope] }
+        smokeClient {
+            client(); gameDirectory = file("../../run-smoke-neoforge-${minecraftTarget}")
+            sourceSet = sourceSets.smoke
+            loadedMods = [mods.renderscope, mods.renderscope_smoke]
+            systemProperty 'renderscope.expectedLoader', 'NeoForge'
+            systemProperty 'renderscope.expectedLoaderVersion', targetLoaderVersion
+            systemProperty 'renderscope.expectedMinecraft', minecraftTarget
+            systemProperty 'renderscope.smoke.output', file("../../distribution/neoforge/${minecraftTarget}/development").absolutePath
+        }
+    }
+}
+dependencies {
+    implementation 'io.github.llamalad7:mixinextras-common:0.4.1'
+    // These exact official universal JARs already supply the required 0.5.x API;
+    // avoid an unnecessary second nested provider in the production mod.
+    if (!builtinMixinExtras.containsKey(minecraftTarget)) {
+        jarJar('io.github.llamalad7:mixinextras-neoforge:0.4.1') { version { strictly '[0.4.1,)'; prefer '0.4.1' } }
+    }
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+// NeoForge production runs named Minecraft. A Forge SRG refmap would be incorrect here.
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-proc:none'] }
+
+if (builtinMixinExtras.containsKey(minecraftTarget)) {
+    // ModDev's NO-SOURCE jarJar task can leave generated files from a previous
+    // configuration. These targets have no bundled dependencies of their own.
+    tasks.named('jar') { exclude 'META-INF/jarjar/**' }
+}

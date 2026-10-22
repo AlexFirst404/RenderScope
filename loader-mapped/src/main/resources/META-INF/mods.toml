@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[${forge_major},)"
+license="LicenseRef-RenderScope-Source-Available-1.0"
+issueTrackerURL="https://github.com/AlexFirst404/RenderScope/issues"
+[[mods]]
+modId="renderscope"
+version="${version}"
+displayName="RenderScope"
+displayURL="https://github.com/AlexFirst404/RenderScope"
+logoFile="assets/renderscope/renderscope-logo.png"
+authors="AlexFirst404"
+displayTest="IGNORE_ALL_VERSION"
+description='''Client-side rendering profiler with exact object highlighting. CPU extraction and submission timings are measured separately; GPU and vertex metrics are unavailable on this adapter.'''
+[[dependencies.renderscope]]
+modId="forge"
+mandatory=true
+versionRange="[${forge_version},)"
+ordering="NONE"
+side="CLIENT"
+[[dependencies.renderscope]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft_version}]"
+ordering="NONE"
+side="CLIENT"

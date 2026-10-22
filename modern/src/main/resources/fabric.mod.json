@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "renderscope",
+  "version": "${version}",
+  "name": "RenderScope",
+  "description": "Client-side CPU rendering profiler. Inspect measured entity and block-entity work and locate the corresponding world instance.",
+  "authors": ["AlexFirst"],
+  "contact": {
+    "sources": "https://github.com/AlexFirst404/RenderScope",
+    "issues": "https://github.com/AlexFirst404/RenderScope/issues"
+  },
+  "license": "LicenseRef-RenderScope-Source-Available-1.0",
+  "icon": "assets/renderscope/renderscope-logo.png",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.renderscope.modern.RenderScopeModern"] },
+  "mixins": [{ "config": "renderscope.modern.mixins.json", "environment": "client" }],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "${minecraft_version}",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

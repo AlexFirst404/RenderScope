@@ -1,0 +1,2835 @@
+{
+  "schemaVersion": 2,
+  "recordedAt": "2026-10-22T21:14:55.412Z",
+  "durationSeconds": 5.0028406,
+  "frames": 593,
+  "measurementMode": "CPU_TIMING_ONLY",
+  "positionsIncluded": false,
+  "timingMeaning": "Exclusive CPU-side render-state extraction and submission intervals, with separate sources. Calls count both stages. Deferred feature execution and GPU work are outside these per-object intervals.",
+  "coverageMeaning": "Real-world entities and block entities reached through vanilla extraction/submission dispatchers. Registry and renderer implementation ownership are separate. Preview entities and virtual block worlds are excluded. Shader shadow calls are excluded when the optional public Iris API identifies them; shaderCoverage records API availability/failures. Terrain, particles, items and GUI are not attributed.",
+  "shaderCoverage": {
+    "shaderApiPresent": false,
+    "shadowDetectionAvailable": false,
+    "shaderPackEnabled": false,
+    "shadowPassActive": false,
+    "apiClass": "",
+    "failure": ""
+  },
+  "geometryAvailable": false,
+  "geometryMeaning": "Unavailable: later deferred feature batches are not assigned to objects. Zero geometry fields do not assert that an object generated no geometry.",
+  "gpuTimingAvailable": false,
+  "gpuMeaning": "Unavailable in this render-state adapter. CPU intervals are not GPU timings, VRAM or predicted FPS gains.",
+  "percentiles": "Capture histograms are bounded; averages include frames with zero calls.",
+  "droppedMeasurements": 0,
+  "performance": {
+    "frames": 593,
+    "fps": 121.16315566966641,
+    "currentFrameMs": 8.2333,
+    "averageFrameMs": 8.253334064080944,
+    "onePercentLowFps": 104.36982567656722,
+    "p50FrameMs": 8.190874594119117,
+    "p95FrameMs": 8.743452683674326,
+    "p99FrameMs": 9.333309154377694,
+    "worstFrameMs": 10.3978,
+    "measuredRenderMs": 0.06786306913996627,
+    "entityRenderMs": 0.0,
+    "blockEntityRenderMs": 0.06786306913996627,
+    "rendererCallsPerFrame": 6.0,
+    "renderedEntitiesPerFrame": 0.0,
+    "renderedBlockEntitiesPerFrame": 3.0,
+    "measuredObjects": 3,
+    "verticesPerFrame": 0.0,
+    "estimatedBytesPerFrame": 0.0
+  },
+  "mods": [
+    {
+      "id": "minecraft",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.06786306913996627,
+        "p95Ms": 0.0905721853024411,
+        "peakMs": 0.3142,
+        "cpuMs": 0.1317453625632378,
+        "callsPerFrame": 6.0,
+        "calls": 3558,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 3,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.03632765598650927,
+            "cpuMs": 0.07904721753794267,
+            "callsPerFrame": 3.0,
+            "calls": 1779,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.031535413153456995,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 3.0,
+            "calls": 1779,
+            "failures": 0
+          }
+        }
+      }
+    }
+  ],
+  "renderers": [
+    {
+      "id": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.03361433389544688,
+        "p95Ms": 0.04514048083490098,
+        "peakMs": 0.07,
+        "cpuMs": 0.10539629005059022,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.015768465430016865,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.017845868465430015,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.02402866779089376,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.268,
+        "cpuMs": 0.026349072512647554,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.013115682967959529,
+            "cpuMs": 0.026349072512647554,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.010912984822934233,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.010220067453625631,
+        "p95Ms": 0.013057652911249584,
+        "peakMs": 0.049,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.007443507588532883,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.002776559865092749,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    }
+  ],
+  "objects": [
+    {
+      "id": "minecraft:chest",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.03361433389544688,
+        "p95Ms": 0.04514048083490098,
+        "peakMs": 0.07,
+        "cpuMs": 0.10539629005059022,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.015768465430016865,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.017845868465430015,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "minecraft:beacon",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.02402866779089376,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.268,
+        "cpuMs": 0.026349072512647554,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.013115682967959529,
+            "cpuMs": 0.026349072512647554,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.010912984822934233,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "minecraft:enchanting_table",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.010220067453625631,
+        "p95Ms": 0.013057652911249584,
+        "peakMs": 0.049,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.007443507588532883,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.002776559865092749,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    }
+  ],
+  "instances": [
+    {
+      "registryId": "minecraft:chest",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.03361433389544688,
+        "p95Ms": 0.04514048083490098,
+        "peakMs": 0.07,
+        "cpuMs": 0.10539629005059022,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.015768465430016865,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.017845868465430015,
+            "cpuMs": 0.05269814502529511,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "registryId": "minecraft:beacon",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.02402866779089376,
+        "p95Ms": 0.03711146670178709,
+        "peakMs": 0.268,
+        "cpuMs": 0.026349072512647554,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.013115682967959529,
+            "cpuMs": 0.026349072512647554,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.010912984822934233,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    },
+    {
+      "registryId": "minecraft:enchanting_table",
+      "kind": "BLOCK_ENTITY",
+      "registryOwner": "minecraft",
+      "rendererClass": "net.minecraft.client.renderer.blockentity.EnchantTableRenderer",
+      "rendererOwner": "minecraft",
+      "statistics": {
+        "averageMs": 0.010220067453625631,
+        "p95Ms": 0.013057652911249584,
+        "peakMs": 0.049,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 1186,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDER_SUBMISSION": {
+            "averageMs": 0.007443507588532883,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          },
+          "RENDER_EXTRACTION": {
+            "averageMs": 0.002776559865092749,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 593,
+            "failures": 0
+          }
+        }
+      }
+    }
+  ],
+  "phases": [],
+  "timeline": [
+    {
+      "secondsFromTimelineStart": 0.0,
+      "frameMs": 9.0145,
+      "measuredCpuMs": 0.0755,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0755,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0755
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0331,
+          "p95Ms": 0.0331,
+          "peakMs": 0.0331,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0214,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0117,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.1435011,
+      "frameMs": 8.8721,
+      "measuredCpuMs": 0.0801,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0801,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0801
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0357,
+          "p95Ms": 0.0357,
+          "peakMs": 0.0357,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0162,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0195,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.2442398,
+      "frameMs": 8.8826,
+      "measuredCpuMs": 0.0802,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0802,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0802
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0364,
+          "p95Ms": 0.0364,
+          "peakMs": 0.0364,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0184,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.018,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.3201187,
+      "frameMs": 8.8562,
+      "measuredCpuMs": 0.1369,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.1369,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.1369
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.096,
+          "p95Ms": 0.096,
+          "peakMs": 0.096,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0823,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0137,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.4713157,
+      "frameMs": 8.7137,
+      "measuredCpuMs": 0.0684,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0684,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0684
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0307,
+          "p95Ms": 0.0307,
+          "peakMs": 0.0307,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0147,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.016,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.5639021,
+      "frameMs": 8.9592,
+      "measuredCpuMs": 0.072,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.072,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.072
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0325,
+          "p95Ms": 0.0325,
+          "peakMs": 0.0325,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0159,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0166,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.6233127,
+      "frameMs": 8.8076,
+      "measuredCpuMs": 0.0704,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0704,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0704
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0315,
+          "p95Ms": 0.0315,
+          "peakMs": 0.0315,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0141,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0174,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.7412849,
+      "frameMs": 8.5733,
+      "measuredCpuMs": 0.0684,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0684,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0684
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0301,
+          "p95Ms": 0.0301,
+          "peakMs": 0.0301,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0131,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.017,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.8343618,
+      "frameMs": 8.8892,
+      "measuredCpuMs": 0.0708,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0708,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0708
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0319,
+          "p95Ms": 0.0319,
+          "peakMs": 0.0319,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0163,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0156,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 0.9436057,
+      "frameMs": 8.3806,
+      "measuredCpuMs": 0.0711,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0711,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0711
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0316,
+          "p95Ms": 0.0316,
+          "peakMs": 0.0316,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0148,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0168,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.0691739,
+      "frameMs": 8.7572,
+      "measuredCpuMs": 0.0705,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0705,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0705
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0324,
+          "p95Ms": 0.0324,
+          "peakMs": 0.0324,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0142,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0182,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.0864687,
+      "frameMs": 8.7297,
+      "measuredCpuMs": 0.0926,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0926,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0926
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.04,
+          "p95Ms": 0.04,
+          "peakMs": 0.04,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0188,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0212,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.2210162,
+      "frameMs": 8.5975,
+      "measuredCpuMs": 0.066,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.066,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.066
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0289,
+          "p95Ms": 0.0289,
+          "peakMs": 0.0289,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0131,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0158,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.3053444,
+      "frameMs": 8.833,
+      "measuredCpuMs": 0.075,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.075,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.075
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0335,
+          "p95Ms": 0.0335,
+          "peakMs": 0.0335,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0152,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0183,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.389499,
+      "frameMs": 8.9889,
+      "measuredCpuMs": 0.3142,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.3142,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.3142
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.268,
+          "p95Ms": 0.268,
+          "peakMs": 0.268,
+          "cpuMs": 15.625,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.141,
+              "cpuMs": 15.625,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.127,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.5328519,
+      "frameMs": 8.8068,
+      "measuredCpuMs": 0.0686,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0686,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0686
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0373,
+          "p95Ms": 0.0373,
+          "peakMs": 0.0373,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0181,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0192,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.6511517,
+      "frameMs": 8.8764,
+      "measuredCpuMs": 0.0642,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0642,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0642
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0357,
+          "p95Ms": 0.0357,
+          "peakMs": 0.0357,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0188,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0169,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.7351736,
+      "frameMs": 8.8771,
+      "measuredCpuMs": 0.0751,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0751,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0751
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0409,
+          "p95Ms": 0.0409,
+          "peakMs": 0.0409,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0184,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0225,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.8204343,
+      "frameMs": 9.3886,
+      "measuredCpuMs": 0.0612,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0612,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0612
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0312,
+          "p95Ms": 0.0312,
+          "peakMs": 0.0312,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.015,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0162,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 1.9299755,
+      "frameMs": 8.6848,
+      "measuredCpuMs": 0.0862,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0862,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0862
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0398,
+          "p95Ms": 0.0398,
+          "peakMs": 0.0398,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0183,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0215,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.0055937,
+      "frameMs": 8.5561,
+      "measuredCpuMs": 0.0645,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0645,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0645
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0329,
+          "p95Ms": 0.0329,
+          "peakMs": 0.0329,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0148,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0181,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.1147711,
+      "frameMs": 8.9697,
+      "measuredCpuMs": 0.0585,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0585,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0585
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0312,
+          "p95Ms": 0.0312,
+          "peakMs": 0.0312,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0146,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0166,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.1990909,
+      "frameMs": 8.9223,
+      "measuredCpuMs": 0.056,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.056,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.056
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0301,
+          "p95Ms": 0.0301,
+          "peakMs": 0.0301,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0137,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0164,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.2908688,
+      "frameMs": 8.2275,
+      "measuredCpuMs": 0.059,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.059,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.059
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0328,
+          "p95Ms": 0.0328,
+          "peakMs": 0.0328,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0136,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0192,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.4747329,
+      "frameMs": 8.7316,
+      "measuredCpuMs": 0.0564,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0564,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0564
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0302,
+          "p95Ms": 0.0302,
+          "peakMs": 0.0302,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0135,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0167,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.4837444,
+      "frameMs": 8.8566,
+      "measuredCpuMs": 0.055,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.055,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.055
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0289,
+          "p95Ms": 0.0289,
+          "peakMs": 0.0289,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0132,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0157,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.5841582,
+      "frameMs": 8.3127,
+      "measuredCpuMs": 0.0732,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0732,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0732
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0403,
+          "p95Ms": 0.0403,
+          "peakMs": 0.0403,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0163,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.024,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.7443974,
+      "frameMs": 9.2997,
+      "measuredCpuMs": 0.0626,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0626,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0626
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0333,
+          "p95Ms": 0.0333,
+          "peakMs": 0.0333,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0138,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0195,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.7956231,
+      "frameMs": 9.3922,
+      "measuredCpuMs": 0.0554,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0554,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0554
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0291,
+          "p95Ms": 0.0291,
+          "peakMs": 0.0291,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0124,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0167,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 2.971036,
+      "frameMs": 8.5643,
+      "measuredCpuMs": 0.0517,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0517,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0517
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0261,
+          "p95Ms": 0.0261,
+          "peakMs": 0.0261,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0116,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0145,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.0054267,
+      "frameMs": 9.2556,
+      "measuredCpuMs": 0.0522,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0522,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0522
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0276,
+          "p95Ms": 0.0276,
+          "peakMs": 0.0276,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0119,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0157,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.1065712,
+      "frameMs": 9.1019,
+      "measuredCpuMs": 0.0582,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0582,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0582
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0304,
+          "p95Ms": 0.0304,
+          "peakMs": 0.0304,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0129,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0175,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.2822263,
+      "frameMs": 8.5168,
+      "measuredCpuMs": 0.0553,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0553,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0553
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0279,
+          "p95Ms": 0.0279,
+          "peakMs": 0.0279,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0127,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0152,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.3002743,
+      "frameMs": 8.865,
+      "measuredCpuMs": 0.0555,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0555,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0555
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0285,
+          "p95Ms": 0.0285,
+          "peakMs": 0.0285,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0127,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0158,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.3926725,
+      "frameMs": 8.6348,
+      "measuredCpuMs": 0.0585,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0585,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0585
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0312,
+          "p95Ms": 0.0312,
+          "peakMs": 0.0312,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0157,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0155,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.5604592,
+      "frameMs": 8.6692,
+      "measuredCpuMs": 0.0625,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0625,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0625
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0313,
+          "p95Ms": 0.0313,
+          "peakMs": 0.0313,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.014,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0173,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.6477007,
+      "frameMs": 10.3978,
+      "measuredCpuMs": 0.07,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.07,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.07
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0366,
+          "p95Ms": 0.0366,
+          "peakMs": 0.0366,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0182,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0184,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.6830155,
+      "frameMs": 9.7634,
+      "measuredCpuMs": 0.0694,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0694,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0694
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.038,
+          "p95Ms": 0.038,
+          "peakMs": 0.038,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0181,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0199,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.8585553,
+      "frameMs": 8.7029,
+      "measuredCpuMs": 0.0985,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0985,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0985
+      },
+      "worstInstance": {
+        "registryId": "minecraft:beacon",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.BeaconRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0566,
+          "p95Ms": 0.0566,
+          "peakMs": 0.0566,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0206,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.036,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 3.9261959,
+      "frameMs": 8.8739,
+      "measuredCpuMs": 0.0645,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0645,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0645
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0357,
+          "p95Ms": 0.0357,
+          "peakMs": 0.0357,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0163,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0194,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.0353211,
+      "frameMs": 8.3413,
+      "measuredCpuMs": 0.0539,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0539,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0539
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0276,
+          "p95Ms": 0.0276,
+          "peakMs": 0.0276,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.012,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0156,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.1603211,
+      "frameMs": 8.221,
+      "measuredCpuMs": 0.052,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.052,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.052
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0254,
+          "p95Ms": 0.0254,
+          "peakMs": 0.0254,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0116,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0138,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.2191693,
+      "frameMs": 8.7395,
+      "measuredCpuMs": 0.057,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.057,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.057
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0294,
+          "p95Ms": 0.0294,
+          "peakMs": 0.0294,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0122,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0172,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.3534879,
+      "frameMs": 8.8914,
+      "measuredCpuMs": 0.0519,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0519,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0519
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0284,
+          "p95Ms": 0.0284,
+          "peakMs": 0.0284,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0125,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0159,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.3955915,
+      "frameMs": 8.3268,
+      "measuredCpuMs": 0.0505,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0505,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0505
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.026,
+          "p95Ms": 0.026,
+          "peakMs": 0.026,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0117,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0143,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.5295712,
+      "frameMs": 8.8435,
+      "measuredCpuMs": 0.0661,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0661,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0661
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.03,
+          "p95Ms": 0.03,
+          "peakMs": 0.03,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0147,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0153,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.6393121,
+      "frameMs": 8.8365,
+      "measuredCpuMs": 0.0626,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0626,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0626
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0315,
+          "p95Ms": 0.0315,
+          "peakMs": 0.0315,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0155,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.016,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.7156351,
+      "frameMs": 8.9112,
+      "measuredCpuMs": 0.0525,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0525,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0525
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0273,
+          "p95Ms": 0.0273,
+          "peakMs": 0.0273,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0132,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0141,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.7918443,
+      "frameMs": 8.7682,
+      "measuredCpuMs": 0.0518,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0518,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0518
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0269,
+          "p95Ms": 0.0269,
+          "peakMs": 0.0269,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0123,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0146,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.9265042,
+      "frameMs": 9.0496,
+      "measuredCpuMs": 0.0609,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0609,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0609
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0332,
+          "p95Ms": 0.0332,
+          "peakMs": 0.0332,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0149,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0183,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "secondsFromTimelineStart": 4.9853768,
+      "frameMs": 8.2333,
+      "measuredCpuMs": 0.0838,
+      "entityCpuMs": 0.0,
+      "blockEntityCpuMs": 0.0838,
+      "spike": false,
+      "topModsMs": {
+        "minecraft": 0.0838
+      },
+      "worstInstance": {
+        "registryId": "minecraft:chest",
+        "kind": "BLOCK_ENTITY",
+        "registryOwner": "minecraft",
+        "rendererClass": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "rendererOwner": "minecraft",
+        "statistics": {
+          "averageMs": 0.0469,
+          "p95Ms": 0.0469,
+          "peakMs": 0.0469,
+          "cpuMs": 0.0,
+          "callsPerFrame": 2.0,
+          "calls": 2,
+          "failures": 0,
+          "verticesPerFrame": 0.0,
+          "estimatedBytesPerFrame": 0.0,
+          "instances": 1,
+          "renderTypes": [],
+          "sources": {
+            "RENDER_SUBMISSION": {
+              "averageMs": 0.0295,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            },
+            "RENDER_EXTRACTION": {
+              "averageMs": 0.0174,
+              "cpuMs": 0.0,
+              "callsPerFrame": 1.0,
+              "calls": 1,
+              "failures": 0
+            }
+          }
+        }
+      }
+    }
+  ],
+  "minecraftVersion": "26.1",
+  "loader": "Forge",
+  "loaderVersion": "62.0.9",
+  "renderscopeVersion": "0.3.0+mc26.1",
+  "threadCpuTimingEnabled": true,
+  "installedMods": [
+    {
+      "id": "forge",
+      "name": "Forge",
+      "version": "62.0.9"
+    },
+    {
+      "id": "minecraft",
+      "name": "Minecraft",
+      "version": "26.1"
+    },
+    {
+      "id": "renderscope",
+      "name": "RenderScope",
+      "version": "0.3.0+mc26.1"
+    },
+    {
+      "id": "renderscope_native_smoke",
+      "name": "RenderScope isolated native gameplay QA",
+      "version": "1.0"
+    }
+  ]
+}

@@ -1,0 +1,1242 @@
+{
+  "startedAt": "2026-10-22T19:25:59.508171900Z",
+  "evidence": "Real integrated-server fixtures and client renderer calls; no synthetic measurements",
+  "testedMods": [
+    {
+      "id": "create",
+      "name": "Create",
+      "version": "6.0.8"
+    },
+    {
+      "id": "mekanism",
+      "name": "Mekanism",
+      "version": "10.4.16"
+    },
+    {
+      "id": "mekanism_extras",
+      "name": "MekanismExtras",
+      "version": "1.5.0"
+    }
+  ],
+  "compatibilityProfile": "forge-oculus",
+  "expectedOptionalMods": {
+    "embeddium": "0.3.31+mc1.20.1",
+    "oculus": "1.8.0",
+    "mekanism_extras": "1.5.0"
+  },
+  "loader": "Forge",
+  "loaderVersion": "47.4.10",
+  "minecraftVersion": "1.20.1",
+  "environment": "installed-production",
+  "primaryJarSha256": "ec17881e856bba4fe8eb66caca708cc27d7908ad934c7e3c6e5d960e929ff44d",
+  "primaryArtifactKind": "jar",
+  "shaderStateBeforeValidation": {
+    "shaderApiPresent": true,
+    "shadowDetectionAvailable": true,
+    "shaderPackEnabled": true,
+    "shadowPassActive": false,
+    "apiClass": "net.irisshaders.iris.api.v0.IrisApi",
+    "failure": ""
+  },
+  "shadowPassObservedDuringWarmup": true,
+  "shaderNativeRendererFallback": true,
+  "instancedVisualMeasurementAvailable": false,
+  "shaderFallbackReason": "Active shaders selected the disabled Flywheel backend; this run measures native Create renderer work",
+  "realShaderEntityFixtureRendered": true,
+  "defaultFlywheelBackend": "flywheel:off",
+  "observedCreateShaftRpm": 32.0,
+  "realFluidAnimationUpdates": 7,
+  "defaultFull": {
+    "create": {
+      "type": "create:fluid_tank",
+      "renderer": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "modStatistics": {
+        "averageMs": 0.1276,
+        "p95Ms": 0.1929,
+        "peakMs": 0.3532,
+        "cpuMs": 0.0,
+        "callsPerFrame": 8.0,
+        "calls": 1808,
+        "failures": 0,
+        "verticesPerFrame": 444.0,
+        "estimatedBytesPerFrame": 23088.0,
+        "instances": 8,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.1276,
+            "cpuMs": 0.0,
+            "callsPerFrame": 8.0,
+            "calls": 1808,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.022901327433628316,
+        "p95Ms": 0.0329,
+        "peakMs": 0.1034,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 452,
+        "failures": 0,
+        "verticesPerFrame": 40.0,
+        "estimatedBytesPerFrame": 2080.0,
+        "instances": 2,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.022901327433628316,
+            "cpuMs": 0.0,
+            "callsPerFrame": 2.0,
+            "calls": 452,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.018032300884955752,
+        "p95Ms": 0.0253,
+        "peakMs": 0.0978,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 20.0,
+        "estimatedBytesPerFrame": 1040.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.018032300884955752,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "mekanism": {
+      "type": "mekanism:basic_fluid_tank",
+      "renderer": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "modStatistics": {
+        "averageMs": 0.07005486725663716,
+        "p95Ms": 0.1138,
+        "peakMs": 0.2027,
+        "cpuMs": 0.13827433628318583,
+        "callsPerFrame": 4.0,
+        "calls": 904,
+        "failures": 0,
+        "verticesPerFrame": 63.92920353982301,
+        "estimatedBytesPerFrame": 3580.0353982300885,
+        "instances": 3,
+        "renderTypes": [
+          "mek_standard_translucent_target",
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.07005486725663716,
+            "cpuMs": 0.13827433628318583,
+            "callsPerFrame": 4.0,
+            "calls": 904,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.03798097345132743,
+        "p95Ms": 0.0703,
+        "peakMs": 0.1243,
+        "cpuMs": 0.13827433628318583,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 19.964601769911503,
+        "estimatedBytesPerFrame": 1118.0176991150443,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.03798097345132743,
+            "cpuMs": 0.13827433628318583,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.03798097345132743,
+        "p95Ms": 0.0703,
+        "peakMs": 0.1243,
+        "cpuMs": 0.13827433628318583,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 19.964601769911503,
+        "estimatedBytesPerFrame": 1118.0176991150443,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.03798097345132743,
+            "cpuMs": 0.13827433628318583,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "mekanismExtrasFull": {
+    "energyCube": {
+      "registryId": "mekanism_extras:absolute_energy_cube",
+      "registryOwner": "mekanism_extras",
+      "rendererClass": "com.jerry.mekanism_extras.client.render.tileentity.RenderExtraEnergyCube",
+      "rendererOwner": "mekanism_extras",
+      "statistics": {
+        "averageMs": 0.0066424778761061945,
+        "p95Ms": 0.0096,
+        "peakMs": 0.0219,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 452,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 1344.0,
+        "instances": 1,
+        "renderTypes": [
+          "mek_standard_translucent_target"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.0066424778761061945,
+            "cpuMs": 0.0,
+            "callsPerFrame": 2.0,
+            "calls": 452,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "fluidTank": {
+      "registryId": "mekanism_extras:absolute_fluid_tank",
+      "registryOwner": "mekanism_extras",
+      "rendererClass": "com.jerry.mekanism_extras.client.render.tileentity.RenderExtraFluidTank",
+      "rendererOwner": "mekanism_extras",
+      "statistics": {
+        "averageMs": 0.012407964601769912,
+        "p95Ms": 0.0215,
+        "peakMs": 0.0371,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 19.964601769911503,
+        "estimatedBytesPerFrame": 1118.0176991150443,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.012407964601769912,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "renderingCompatibilityFull": {
+    "integrations": [
+      {
+        "id": "embeddium",
+        "version": "0.3.31+mc1.20.1",
+        "inspectedAdapter": true,
+        "coverage": "Immediate-mode native vertex-copy adapter enabled; counters show observed measured calls"
+      },
+      {
+        "id": "flywheel",
+        "version": "1.0.5",
+        "inspectedAdapter": true,
+        "coverage": "Visual CPU tasks and separate shared batch CPU/GPU phase; per-object instanced geometry unavailable"
+      },
+      {
+        "id": "mekanism_extras",
+        "version": "1.5.0",
+        "inspectedAdapter": true,
+        "coverage": "Registry and renderer owners remain separate; native Mekanism deferred callbacks reuse the base integration"
+      },
+      {
+        "id": "oculus",
+        "version": "1.8.0",
+        "inspectedAdapter": true,
+        "coverage": "Shadow pass excluded from ordinary object and shared Flywheel measurements; shader buffer RenderType requests observed separately"
+      }
+    ],
+    "shaders": {
+      "shaderApiPresent": true,
+      "shadowDetectionAvailable": true,
+      "shaderPackEnabled": true,
+      "shadowPassActive": false,
+      "apiClass": "net.irisshaders.iris.api.v0.IrisApi",
+      "failure": ""
+    },
+    "observedFastBatchCalls": 8139,
+    "observedFastDelegateVertices": 0,
+    "observedShaderBufferRequests": 8938,
+    "limitations": [
+      "Terrain/chunk batches are not attributed to individual mods or world objects.",
+      "Shader execution and terrain GPU cost are not distributed among mods or individual objects."
+    ]
+  },
+  "actualShaderShadowPassObserved": true,
+  "actualShaderBufferRequestsMeasured": true,
+  "shaderNativeMechanismsFull": {
+    "motor": {
+      "registryId": "create:motor",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.motor.CreativeMotorRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.006472123893805309,
+        "p95Ms": 0.012,
+        "peakMs": 0.0482,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 1248.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.006472123893805309,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "press": {
+      "registryId": "create:mechanical_press",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.press.MechanicalPressRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.02636637168141593,
+        "p95Ms": 0.0375,
+        "peakMs": 0.0915,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 140.0,
+        "estimatedBytesPerFrame": 7280.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.02636637168141593,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "shaft": {
+      "registryId": "create:simple_kinetic",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.011702654867256636,
+        "p95Ms": 0.0165,
+        "peakMs": 0.0679,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 24.0,
+        "estimatedBytesPerFrame": 1248.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.011702654867256636,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "cogwheel": {
+      "registryId": "create:simple_kinetic",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.022760619469026546,
+        "p95Ms": 0.0346,
+        "peakMs": 0.0656,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 226,
+        "failures": 0,
+        "verticesPerFrame": 168.0,
+        "estimatedBytesPerFrame": 8736.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.022760619469026546,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 226,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "sharedFlywheelBatchMeasured": false,
+  "flywheelGpuTimingMeasured": false,
+  "shaderFallbackFlywheelGpuState": {
+    "status": "disabled",
+    "sampledFrames": 0,
+    "averageMs": 0.0,
+    "peakMs": 0.0,
+    "completedBatches": 0,
+    "pendingBatches": 0,
+    "droppedBatches": 0
+  },
+  "realPressHeadOffsetChanges": 79,
+  "realShaftSpeedChanges": 5,
+  "deferredEnergyCubeStatistics": {
+    "averageMs": 0.025879646017699116,
+    "p95Ms": 0.0354,
+    "peakMs": 0.0721,
+    "cpuMs": 0.0,
+    "callsPerFrame": 2.0,
+    "calls": 452,
+    "failures": 0,
+    "verticesPerFrame": 24.0,
+    "estimatedBytesPerFrame": 1344.0,
+    "instances": 1,
+    "renderTypes": [
+      "mek_standard_translucent_target"
+    ],
+    "sources": {
+      "RENDERER": {
+        "averageMs": 0.025879646017699116,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 452,
+        "failures": 0
+      }
+    }
+  },
+  "defaultDeferredRendererCalls": 1362,
+  "defaultQueuedDeferredCalls": 1362,
+  "defaultRenderedDeferredCalls": 1362,
+  "defaultTimingOnly": {
+    "create": {
+      "type": "create:fluid_tank",
+      "renderer": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "modStatistics": {
+        "averageMs": 0.08834852320675105,
+        "p95Ms": 0.1199,
+        "peakMs": 0.3763,
+        "cpuMs": 0.13185654008438819,
+        "callsPerFrame": 8.0,
+        "calls": 1896,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 8,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.08834852320675105,
+            "cpuMs": 0.13185654008438819,
+            "callsPerFrame": 8.0,
+            "calls": 1896,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.019122362869198314,
+        "p95Ms": 0.0257,
+        "peakMs": 0.2954,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 474,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 2,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.019122362869198314,
+            "cpuMs": 0.0,
+            "callsPerFrame": 2.0,
+            "calls": 474,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.015313080168776371,
+        "p95Ms": 0.0215,
+        "peakMs": 0.2473,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.015313080168776371,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "mekanism": {
+      "type": "mekanism:basic_fluid_tank",
+      "renderer": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "modStatistics": {
+        "averageMs": 0.04593755274261603,
+        "p95Ms": 0.0607,
+        "peakMs": 0.2206,
+        "cpuMs": 0.0,
+        "callsPerFrame": 4.0,
+        "calls": 948,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 3,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.04593755274261603,
+            "cpuMs": 0.0,
+            "callsPerFrame": 4.0,
+            "calls": 948,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.026762025316455697,
+        "p95Ms": 0.0383,
+        "peakMs": 0.2023,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.026762025316455697,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.026762025316455697,
+        "p95Ms": 0.0383,
+        "peakMs": 0.2023,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.026762025316455697,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "mekanismExtrasTimingOnly": {
+    "energyCube": {
+      "registryId": "mekanism_extras:absolute_energy_cube",
+      "registryOwner": "mekanism_extras",
+      "rendererClass": "com.jerry.mekanism_extras.client.render.tileentity.RenderExtraEnergyCube",
+      "rendererOwner": "mekanism_extras",
+      "statistics": {
+        "averageMs": 0.005191561181434599,
+        "p95Ms": 0.0065,
+        "peakMs": 0.0264,
+        "cpuMs": 0.06592827004219409,
+        "callsPerFrame": 2.0,
+        "calls": 474,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.005191561181434599,
+            "cpuMs": 0.06592827004219409,
+            "callsPerFrame": 2.0,
+            "calls": 474,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "fluidTank": {
+      "registryId": "mekanism_extras:absolute_fluid_tank",
+      "registryOwner": "mekanism_extras",
+      "rendererClass": "com.jerry.mekanism_extras.client.render.tileentity.RenderExtraFluidTank",
+      "rendererOwner": "mekanism_extras",
+      "statistics": {
+        "averageMs": 0.00880337552742616,
+        "p95Ms": 0.0131,
+        "peakMs": 0.0244,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.00880337552742616,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "renderingCompatibilityTimingOnly": {
+    "integrations": [
+      {
+        "id": "embeddium",
+        "version": "0.3.31+mc1.20.1",
+        "inspectedAdapter": true,
+        "coverage": "Immediate-mode native vertex-copy adapter enabled; counters show observed measured calls"
+      },
+      {
+        "id": "flywheel",
+        "version": "1.0.5",
+        "inspectedAdapter": true,
+        "coverage": "Visual CPU tasks and separate shared batch CPU/GPU phase; per-object instanced geometry unavailable"
+      },
+      {
+        "id": "mekanism_extras",
+        "version": "1.5.0",
+        "inspectedAdapter": true,
+        "coverage": "Registry and renderer owners remain separate; native Mekanism deferred callbacks reuse the base integration"
+      },
+      {
+        "id": "oculus",
+        "version": "1.8.0",
+        "inspectedAdapter": true,
+        "coverage": "Shadow pass excluded from ordinary object and shared Flywheel measurements; shader buffer RenderType requests observed separately"
+      }
+    ],
+    "shaders": {
+      "shaderApiPresent": true,
+      "shadowDetectionAvailable": true,
+      "shaderPackEnabled": true,
+      "shadowPassActive": false,
+      "apiClass": "net.irisshaders.iris.api.v0.IrisApi",
+      "failure": ""
+    },
+    "observedFastBatchCalls": 8139,
+    "observedFastDelegateVertices": 0,
+    "observedShaderBufferRequests": 8938,
+    "limitations": [
+      "Terrain/chunk batches are not attributed to individual mods or world objects.",
+      "Shader execution and terrain GPU cost are not distributed among mods or individual objects."
+    ]
+  },
+  "shaderNativeMechanismsTimingOnly": {
+    "motor": {
+      "registryId": "create:motor",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.motor.CreativeMotorRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.0038291139240506328,
+        "p95Ms": 0.005,
+        "peakMs": 0.0105,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.0038291139240506328,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "press": {
+      "registryId": "create:mechanical_press",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.press.MechanicalPressRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.019950210970464132,
+        "p95Ms": 0.0285,
+        "peakMs": 0.056,
+        "cpuMs": 0.06592827004219409,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.019950210970464132,
+            "cpuMs": 0.06592827004219409,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "shaft": {
+      "registryId": "create:simple_kinetic",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.00770295358649789,
+        "p95Ms": 0.0099,
+        "peakMs": 0.016,
+        "cpuMs": 0.06592827004219409,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.00770295358649789,
+            "cpuMs": 0.06592827004219409,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "cogwheel": {
+      "registryId": "create:simple_kinetic",
+      "registryOwner": "create",
+      "rendererClass": "com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityRenderer",
+      "rendererOwner": "create",
+      "measurement": "Native renderer CPU and emitted vertices; Flywheel instancing is disabled by the active shader configuration",
+      "statistics": {
+        "averageMs": 0.01780253164556962,
+        "p95Ms": 0.0222,
+        "peakMs": 0.0546,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 237,
+        "failures": 0,
+        "verticesPerFrame": 0.0,
+        "estimatedBytesPerFrame": 0.0,
+        "instances": 1,
+        "renderTypes": [],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.01780253164556962,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 237,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "defaultFlywheelGpuTimingOnly": {
+    "status": "disabled",
+    "sampledFrames": 0,
+    "averageMs": 0.0,
+    "peakMs": 0.0,
+    "completedBatches": 0,
+    "pendingBatches": 0,
+    "droppedBatches": 0
+  },
+  "timingOnlyDeferredRendererCalls": 1004,
+  "timingOnlyQueuedDeferredCalls": 1004,
+  "timingOnlyRenderedDeferredCalls": 1004,
+  "fallbackFull": {
+    "create": {
+      "type": "create:fluid_tank",
+      "renderer": "com.simibubi.create.content.fluids.tank.FluidTankRenderer",
+      "rendererOwner": "create",
+      "modStatistics": {
+        "averageMs": 0.08466085106382978,
+        "p95Ms": 0.1091,
+        "peakMs": 0.146,
+        "cpuMs": 0.13297872340425532,
+        "callsPerFrame": 8.0,
+        "calls": 1880,
+        "failures": 0,
+        "verticesPerFrame": 444.0,
+        "estimatedBytesPerFrame": 23088.0,
+        "instances": 8,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.08466085106382978,
+            "cpuMs": 0.13297872340425532,
+            "callsPerFrame": 8.0,
+            "calls": 1880,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.013062127659574468,
+        "p95Ms": 0.0186,
+        "peakMs": 0.0704,
+        "cpuMs": 0.0,
+        "callsPerFrame": 2.0,
+        "calls": 470,
+        "failures": 0,
+        "verticesPerFrame": 40.0,
+        "estimatedBytesPerFrame": 2080.0,
+        "instances": 2,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.013062127659574468,
+            "cpuMs": 0.0,
+            "callsPerFrame": 2.0,
+            "calls": 470,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.00962723404255319,
+        "p95Ms": 0.0143,
+        "peakMs": 0.0652,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 235,
+        "failures": 0,
+        "verticesPerFrame": 20.0,
+        "estimatedBytesPerFrame": 1040.0,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.00962723404255319,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 235,
+            "failures": 0
+          }
+        }
+      }
+    },
+    "mekanism": {
+      "type": "mekanism:basic_fluid_tank",
+      "renderer": "mekanism.client.render.tileentity.RenderFluidTank",
+      "rendererOwner": "mekanism",
+      "modStatistics": {
+        "averageMs": 0.05058382978723404,
+        "p95Ms": 0.0681,
+        "peakMs": 0.1521,
+        "cpuMs": 0.06648936170212766,
+        "callsPerFrame": 4.0,
+        "calls": 940,
+        "failures": 0,
+        "verticesPerFrame": 63.863829787234046,
+        "estimatedBytesPerFrame": 3576.3744680851064,
+        "instances": 3,
+        "renderTypes": [
+          "mek_standard_translucent_target",
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.05058382978723404,
+            "cpuMs": 0.06648936170212766,
+            "callsPerFrame": 4.0,
+            "calls": 940,
+            "failures": 0
+          }
+        }
+      },
+      "typeStatistics": {
+        "averageMs": 0.027395744680851066,
+        "p95Ms": 0.0432,
+        "peakMs": 0.1235,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 235,
+        "failures": 0,
+        "verticesPerFrame": 19.931914893617023,
+        "estimatedBytesPerFrame": 1116.1872340425532,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.027395744680851066,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 235,
+            "failures": 0
+          }
+        }
+      },
+      "instanceStatistics": {
+        "averageMs": 0.027395744680851066,
+        "p95Ms": 0.0432,
+        "peakMs": 0.1235,
+        "cpuMs": 0.0,
+        "callsPerFrame": 1.0,
+        "calls": 235,
+        "failures": 0,
+        "verticesPerFrame": 19.931914893617023,
+        "estimatedBytesPerFrame": 1116.1872340425532,
+        "instances": 1,
+        "renderTypes": [
+          "iris:is_block_entity"
+        ],
+        "sources": {
+          "RENDERER": {
+            "averageMs": 0.027395744680851066,
+            "cpuMs": 0.0,
+            "callsPerFrame": 1.0,
+            "calls": 235,
+            "failures": 0
+          }
+        }
+      }
+    }
+  },
+  "fallbackFlywheelBackend": "flywheel:off",
+  "fallbackKineticVerticesPerFrame": 216.0,
+  "captureExportMetadataAndPrivacy": true,
+  "captureFrames": 589,
+  "captureDurationSeconds": 5.0045097,
+  "createSelectedInstanceBoxAndLabel": true,
+  "mekanismSelectedInstanceBoxAndLabel": true,
+  "mekanismExtrasSelectedInstanceBoxAndLabel": true,
+  "mekanismExtrasScreenshot": "addons/mekanism-extras-selected-instance.png",
+  "createShaftSelectedInstanceBoxAndLabel": true,
+  "createMotorSelectedInstanceBoxAndLabel": true,
+  "createPressSelectedInstanceBoxAndLabel": true,
+  "nativeMechanismsInHeatmap": {
+    "motor": true,
+    "press": true,
+    "shaft": true,
+    "cogwheel": true
+  },
+  "combinedHeatmapBoxes": 14,
+  "removedNativeInstanceExpiredAndOverlayCleared": true,
+  "recreatedNativeInstanceMeasured": true,
+  "worldSessionMeasurementsAndSelectionCleared": true,
+  "presentationMotion": {
+    "shaft": {
+      "source": "Actual installed Minecraft framebuffer screenshots; no generated UI, timings or animation",
+      "rawFrameAvailability": "Original PNG frames are source-repository evidence; release ZIPs include this provenance and the encoded GIF",
+      "loader": "Forge",
+      "loaderVersion": "47.4.10",
+      "environment": "installed-production",
+      "primaryJarSha256": "ec17881e856bba4fe8eb66caca708cc27d7908ad934c7e3c6e5d960e929ff44d",
+      "mechanism": "shaft",
+      "flywheelBackend": "flywheel:off",
+      "renderingMode": "Active shaders with native Create renderer fallback",
+      "frameCount": 16,
+      "playbackFrameDurationMillis": 150,
+      "completedAt": "2026-10-22T19:26:48.772095900Z",
+      "frames": [
+        {
+          "file": "frame-00.png",
+          "requestedAtMillis": 0.0,
+          "capturedAtMillis": 3.5056
+        },
+        {
+          "file": "frame-01.png",
+          "requestedAtMillis": 197.0084,
+          "capturedAtMillis": 199.6817
+        },
+        {
+          "file": "frame-02.png",
+          "requestedAtMillis": 398.9551,
+          "capturedAtMillis": 401.8773
+        },
+        {
+          "file": "frame-03.png",
+          "requestedAtMillis": 551.4281,
+          "capturedAtMillis": 554.5574
+        },
+        {
+          "file": "frame-04.png",
+          "requestedAtMillis": 749.3685,
+          "capturedAtMillis": 751.703
+        },
+        {
+          "file": "frame-05.png",
+          "requestedAtMillis": 946.9575,
+          "capturedAtMillis": 949.6327
+        },
+        {
+          "file": "frame-06.png",
+          "requestedAtMillis": 1100.937,
+          "capturedAtMillis": 1103.3232
+        },
+        {
+          "file": "frame-07.png",
+          "requestedAtMillis": 1296.7704,
+          "capturedAtMillis": 1299.3088
+        },
+        {
+          "file": "frame-08.png",
+          "requestedAtMillis": 1447.4177,
+          "capturedAtMillis": 1451.8148
+        },
+        {
+          "file": "frame-09.png",
+          "requestedAtMillis": 1601.0341,
+          "capturedAtMillis": 1603.9758
+        },
+        {
+          "file": "frame-10.png",
+          "requestedAtMillis": 1796.9786,
+          "capturedAtMillis": 1799.1177
+        },
+        {
+          "file": "frame-11.png",
+          "requestedAtMillis": 1997.1762,
+          "capturedAtMillis": 1999.7308
+        },
+        {
+          "file": "frame-12.png",
+          "requestedAtMillis": 2150.6455,
+          "capturedAtMillis": 2152.6778
+        },
+        {
+          "file": "frame-13.png",
+          "requestedAtMillis": 2344.9563,
+          "capturedAtMillis": 2346.7106
+        },
+        {
+          "file": "frame-14.png",
+          "requestedAtMillis": 2496.6037,
+          "capturedAtMillis": 2498.6192
+        },
+        {
+          "file": "frame-15.png",
+          "requestedAtMillis": 2648.4723,
+          "capturedAtMillis": 2650.7585
+        }
+      ]
+    },
+    "press": {
+      "source": "Actual installed Minecraft framebuffer screenshots; no generated UI, timings or animation",
+      "rawFrameAvailability": "Original PNG frames are source-repository evidence; release ZIPs include this provenance and the encoded GIF",
+      "loader": "Forge",
+      "loaderVersion": "47.4.10",
+      "environment": "installed-production",
+      "primaryJarSha256": "ec17881e856bba4fe8eb66caca708cc27d7908ad934c7e3c6e5d960e929ff44d",
+      "mechanism": "press",
+      "flywheelBackend": "flywheel:off",
+      "renderingMode": "Active shaders with native Create renderer fallback",
+      "frameCount": 16,
+      "playbackFrameDurationMillis": 150,
+      "completedAt": "2026-10-22T19:26:55.267591700Z",
+      "frames": [
+        {
+          "file": "frame-00.png",
+          "requestedAtMillis": 0.0,
+          "capturedAtMillis": 2.9897
+        },
+        {
+          "file": "frame-01.png",
+          "requestedAtMillis": 193.9754,
+          "capturedAtMillis": 196.6699
+        },
+        {
+          "file": "frame-02.png",
+          "requestedAtMillis": 345.9778,
+          "capturedAtMillis": 348.9154
+        },
+        {
+          "file": "frame-03.png",
+          "requestedAtMillis": 497.255,
+          "capturedAtMillis": 499.4078
+        },
+        {
+          "file": "frame-04.png",
+          "requestedAtMillis": 649.179,
+          "capturedAtMillis": 652.8979
+        },
+        {
+          "file": "frame-05.png",
+          "requestedAtMillis": 848.7194,
+          "capturedAtMillis": 851.0815
+        },
+        {
+          "file": "frame-06.png",
+          "requestedAtMillis": 1043.2075,
+          "capturedAtMillis": 1045.2079
+        },
+        {
+          "file": "frame-07.png",
+          "requestedAtMillis": 1194.6458,
+          "capturedAtMillis": 1196.9515
+        },
+        {
+          "file": "frame-08.png",
+          "requestedAtMillis": 1347.6497,
+          "capturedAtMillis": 1349.9822
+        },
+        {
+          "file": "frame-09.png",
+          "requestedAtMillis": 1500.1791,
+          "capturedAtMillis": 1502.5712
+        },
+        {
+          "file": "frame-10.png",
+          "requestedAtMillis": 1650.5305,
+          "capturedAtMillis": 1652.9968
+        },
+        {
+          "file": "frame-11.png",
+          "requestedAtMillis": 1843.771,
+          "capturedAtMillis": 1846.4366
+        },
+        {
+          "file": "frame-12.png",
+          "requestedAtMillis": 1994.7406,
+          "capturedAtMillis": 1997.2234
+        },
+        {
+          "file": "frame-13.png",
+          "requestedAtMillis": 2196.3308,
+          "capturedAtMillis": 2198.2716
+        },
+        {
+          "file": "frame-14.png",
+          "requestedAtMillis": 2348.3201,
+          "capturedAtMillis": 2350.617
+        },
+        {
+          "file": "frame-15.png",
+          "requestedAtMillis": 2499.9679,
+          "capturedAtMillis": 2502.2526
+        }
+      ]
+    }
+  },
+  "screenshots": [
+    "01-create-mekanism-mods.png",
+    "02-create-fluid-tank-detail.png",
+    "03-mekanism-fluid-tank-detail.png",
+    "04-create-selected-instance.png",
+    "05-mekanism-selected-instance.png",
+    "08-create-native-shaft-detail.png",
+    "09-create-native-shaft-selected.png",
+    "10-create-native-motor-selected.png",
+    "11-create-native-press-selected.png",
+    "06-create-mekanism-heatmap.png",
+    "07-compatibility-capture.png"
+  ],
+  "success": true,
+  "completedAt": "2026-10-22T19:27:09.716195500Z"
+}

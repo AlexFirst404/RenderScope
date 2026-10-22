@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[${loader_major},)"
+license="LicenseRef-RenderScope-Source-Available-1.0"
+[[mods]]
+modId="renderscope_smoke"
+version="1.0.0"
+displayName="RenderScope Native Smoke Harness"
+description='''Test-only real client fixture; excluded from releases.'''
+[[dependencies.renderscope_smoke]]
+modId="renderscope"
+mandatory=true
+versionRange="[0.3,)"
+ordering="AFTER"
+side="CLIENT"
+[[dependencies.renderscope_smoke]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft_version}]"
+ordering="NONE"
+side="CLIENT"

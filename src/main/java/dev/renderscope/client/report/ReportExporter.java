@@ -4,7 +4,7 @@ import com.google.gson.*;
 import dev.renderscope.client.LoaderInfo;
 import dev.renderscope.core.*;
 import net.minecraft.SharedConstants;
-import net.minecraftforge.fml.ModList;
+import dev.renderscope.client.platform.PlatformServices;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -26,15 +26,18 @@ public final class ReportExporter {
         LoaderInfo loader = LoaderInfo.current();
         root.addProperty("loader", loader.name());
         root.addProperty("loaderVersion", loader.version());
-        root.addProperty("renderscopeVersion", ModList.get().getModContainerById("renderscope")
-                .map(mod -> mod.getModInfo().getVersion().toString()).orElse("unknown"));
+        root.addProperty("renderscopeVersion", PlatformServices.current().mods().stream()
+                .filter(mod -> mod.id().equals("renderscope")).map(mod -> mod.version()).findFirst().orElse("unknown"));
         JsonArray mods = new JsonArray();
-        for (var mod : ModList.get().getMods()) {
+        for (var mod : PlatformServices.current().mods()) {
             JsonObject entry = new JsonObject();
-            entry.addProperty("id",mod.getModId()); entry.addProperty("name",mod.getDisplayName());
-            entry.addProperty("version",mod.getVersion().toString()); mods.add(entry);
+            entry.addProperty("id",mod.id()); entry.addProperty("name",mod.name());
+            entry.addProperty("version",mod.version()); mods.add(entry);
         }
         root.add("installedMods", mods);
+        // Coverage is runtime capability metadata only: never world identity or positions.
+        root.add("renderingCompatibility", GSON.toJsonTree(
+                dev.renderscope.client.integration.RenderingCompatibility.snapshot()));
         Path directory = gameDirectory.resolve("renderscope-reports");
         Files.createDirectories(directory);
         String stamp = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS").withZone(ZoneId.systemDefault())

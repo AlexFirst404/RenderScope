@@ -1,0 +1,51 @@
+// Test-only artifacts. No production source/resource/classpath is changed.
+def installedMapped = providers.gradleProperty('minecraft_version').get().startsWith('1.21.')
+def qaRoot = installedMapped ? file('../installed-smoke') : file('installed-smoke')
+def repoRoot = installedMapped ? file('../..') : file('..')
+def generatedInstalled = layout.buildDirectory.dir('generated/installed-smoke')
+sourceSets {
+    installedSmoke {
+        java.srcDirs = [generatedInstalled.map { it.dir('java') }, new File(qaRoot, 'java')]
+        resources.srcDirs = [generatedInstalled.map { it.dir('resources') }]
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations.installedSmokeImplementation.extendsFrom configurations.implementation
+configurations.installedSmokeRuntimeOnly.extendsFrom configurations.runtimeOnly
+configurations.installedSmokeAnnotationProcessor.extendsFrom configurations.annotationProcessor
+tasks.register('generateInstalledSmoke', Exec) {
+    workingDir repoRoot
+    commandLine providers.gradleProperty('python').orElse('python').get(), new File(qaRoot, 'generate.py').absolutePath,
+        '--minecraft', providers.gradleProperty('minecraft_version').get(), '--output', generatedInstalled.get().asFile.absolutePath
+    inputs.dir qaRoot
+    inputs.file new File(repoRoot, 'modern/src/gametest/java/dev/renderscope/modern/smoke/ModernClientSmoke.java')
+    inputs.dir new File(repoRoot, installedMapped ? 'loader-mapped/smoke/java' : 'loader26/smoke')
+    inputs.property 'minecraft', providers.gradleProperty('minecraft_version').get()
+    outputs.dir generatedInstalled
+}
+tasks.named('compileInstalledSmokeJava') { dependsOn 'generateInstalledSmoke' }
+tasks.named('processInstalledSmokeResources') { dependsOn 'generateInstalledSmoke' }
+def installedQaJar = tasks.register('installedSmokeJar', Jar) {
+    archiveClassifier = installedMapped ? 'installed-smoke-dev' : 'installed-smoke-harness'
+    from sourceSets.installedSmoke.output
+}
+if (installedMapped) {
+    // Explicit custom Mixin source sets replace Loom's automatic default list.
+    // Retain the existing main registration exactly, as well as the separate QA refmap.
+    loom.mixin.add sourceSets.main, 'renderscope.modern.refmap.json'
+    loom.mixin.add sourceSets.installedSmoke, 'renderscope.installed-smoke.refmap.json'
+    def remapType = Class.forName('net.fabricmc.loom.task.RemapJarTask', true, tasks.named('remapJar').get().getClass().getClassLoader())
+    tasks.register('remapInstalledSmokeJar', remapType) {
+        dependsOn installedQaJar
+        inputFile = installedQaJar.flatMap { it.archiveFile }
+        archiveClassifier = 'installed-smoke-harness'
+        classpath.from sourceSets.installedSmoke.compileClasspath
+        addNestedDependencies = false
+    }
+}
+tasks.register('installedSmokeProductionJar') {
+    group = 'verification'
+    description = 'Build separate installed-Fabric QA only; never launches Minecraft.'
+    dependsOn installedMapped ? 'remapInstalledSmokeJar' : installedQaJar
+}

@@ -1,0 +1,99 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'java'
+}
+
+def sharedProperties = new Properties()
+file('../gradle.properties').withInputStream { sharedProperties.load(it) }
+def apiVersions = ['26.1': '0.145.1+26.1', '26.1.1': '0.145.4+26.1.1',
+    '26.1.2': '0.155.3+26.1.2', '26.2': '0.161.0+26.2', '26.3': '0.163.0+26.3']
+if (!apiVersions.containsKey(minecraft_version)) throw new GradleException("No inspected adapter selection for Minecraft ${minecraft_version}")
+def selectedApi = providers.gradleProperty('fabric_api_version').getOrElse(apiVersions[minecraft_version])
+def oldLevelExtraction = minecraft_version.startsWith('26.1')
+def platformAdapter = minecraft_version == '26.3' ? 'sdl' : oldLevelExtraction ? 'glfw-level' : 'glfw-extractor'
+def worldAdapter = oldLevelExtraction ? 'level-extractor' : 'state-extractor'
+layout.buildDirectory = layout.projectDirectory.dir("build/${minecraft_version}")
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${minecraft_version}"
+base { archivesName = 'renderscope-fabric' }
+
+repositories { mavenCentral() }
+if (file('../.tools/fabric-maven').isDirectory()) {
+    def verifiedCache = repositories.maven { name = 'VerifiedFabricCache'; url = uri('../.tools/fabric-maven') }
+    repositories.remove(verifiedCache)
+    repositories.addFirst(verifiedCache)
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${selectedApi}"
+    include(implementation('io.github.llamalad7:mixinextras-fabric:0.4.1'))
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', "src/${platformAdapter}/java", "src/${worldAdapter}/java", '../src/main/java', '../fabric/src/main/java']
+        java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**', 'dev/renderscope/client/ProfilerSettings.java',
+            'dev/renderscope/client/LoaderInfo.java', 'dev/renderscope/client/ModOwnership.java',
+            'dev/renderscope/client/platform/PlatformAccess.java', 'dev/renderscope/client/platform/PlatformServices.java',
+            'dev/renderscope/client/integration/ShaderPasses.java',
+            'dev/renderscope/fabric/FabricPlatform.java'
+        resources.srcDirs = ['src/main/resources']
+    }
+    test {
+        java.srcDirs = ['src/test/java', '../src/test/java/dev/renderscope/core']
+    }
+}
+
+loom {
+    runs {
+        client {
+            client()
+            runDir "../run-modern-${minecraft_version}"
+        }
+    }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 25 }
+tasks.withType(Jar).configureEach {
+    from('../LICENSE') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title': 'RenderScope', 'Implementation-Version': project.version,
+        'RenderScope-Loader': 'fabric', 'RenderScope-Loader-Version': loader_version,
+        'RenderScope-Minecraft': minecraft_version, 'RenderScope-Rendering': 'CPU extraction/submission; GPU unavailable')
+}
+tasks.named('processResources') {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version, minecraft_version: minecraft_version }
+    filesMatching('renderscope.modern.mixins.json') {
+        expand worldMixins: oldLevelExtraction ? '"LegacyLevelRendererMixin"' : '"LevelExtractorMixin", "LevelRendererMixin"'
+    }
+    from('../src/main/resources/assets/renderscope/textures/gui/logo.png') { into 'assets/renderscope/textures/gui' }
+    from('../src/main/resources/renderscope-logo.png') { into 'assets/renderscope' }
+}
+tasks.named('test') { useJUnitPlatform() }
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'renderscope_modern_smoke'
+        enableGameTests = false
+        enableClientGameTests = true
+        clearRunDirectory = false
+        username = 'RenderScopeQA'
+    }
+}
+sourceSets.gametest.java.srcDir oldLevelExtraction ? 'src/gametest-direct/java' : 'src/gametest-hud/java'
+loom.runs.named('clientGameTest') {
+    runDir "../run-modern-gametest-${minecraft_version}"
+    vmArg "-Drenderscope.modern.smoke.output=${file("validation/${minecraft_version}").absolutePath}"
+    vmArg "-Drenderscope.modern.smoke.artifact=${tasks.named('jar').get().archiveFile.get().asFile.absolutePath}"
+}
+tasks.named('runClientGameTest') { dependsOn tasks.named('jar') }
+
+apply from: 'installed-smoke/installed-smoke.gradle'

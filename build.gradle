@@ -30,6 +30,12 @@ sourceSets {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
     }
+    installedSmoke {
+        java.srcDirs = ['.tools/generated-forge-smoke/src']
+        resources.srcDirs = ['src/smoke/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
 }
 minecraft {
     mappings channel: 'official', version: minecraft_version
@@ -94,7 +100,7 @@ dependencies {
     implementation(annotationProcessor('io.github.llamalad7:mixinextras-common:0.4.1'))
     runtimeOnly 'io.github.llamalad7:mixinextras-forge:0.4.1'
     jarJar('io.github.llamalad7:mixinextras-forge:0.4.1') {
-        jarJar.ranged(it, '[0.4.1,0.5)')
+        jarJar.ranged(it, '[0.4.1,)')
     }
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -147,6 +153,18 @@ tasks.register('compatJar', Jar) {
 }
 reobf { compatJar {} }
 tasks.named('compatJar') { finalizedBy 'reobfCompatJar' }
+tasks.register('installedSmokeJar', Jar) {
+    from sourceSets.installedSmoke.output
+    archiveClassifier = 'smoke-harness'
+}
+reobf { installedSmokeJar {} }
+tasks.named('installedSmokeJar') { finalizedBy 'reobfInstalledSmokeJar' }
+tasks.named('compileInstalledSmokeJava') {
+    doFirst {
+        if (!file('.tools/generated-forge-smoke/src/dev/renderscope/smoke/InstalledSmokeTest.java').isFile())
+            throw new GradleException('Run scripts/create-fabric-smoke.py and scripts/create-forge-smoke.py before building the installed QA harness.')
+    }
+}
 
 // A renderer assertion can stop Minecraft with exit code zero. Require fresh harness evidence too.
 ['runSmokeClient': ['smoke-result.json', targetDistribution],

@@ -1,0 +1,100 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+    id 'org.spongepowered.mixin' version '0.7.38'
+}
+def sharedProperties = new Properties()
+file('../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('1.20.4').get()
+def forgeVersions = ['1.20.2':'48.1.0', '1.20.3':'49.0.2', '1.20.4':'49.2.0']
+if (!forgeVersions.containsKey(mcVersion)) throw new GradleException("No Forge adapter configuration for ${mcVersion}")
+def forgeVersion = forgeVersions[mcVersion]
+def sharedJava = file('../src/main/java').canonicalFile.toPath()
+def unsupportedOptional = [
+    'dev/renderscope/client/integration/FlywheelPlanAdapter.java',
+    'dev/renderscope/mixin/FastBufferBuilderMixin.java',
+    'dev/renderscope/mixin/IrisBufferSourceMixin.java',
+    'dev/renderscope/mixin/FlywheelBatchMixin.java',
+    'dev/renderscope/mixin/FlywheelLightUpdateMixin.java',
+    'dev/renderscope/mixin/FlywheelStorageMixin.java',
+    'dev/renderscope/mixin/FlywheelTaskExecutorMixin.java',
+    'dev/renderscope/mixin/MekanismDeferredRenderMixin.java',
+    'dev/renderscope/mixin/RenderScopeMixinPlugin.java'
+] as Set
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-forge' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+sourceSets {
+    main {
+        java.srcDirs = ['../mc20/src/main/java', '../src/main/java']
+        if (mcVersion != '1.20.2') java.srcDir 'src/forge49/java'
+        java.exclude { entry ->
+            def path = entry.path.replace('\\', '/')
+            entry.file.toPath().startsWith(sharedJava) && (unsupportedOptional.contains(path)
+                || path == 'dev/renderscope/client/ui/RenderScopeScreen.java')
+        }
+        resources.srcDirs = ['src/main/resources', '../src/main/resources']
+        resources.exclude { entry -> entry.file.toPath().startsWith(file('../src/main/resources').canonicalFile.toPath()) && entry.path in ['META-INF/mods.toml', 'pack.mcmeta', 'renderscope.mixins.json'] }
+    }
+    test { java.srcDirs = ['../src/test/java'] }
+}
+minecraft {
+    mappings channel: 'official', version: mcVersion
+    runs { client {
+        workingDirectory project.file("../run-forge-${mcVersion}")
+        mods { renderscope { source sourceSets.main } }
+        property 'mixin.env.remapRefMap', 'true'
+        property 'mixin.env.refMapRemappingFile', layout.buildDirectory.file('createSrgToMcp/output.srg').get().asFile.absolutePath
+        arg '-mixin.config=renderscope.mixins.json'
+    } }
+}
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/'; content { includeGroup 'org.spongepowered' } }
+}
+jarJar.enable()
+dependencies {
+    minecraft "net.minecraftforge:forge:${mcVersion}-${forgeVersion}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation(annotationProcessor('io.github.llamalad7:mixinextras-common:0.4.1'))
+    runtimeOnly 'io.github.llamalad7:mixinextras-forge:0.4.1'
+    jarJar('io.github.llamalad7:mixinextras-forge:0.4.1') { jarJar.ranged(it, '[0.4.1,)') }
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+mixin { add sourceSets.main, 'renderscope.refmap.json'; config 'renderscope.mixins.json' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 17 }
+tasks.withType(Jar).configureEach {
+    from('../LICENSE') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('MixinConfigs':'renderscope.mixins.json', 'Implementation-Version':project.version,
+            'Implementation-Title':'RenderScope', 'RenderScope-Loader':'forge', 'RenderScope-Loader-Version':forgeVersion)
+}
+tasks.named('processResources') {
+    def props = [version: project.version, minecraft_version: mcVersion, forge_version: forgeVersion,
+        forge_major: forgeVersion.tokenize('.')[0], pack_format: mcVersion == '1.20.2' ? 18 : 22]
+    inputs.properties props
+    inputs.property 'explicitMixinExtrasBootstrap', mcVersion != '1.20.2'
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+    doLast {
+        if (mcVersion != '1.20.2') {
+            def configFile = destinationDir.toPath().resolve('renderscope.mixins.json').toFile()
+            def config = new groovy.json.JsonSlurper().parse(configFile)
+            config.plugin = 'dev.renderscope.mixin.LegacyForgeMixinPlugin'
+            configFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(config)), 'UTF-8')
+        }
+    }
+}
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('jar') { archiveClassifier = 'slim'; finalizedBy 'reobfJar' }
+tasks.named('jarJar') { archiveClassifier = ''; finalizedBy 'reobfJarJar' }
+tasks.named('build') { dependsOn 'jarJar' }
+
+ext.smokeMinecraft = mcVersion
+ext.smokeLoader = 'forge'
+ext.smokeLoaderVersion = forgeVersion
+apply from: '../loader21/older-smoke.gradle'

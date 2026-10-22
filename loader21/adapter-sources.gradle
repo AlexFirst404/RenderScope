@@ -1,0 +1,179 @@
+def sharedProperties = new Properties()
+file('../../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = project.minecraftTarget
+def sharedJava = file('../../src/main/java').canonicalFile.toPath()
+def sharedResources = file('../../src/main/resources').canonicalFile.toPath()
+def pre121 = mcVersion.startsWith('1.20.')
+def patch = pre121 || mcVersion == '1.21' ? 0 : mcVersion.tokenize('.').last().toInteger()
+ext.renderStates = !pre121 && patch >= 2
+ext.pipelines = !pre121 && patch >= 5
+ext.extractedGui = !pre121 && patch >= 6
+// Forge 50.2.0 bundles upstream Sponge 0.8.5, whose enum predates JAVA_21.
+// The game, compiler and runtime remain Java 21; this target's own classes use Java 17 bytecode.
+def legacySponge = project.targetLoader == 'forge' && mcVersion == '1.20.6'
+def adapters = []
+// Keep the font depth workaround isolated to Minecraft 1.21.6.
+if (mcVersion == '1.21.6') adapters.add('../../mc21/src/font1216/java')
+adapters.add("../src/${renderStates ? 'direct-view' : 'shader'}/java")
+if (project.targetLoader == 'forge' && patch >= 3) {
+    adapters.add('../src/forge-state/java')
+    adapters.add("../src/forge-world${patch >= 6 ? '126' : patch >= 4 ? '124' : '123'}/java")
+}
+if (project.targetLoader == 'forge' && patch >= 6) adapters.add(0, '../src/forge-bus7/java')
+if (project.targetLoader == 'neoforge' && patch >= 6) {
+    adapters.add('../src/neoforge-typed/java')
+    adapters.add('../src/forge-world126/java')
+}
+adapters.add("../src/${project.targetLoader}${mcVersion.startsWith('1.20.') ? '120' : '121'}/java")
+adapters.add("../src/${project.targetLoader}/java")
+if (extractedGui) adapters.add('../../mc21/src/gui/java')
+if (pipelines) adapters.add('../../mc21/src/pipeline/java')
+if (renderStates) adapters.add('../../mc21/src/state/java')
+if (mcVersion.startsWith('1.20.')) adapters.add('../../mc21/src/pre121/java')
+adapters.addAll(['../../mc21/src/main/java', '../../src/main/java'])
+def selected = [:]
+adapters.each { directory -> fileTree(directory).matching { include '**/*.java' }.files.each { source ->
+    def path = file(directory).toPath().relativize(source.toPath()).toString().replace('\\', '/')
+    selected.putIfAbsent(path, source.canonicalFile)
+} }
+def unsupportedOptional = [
+    'dev/renderscope/client/integration/FlywheelPlanAdapter.java',
+    'dev/renderscope/mixin/FastBufferBuilderMixin.java',
+    'dev/renderscope/mixin/IrisBufferSourceMixin.java',
+    'dev/renderscope/mixin/FlywheelBatchMixin.java',
+    'dev/renderscope/mixin/FlywheelLightUpdateMixin.java',
+    'dev/renderscope/mixin/FlywheelStorageMixin.java',
+    'dev/renderscope/mixin/FlywheelTaskExecutorMixin.java',
+    'dev/renderscope/mixin/MekanismDeferredRenderMixin.java',
+    'dev/renderscope/mixin/RenderScopeMixinPlugin.java'
+] as Set
+
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = "renderscope-${project.targetLoader}" }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+if (legacySponge) {
+    // Dependency selection describes the actual Java 21 game/runtime, independently
+    // of the lower bytecode level needed by Sponge's legacy Mixin parser.
+    configurations.configureEach {
+        attributes.attribute(org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+    }
+}
+sourceSets {
+    main {
+        java.srcDirs = adapters
+        java.exclude { entry ->
+            if (entry.isDirectory()) return false
+            def path = entry.path.replace('\\', '/')
+            def chosen = selected[path]
+            (chosen != null && entry.file.canonicalFile != chosen) || path.startsWith('dev/renderscope/fabric/')
+                || (entry.file.toPath().startsWith(sharedJava) && (unsupportedOptional.contains(path)
+                || (project.targetLoader == 'neoforge' && (path == 'dev/renderscope/RenderScope.java'
+                || path.startsWith('dev/renderscope/client/platform/Forge')))))
+        }
+        resources.srcDirs = ['src/main/resources', '../../src/main/resources']
+        resources.exclude { entry -> entry.file.toPath().startsWith(sharedResources)
+            && entry.path in ['META-INF/mods.toml', 'pack.mcmeta', 'renderscope.mixins.json'] }
+    }
+    test { java.srcDirs = ['../../src/test/java'] }
+    smoke {
+        java.srcDirs = [layout.buildDirectory.dir('generated/smokeJava'), "../src/smoke-${project.targetLoader}/java"]
+        if (project.targetLoader == 'forge' && patch >= 6) {
+            java.srcDir '../src/smoke-forge-bus7/java'
+            java.exclude { entry -> entry.path.endsWith('NativeSmokeBootstrap.java') && entry.file.toPath().toString().contains('smoke-forge' + File.separator) }
+        }
+        resources.srcDirs = ['src/smoke/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+repositories { mavenCentral() }
+dependencies {
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+    testRuntimeOnly 'org.slf4j:slf4j-api:2.0.9'
+}
+def vendorIndex = file('../../.tools/verified-vendor-maven/verified-modules.json')
+if (vendorIndex.isFile()) {
+    def modules = new groovy.json.JsonSlurper().parse(vendorIndex)
+    def verifiedRepository = repositories.maven {
+        url = file('../../.tools/verified-vendor-maven')
+        metadataSources { gradleMetadata(); mavenPom(); artifact() }
+    }
+    repositories.exclusiveContent {
+        forRepositories(verifiedRepository)
+        filter { modules.each { entry -> def parts = entry.coordinate.tokenize(':'); includeVersion(parts[0], parts[1], parts[2]) } }
+    }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = legacySponge ? 17 : 21 }
+tasks.withType(Jar).configureEach {
+    from('../../LICENSE') { into 'META-INF' }
+    from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('MixinConfigs':'renderscope.mixins.json', 'Implementation-Version':project.version,
+            'Implementation-Title':'RenderScope', 'RenderScope-Loader':project.targetLoader,
+            'RenderScope-Loader-Version':project.targetLoaderVersion)
+}
+tasks.named('processResources') {
+    def packFormats = ['1.20.5':32,'1.20.6':32,'1.21':34,'1.21.1':34,'1.21.2':42,'1.21.3':42,
+        '1.21.4':46,'1.21.5':55,'1.21.6':63,'1.21.7':64,'1.21.8':64]
+    def props = [version:project.version, minecraft_version:mcVersion, loader_version:project.targetLoaderVersion,
+        loader_major:project.targetLoaderVersion.tokenize('.')[0], pack_format:packFormats[mcVersion]]
+    inputs.properties props
+    inputs.property 'legacySpongeCompatibility', legacySponge
+    filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml', 'pack.mcmeta']) { expand props }
+    if (pipelines) from('../pipeline/accesstransformer.cfg') { into 'META-INF' }
+    doLast {
+        if (legacySponge || (project.targetLoader == 'forge' && patch >= 3) || (project.targetLoader == 'neoforge' && patch >= 6)) {
+            def configFile = destinationDir.toPath().resolve('renderscope.mixins.json').toFile()
+            def config = new groovy.json.JsonSlurper().parse(configFile)
+            if (legacySponge) config.compatibilityLevel = 'JAVA_17'
+            else if (!config.client.contains('ForgeLevelRendererMixin')) config.client.add('ForgeLevelRendererMixin')
+            configFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(config)), 'UTF-8')
+        }
+    }
+}
+
+tasks.register('generateSmokeSources') {
+    def original = file('../src/smoke/java')
+    def destination = layout.buildDirectory.dir('generated/smokeJava')
+    inputs.dir original
+    inputs.property 'minecraft_version', mcVersion
+    outputs.dir destination
+    doLast {
+        fileTree(original).matching { include '**/*.java' }.files.each { source ->
+            String text = source.getText('UTF-8')
+            if (renderStates) {
+                text = text.replace('new GameRules()', 'new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures())')
+                text = text.replace('access.registryOrThrow(Registries.WORLD_PRESET)', 'access.lookupOrThrow(Registries.WORLD_PRESET)')
+                text = text.replace('.getOrThrow(WorldPresets.FLAT).createWorldDimensions()', '.getOrThrow(WorldPresets.FLAT).value().createWorldDimensions()')
+                text = text.replace('mc.getToasts().clear();', 'mc.getToastManager().clear();')
+            }
+            if (extractedGui) {
+                text = text.replace('SharedConstants.getCurrentVersion().getName()', 'SharedConstants.getCurrentVersion().name()')
+                text = text.replace('mc.getMainRenderTarget(), message ->', 'mc.getMainRenderTarget(), 1, message ->')
+            }
+            def target = destination.get().file(original.toPath().relativize(source.toPath()).toString()).asFile
+            target.parentFile.mkdirs()
+            target.setText(text, 'UTF-8')
+        }
+    }
+}
+tasks.named('compileSmokeJava') { dependsOn 'generateSmokeSources' }
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('processSmokeResources') {
+    def props = [minecraft_version:mcVersion, loader_major:project.targetLoaderVersion.tokenize('.')[0]]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) { expand props }
+    if (project.targetLoader == 'forge' && patch >= 6) {
+        // Forge 56+ presents missing pack metadata as a loading warning screen.
+        // The isolated QA mod needs its own valid resource pack descriptor too.
+        def smokePackFormats = ['1.21.6':63, '1.21.7':64, '1.21.8':64]
+        inputs.property 'smokePackFormat', smokePackFormats[mcVersion]
+        doLast {
+            def metadata = [pack:[pack_format:smokePackFormats[mcVersion], description:'RenderScope isolated client integration tests']]
+            destinationDir.toPath().resolve('pack.mcmeta').toFile().setText(groovy.json.JsonOutput.toJson(metadata), 'UTF-8')
+        }
+    }
+}
+tasks.register('smokeJar', Jar) { from sourceSets.smoke.output; archiveClassifier = 'smoke-harness' }

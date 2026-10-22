@@ -2,6 +2,7 @@ package dev.renderscope.client;
 
 import dev.renderscope.core.*;
 import dev.renderscope.client.integration.FlywheelHooks;
+import dev.renderscope.client.integration.ShaderPasses;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +29,12 @@ public final class RenderHooks {
     private RenderHooks() { }
     public static void setGeometryEnabled(boolean enabled) { geometryEnabled = enabled; }
     public static void worldPass(boolean active) { worldPass = active; }
-    public static boolean isWorldPass() { return frameOpen && worldPass; }
+    public static boolean isWorldPass() {
+        // Shader renderers can run before the loader's main-world event begins.
+        // Probe first so that their real shadow pass is observed and excluded consistently.
+        boolean shadow = ShaderPasses.isShadowPass();
+        return !shadow && frameOpen && worldPass;
+    }
 
     public static void beginFrame() {
         ACTIVE.remove();
@@ -69,7 +75,7 @@ public final class RenderHooks {
 
     public static Scope begin(Entity entity, Object renderer) {
         var runtime = ClientRuntime.current();
-        if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
+        if (runtime == null || !isWorldPass() || !runtime.settings().profiling) return null;
         SampleContext context = context(entity, renderer);
         return context == null ? null : begin(runtime, context);
     }
@@ -89,7 +95,7 @@ public final class RenderHooks {
 
     public static Scope begin(BlockEntity entity, Object renderer) {
         var runtime = ClientRuntime.current();
-        if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
+        if (runtime == null || !isWorldPass() || !runtime.settings().profiling) return null;
         SampleContext context = context(entity, renderer);
         return context == null ? null : begin(runtime, context);
     }
@@ -117,10 +123,26 @@ public final class RenderHooks {
         return scope;
     }
 
+    /** Rendering-state APIs retain only value metadata between extraction and drawing. */
+    public static Scope beginPrepared(SampleContext context, Object renderer, MeasurementSource source,
+                                      RenderProfiler.FrameHandle frame, boolean countGeometry) {
+        var runtime = ClientRuntime.current();
+        if (runtime == null || context == null || renderer == null || source == null || frame == null
+                || !isWorldPass() || !runtime.settings().profiling) return null;
+        SampleContext actual = new SampleContext(context.key(), context.registryId(), context.registryOwner(),
+                renderer.getClass().getName(), runtime.ownership().rendererOwner(renderer.getClass()),
+                context.position(), context.bounds());
+        Scope scope = new Scope(runtime.profiler(), ACTIVE.get(), geometryEnabled && countGeometry, actual);
+        scope.token = runtime.profiler().beginCall(actual, source, frame);
+        if (scope.token == null) return null;
+        ACTIVE.set(scope);
+        return scope;
+    }
+
     /** CPU visual work can run on Flywheel workers, outside a vanilla renderer/world pass. */
     public static Scope beginVisual(SampleContext context, MeasurementSource source, RenderProfiler.FrameHandle frame) {
         var runtime = ClientRuntime.current();
-        if (runtime == null || context == null || frame == null) return null;
+        if (runtime == null || context == null || frame == null || ShaderPasses.isShadowPass()) return null;
         Scope scope = new Scope(runtime.profiler(), ACTIVE.get(), false, context);
         scope.token = runtime.profiler().beginCall(context, source, frame);
         if (scope.token == null) return null;
@@ -143,7 +165,7 @@ public final class RenderHooks {
 
     /** Optional integrations call this while a measured renderer queues deferred world work. */
     public static void rememberDeferred(Object task, String renderType) {
-        if (!frameOpen || !worldPass) return;
+        if (!isWorldPass()) return;
         queuedDeferredCalls++;
         Scope scope = ACTIVE.get();
         if (scope == null) return;
@@ -155,7 +177,7 @@ public final class RenderHooks {
     /** Only callbacks associated with a real current-frame renderer acquire a measurement. */
     public static Scope beginDeferred(Object task) {
         var runtime = ClientRuntime.current();
-        if (runtime == null || !frameOpen || !worldPass || !runtime.settings().profiling) return null;
+        if (runtime == null || !isWorldPass() || !runtime.settings().profiling) return null;
         DeferredContexts.Entry entry = DEFERRED.find(task);
         if (entry == null) return null;
         Scope scope = begin(runtime, entry.context());
@@ -172,7 +194,7 @@ public final class RenderHooks {
     public static long renderedDeferredCalls() { return renderedDeferredCalls; }
 
     public static void endDeferred(Scope scope, boolean failed) {
-        if (frameOpen && worldPass) renderedDeferredCalls++;
+        if (isWorldPass()) renderedDeferredCalls++;
         end(scope, failed);
     }
 
@@ -188,9 +210,17 @@ public final class RenderHooks {
     public static boolean recorded(Scope scope) { return scope != null && scope.token.recorded(); }
 
     public static void vertex(int formatBytes) {
-        if (!geometryEnabled) return;
+        vertices(1, formatBytes);
+    }
+
+    /** Alternative vertex writers submit whole batches without calling vanilla endVertex. */
+    public static void vertices(int count, int formatBytes) {
+        if (!geometryEnabled || count <= 0 || formatBytes <= 0) return;
         Scope scope = ACTIVE.get();
-        if (scope != null && scope.geometry) { scope.vertices++; scope.bytes += formatBytes; }
+        if (scope != null && scope.geometry) {
+            scope.vertices += count;
+            scope.bytes += (long) count * formatBytes;
+        }
     }
 
     public static void renderType(String name) {
@@ -203,7 +233,10 @@ public final class RenderHooks {
         }
     }
 
-    public static boolean collectingGeometry() { return geometryEnabled && ACTIVE.get() != null; }
+    public static boolean collectingGeometry() {
+        Scope scope = ACTIVE.get();
+        return geometryEnabled && scope != null && scope.geometry;
+    }
 
     public static final class Scope {
         private final RenderProfiler profiler;

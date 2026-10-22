@@ -1,0 +1,83 @@
+// Native test-only fixture for the pre-1.20.5 loader projects. No test classes enter the main JAR.
+def mcVersion = project.smokeMinecraft
+def loader = project.smokeLoader
+def loaderVersion = project.smokeLoaderVersion
+def legacyNeo = plugins.hasPlugin('net.neoforged.gradle.userdev')
+sourceSets {
+    smoke {
+        java.srcDirs = [layout.buildDirectory.dir('generated/smokeJava'),
+                "../loader21/src/smoke-${loader}-old/java"]
+        resources.srcDirs = ["../loader21/older-smoke-resources/${loader}"]
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+tasks.register('generateSmokeSources') {
+    def original = file('../loader21/src/smoke/java')
+    def destination = layout.buildDirectory.dir('generated/smokeJava')
+    inputs.dir original
+    inputs.property 'minecraft_version', mcVersion
+    outputs.dir destination
+    doLast {
+        fileTree(original).matching { include '**/*.java' }.files.each { source ->
+            String text = source.getText('UTF-8')
+            if (mcVersion == '1.20.2') {
+                text = text.replace('mc.createWorldOpenFlows().openWorld(WORLD, () -> mc.setScreen(new TitleScreen()));',
+                    'mc.createWorldOpenFlows().loadLevel(mc.screen, WORLD);')
+                text = text.replace('.getOrThrow(WorldPresets.FLAT).createWorldDimensions(), mc.screen);',
+                    '.getOrThrow(WorldPresets.FLAT).createWorldDimensions());')
+            } else {
+                text = text.replace('mc.createWorldOpenFlows().openWorld(WORLD, () -> mc.setScreen(new TitleScreen()));',
+                    'mc.createWorldOpenFlows().checkForBackupAndLoad(WORLD, () -> mc.setScreen(new TitleScreen()));')
+            }
+            def target = destination.get().file(original.toPath().relativize(source.toPath()).toString()).asFile
+            target.parentFile.mkdirs()
+            target.setText(text, 'UTF-8')
+        }
+    }
+}
+tasks.named('compileSmokeJava') { dependsOn 'generateSmokeSources' }
+tasks.named('processSmokeResources') {
+    def props = [minecraft_version:mcVersion, loader_major:loaderVersion.tokenize('.')[0]]
+    inputs.properties props
+    filesMatching('META-INF/mods.toml') { expand props }
+}
+tasks.register('smokeJar', Jar) { from sourceSets.smoke.output; archiveClassifier = 'smoke-harness' }
+
+if (loader == 'forge') {
+    minecraft.runs.create('smokeClient') {
+        parent minecraft.runs.client
+        workingDirectory project.file("../run-smoke-forge-${mcVersion}")
+        mods { renderscope { source sourceSets.main }; renderscope_smoke { source sourceSets.smoke } }
+        property 'renderscope.expectedLoader', 'Forge'
+        property 'renderscope.expectedLoaderVersion', loaderVersion
+        property 'renderscope.expectedMinecraft', mcVersion
+        property 'renderscope.smoke.output', file("../distribution/forge/${mcVersion}/development").absolutePath
+    }
+    reobf { smokeJar { } }
+    tasks.named('smokeJar') { finalizedBy 'reobfSmokeJar' }
+} else if (legacyNeo) {
+    runs.create('smokeClient') {
+        configure('client')
+        workingDirectory = file("../run-smoke-neoforge-${mcVersion}")
+        modSource sourceSets.smoke
+        systemProperty 'renderscope.expectedLoader', 'NeoForge'
+        systemProperty 'renderscope.expectedLoaderVersion', loaderVersion
+        systemProperty 'renderscope.expectedMinecraft', mcVersion
+        systemProperty 'renderscope.smoke.output', file("../distribution/neoforge/${mcVersion}/development").absolutePath
+    }
+} else {
+    neoForge.addModdingDependenciesTo sourceSets.smoke
+    neoForge.mods.create('renderscope_smoke') { sourceSet(sourceSets.smoke) }
+    neoForge.runs.client.loadedMods = [neoForge.mods.renderscope]
+    neoForge.runs.create('smokeClient') {
+        client()
+        sourceSet = sourceSets.smoke
+        loadedMods = [neoForge.mods.renderscope, neoForge.mods.renderscope_smoke]
+        gameDirectory = file("../run-smoke-neoforge-${mcVersion}")
+        systemProperty 'renderscope.expectedLoader', 'NeoForge'
+        systemProperty 'renderscope.expectedLoaderVersion', loaderVersion
+        systemProperty 'renderscope.expectedMinecraft', mcVersion
+        systemProperty 'renderscope.smoke.output', file("../distribution/neoforge/${mcVersion}/development").absolutePath
+    }
+}

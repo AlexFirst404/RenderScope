@@ -1,0 +1,109 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+def sharedProperties = new Properties()
+file('../../gradle.properties').withInputStream { sharedProperties.load(it) }
+def mcVersion = providers.gradleProperty('minecraft_version').orElse('26.3').get()
+def neoVersions = ['26.1':'26.1.0.19-beta','26.1.1':'26.1.1.15-beta','26.1.2':'26.1.2.122',
+    '26.2':'26.2.0.93','26.3':'26.3.0.95']
+if (!neoVersions.containsKey(mcVersion)) throw new GradleException("No NeoForge adapter selection for ${mcVersion}")
+def neoVersion = neoVersions[mcVersion]
+def oldLevel = mcVersion.startsWith('26.1')
+def inputAdapter = mcVersion == '26.3' ? 'sdl' : oldLevel ? 'glfw-level' : 'glfw-extractor'
+def worldAdapter = oldLevel ? 'level-extractor' : 'state-extractor'
+group = 'dev.renderscope'
+version = "${sharedProperties.mod_version}+mc${mcVersion}"
+base { archivesName = 'renderscope-neoforge' }
+layout.buildDirectory = file("build/${mcVersion}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.withSourcesJar()
+def commonModernJava = file('../../modern/src/main/java').canonicalFile.toPath()
+def neoMixinSources = layout.buildDirectory.dir('generated/neoforge-mixin')
+tasks.register('generateNeoBlockEntityMixin') {
+    inputs.file '../../modern/src/main/java/dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java'
+    inputs.property 'minecraft', mcVersion
+    outputs.dir neoMixinSources
+    doLast {
+        def source=file('../../modern/src/main/java/dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java').getText('UTF-8')
+        // The short Neo overload delegates; only this exact Frustum overload
+        // contains the renderer invocation. 26.2 adds a boolean before Frustum.
+        def boolArg=oldLevel ? '' : 'Z'
+        def selector='tryExtractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;'+boolArg+'Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;'
+        source=source.replace('method = "tryExtractRenderState"','method = "'+selector+'"')
+        def target=neoMixinSources.get().file('dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java').asFile
+        target.parentFile.mkdirs()
+        target.setText(source,'UTF-8')
+    }
+}
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java', '../../modern/src/main/java', "../../modern/src/${inputAdapter}/java",
+            "../../modern/src/${worldAdapter}/java", '../../src/main/java', neoMixinSources]
+        java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**',
+            'dev/renderscope/client/ProfilerSettings.java', 'dev/renderscope/client/LoaderInfo.java',
+            'dev/renderscope/client/ModOwnership.java', 'dev/renderscope/client/platform/PlatformAccess.java',
+            'dev/renderscope/client/platform/PlatformServices.java', 'dev/renderscope/client/platform/NeoForgePlatform.java',
+            'dev/renderscope/client/integration/ShaderPasses.java'
+        java.exclude 'dev/renderscope/modern/RenderScopeModern.java'
+        java.exclude { entry -> entry.file.toPath().startsWith(commonModernJava) && entry.path.replace('\\','/')=='dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java' }
+        resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources', '../resources']
+        resources.exclude 'fabric.mod.json'
+    }
+    test {
+        java.srcDirs = ['../../src/test/java/dev/renderscope/core', '../../modern/src/test/java']
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+tasks.named('compileJava') { dependsOn 'generateNeoBlockEntityMixin' }
+tasks.named('sourcesJar') { dependsOn 'generateNeoBlockEntityMixin' }
+apply from: '../smoke/native-smoke.gradle'
+['compileClasspath', 'smokeCompileClasspath', 'runtimeClasspath', 'smokeRuntimeClasspath'].each { name ->
+    configurations.named(name) { attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25) }
+}
+neoForge {
+    enable { version = neoVersion; disableRecompilation = true }
+    addModdingDependenciesTo sourceSets.smoke
+    mods { renderscope { sourceSet(sourceSets.main) }; renderscope_native_smoke { sourceSet(sourceSets.smoke) } }
+    runs {
+        client { client(); gameDirectory = file("../../run-neoforge-${mcVersion}"); loadedMods = [mods.renderscope] }
+        smokeClient {
+            client(); gameDirectory = file("../../run-smoke-neoforge-${mcVersion}")
+            sourceSet = sourceSets.smoke
+            loadedMods = [mods.renderscope, mods.renderscope_native_smoke]
+            systemProperty 'renderscope.modern.smoke.output', file("../../distribution/neoforge/${mcVersion}/development").absolutePath
+            systemProperty 'renderscope.modern.smoke.artifact', tasks.named('jar').flatMap { it.archiveFile }.get().asFile.absolutePath
+        }
+    }
+}
+repositories { mavenCentral() }
+dependencies {
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+// JDK 25 reads Minecraft's classes; Java 21 mod bytecode remains compatible
+// with the official loader's Sponge Mixin language level.
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = name == 'compileTestJava' ? 25 : 21; options.compilerArgs += ['-proc:none'] }
+tasks.withType(Jar).configureEach {
+    from('../../LICENSE') { into 'META-INF' }
+    from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
+    manifest.attributes('Implementation-Title':'RenderScope', 'Implementation-Version':project.version,
+        'RenderScope-Loader':'neoforge', 'RenderScope-Loader-Version':neoVersion)
+}
+tasks.named('processResources') {
+    def props = [version: project.version, minecraft_version: mcVersion, neo_version: neoVersion,
+        pack_major: oldLevel ? 84 : mcVersion == '26.2' ? 88 : 97, pack_minor: mcVersion == '26.3' ? 1 : 0]
+    inputs.properties props
+    filesMatching('META-INF/neoforge.mods.toml') { expand props }
+    filesMatching('pack.mcmeta') { expand props }
+    filesMatching('renderscope.modern.mixins.json') {
+        expand worldMixins: oldLevel ? '"LegacyLevelRendererMixin"' : '"LevelExtractorMixin", "LevelRendererMixin"'
+        filter { line -> line.replace('"JAVA_25"', '"JAVA_21"') }
+    }
+    from('../../src/main/resources/assets/renderscope/textures/gui/logo.png') { into 'assets/renderscope/textures/gui' }
+    from('../../src/main/resources/renderscope-logo.png') { into 'assets/renderscope' }
+}
+tasks.named('test') { useJUnitPlatform() }

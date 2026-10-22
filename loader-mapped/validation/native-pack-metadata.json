@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact pinned native loader pack-type metadata audit; static source/bytecode and actual codec tests, not a world PASS",
+  "auditedAt": "2026-10-22T20:53:16.794010+00:00",
+  "behavior": "Individual native pack.mcmeta follows the upstream SERVER data range. Forge ResourcePackLoader uses DelegatingPackResources with new current-client PackMetadataSection for hidden client packs; NeoForge ResourcePackLoader similarly synthesizes current-client metadata for hidden defaults. RenderScope does not opt into showAsResourcePack. No client resource format is replaced by a data format in the synthetic client pack.",
+  "legacyFields": "No pack_format or supported_formats: these actual data ranges are beyond the legacy boundary, and the CLIENT codec forbids supported_formats above64.",
+  "codecRegressionSuite": "dev.renderscope.modern.NativeResourcePackMetadataTest",
+  "codecRegressionCases": [
+    "emittedNativeMetadataIsAcceptedByBothActualPackTypeCodecs",
+    "resourceRangeAlonePassesClientButFailsTheNativeServerPackRead"
+  ],
+  "targets": [
+    {
+      "minecraft": "1.21.9",
+      "loader": "forge",
+      "loaderVersion": "59.0.5",
+      "officialCoordinate": "net.minecraftforge:forge:1.21.9-59.0.5:universal",
+      "officialUniversalSha1": "c8dcb9cabaa8acc9b5e344c1fd6d9821c02116ac",
+      "officialUniversalSha256": "7e1c3396f61ee105c909b22c734ec15cee6b9dc31c2fde6df1866928b1ec999a",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.forge.description"
+          },
+          "max_format": 88,
+          "min_format": 88
+        }
+      },
+      "nativeEmittedServerRange": [
+        88,
+        0
+      ],
+      "syntheticHiddenClientResourceRange": [
+        69,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/minecraftforge/resource/ResourcePackLoader.class",
+          "sha256": "69ac6fa89e6ba93f0dc976b42dc26f91b689d9ef77c5a1a24b01dac969fd821a"
+        },
+        {
+          "class": "net/minecraftforge/resource/DelegatingPackResources.class",
+          "sha256": "c86f894813b197743156b592d23ba2e2b3897bb75e0a3e2bc30faf956658d5db"
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.10",
+      "loader": "forge",
+      "loaderVersion": "60.1.0",
+      "officialCoordinate": "net.minecraftforge:forge:1.21.10-60.1.0:universal",
+      "officialUniversalSha1": "ee7534a973c8c5069c6079174a84198133618ead",
+      "officialUniversalSha256": "a4049d7ead49f8f843748c2b3374466c0996f5405dcead390f84af5117e427af",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.forge.description"
+          },
+          "max_format": 88,
+          "min_format": 88
+        }
+      },
+      "nativeEmittedServerRange": [
+        88,
+        0
+      ],
+      "syntheticHiddenClientResourceRange": [
+        69,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/minecraftforge/resource/ResourcePackLoader.class",
+          "sha256": "9211b41e29f4dedee0c6f24587bdd099694e75d4323bb8f66cef156f00f46864"
+        },
+        {
+          "class": "net/minecraftforge/resource/DelegatingPackResources.class",
+          "sha256": "c86f894813b197743156b592d23ba2e2b3897bb75e0a3e2bc30faf956658d5db"
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.11",
+      "loader": "forge",
+      "loaderVersion": "61.2.0",
+      "officialCoordinate": "net.minecraftforge:forge:1.21.11-61.2.0:universal",
+      "officialUniversalSha1": "684d4cf385f66d2757c114cd513ad370f3465090",
+      "officialUniversalSha256": "9c35eb4f7af1455e31b20693c704194f73457bdbbbc080a13c3acf78c712e550",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.forge.description"
+          },
+          "max_format": 94,
+          "min_format": [
+            94,
+            1
+          ]
+        }
+      },
+      "nativeEmittedServerRange": [
+        94,
+        1
+      ],
+      "syntheticHiddenClientResourceRange": [
+        75,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/minecraftforge/resource/ResourcePackLoader.class",
+          "sha256": "84e1d41ad4fa505dfc39e5dd1bb8a716909ad564ecb413456ea68368f274c3f5"
+        },
+        {
+          "class": "net/minecraftforge/resource/DelegatingPackResources.class",
+          "sha256": "84c46864e3cbb9b2bb38c2a3b7e55bd4066230c3d251a0057cab3d5a4da61056"
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.9",
+      "loader": "neoforge",
+      "loaderVersion": "21.9.16-beta",
+      "officialCoordinate": "net.neoforged:neoforge:21.9.16-beta:universal",
+      "officialUniversalSha1": "1ede49f3c6d7b221970e22113249947f1da88088",
+      "officialUniversalSha256": "7e74d4b2016bd10fd9b1ddd53695acf6f271e1c9c1e9923afb59cf69ebb06051",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.neoforge.description"
+          },
+          "max_format": [
+            88,
+            0
+          ],
+          "min_format": 88
+        }
+      },
+      "nativeEmittedServerRange": [
+        88,
+        0
+      ],
+      "syntheticHiddenClientResourceRange": [
+        69,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/neoforged/neoforge/resource/ResourcePackLoader.class",
+          "sha256": "0df6ae558b3edade21a02e8a6436fd8ddebe595c002fb00abf19f20dc2f3acb1"
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.10",
+      "loader": "neoforge",
+      "loaderVersion": "21.10.64",
+      "officialCoordinate": "net.neoforged:neoforge:21.10.64:universal",
+      "officialUniversalSha1": "f3fdbbbda21bad3e3adafdddf31f9e7f26ea5d58",
+      "officialUniversalSha256": "51dc4f8418cc0c067df2524bc220edef56097f475f60527d550992bed90a2b57",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.neoforge.description"
+          },
+          "max_format": [
+            88,
+            0
+          ],
+          "min_format": 88
+        }
+      },
+      "nativeEmittedServerRange": [
+        88,
+        0
+      ],
+      "syntheticHiddenClientResourceRange": [
+        69,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/neoforged/neoforge/resource/ResourcePackLoader.class",
+          "sha256": "0df6ae558b3edade21a02e8a6436fd8ddebe595c002fb00abf19f20dc2f3acb1"
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.11",
+      "loader": "neoforge",
+      "loaderVersion": "21.11.48",
+      "officialCoordinate": "net.neoforged:neoforge:21.11.48:universal",
+      "officialUniversalSha1": "8097c6382d38648441484f58e1e95f9ac838ac18",
+      "officialUniversalSha256": "95882e7dda195b8cdf8c7fcddd69c32b9163ca1c84cd33ea47a1afc9e51960a6",
+      "upstreamPackMetadata": {
+        "pack": {
+          "description": {
+            "translate": "pack.neoforge.description"
+          },
+          "max_format": [
+            94,
+            1
+          ],
+          "min_format": [
+            94,
+            1
+          ]
+        }
+      },
+      "nativeEmittedServerRange": [
+        94,
+        1
+      ],
+      "syntheticHiddenClientResourceRange": [
+        75,
+        0
+      ],
+      "classes": [
+        {
+          "class": "net/neoforged/neoforge/resource/ResourcePackLoader.class",
+          "sha256": "0df6ae558b3edade21a02e8a6436fd8ddebe595c002fb00abf19f20dc2f3acb1"
+        }
+      ]
+    }
+  ],
+  "metadataOnlyBinaryComparisons": [
+    {
+      "minecraft": "1.21.9",
+      "loader": "forge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "a8515141d5b6aba1110d7c8f87151881439b6f30b4ade990abf2b13a27194510",
+      "currentPrimarySha256": "eeae695b98ad9353366a066f520cf3af265d5574601c4c87b93045b1e2eb0698",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/forge/renderscope-forge-0.3.0+mc1.21.9.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    },
+    {
+      "minecraft": "1.21.10",
+      "loader": "forge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "4aaeb38faf708653434ab2c3cc57e7fc9ebc9cae4d4a119c3f3bde2cd9643a1c",
+      "currentPrimarySha256": "7f7dfbc6049e9af7715156d66f1af8d2203e8c5811f0f47e6beaa21c64f64905",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/forge/renderscope-forge-0.3.0+mc1.21.10.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    },
+    {
+      "minecraft": "1.21.11",
+      "loader": "forge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "aaf6c857cdfb0dc89ca6b5ce1c15f7f1bd8e0e4b231d4759c85f30f06c5f1851",
+      "currentPrimarySha256": "4cd8af64cec9ccfedd346a497470604b0246274ce7a54edf41e33339472dabbd",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/forge/renderscope-forge-0.3.0+mc1.21.11.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    },
+    {
+      "minecraft": "1.21.9",
+      "loader": "neoforge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "486cb9dc7aaf95692a5a9f278219c4d71a17626e9d601c345804a0c0392325cc",
+      "currentPrimarySha256": "0ac384199639e081b6e6f55ccb2ba1aa5ef41bcffbc61e9e8df9bffee1d12b8c",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/neoforge/renderscope-neoforge-0.3.0+mc1.21.9.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    },
+    {
+      "minecraft": "1.21.10",
+      "loader": "neoforge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "93a8649814815099e02c24713a4a648cefcd0e5876cb883dac823c49ebbd2fc1",
+      "currentPrimarySha256": "c51ff257143b0c02d2fe02ea196be57afaa81f1a5e883813f92df243ebb94870",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/neoforge/renderscope-neoforge-0.3.0+mc1.21.10.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    },
+    {
+      "minecraft": "1.21.11",
+      "loader": "neoforge",
+      "previousGitCommit": "f10121fc3e32ddd3c25f78bea27dceb3c835c0b6",
+      "previousPrimarySha256": "1a4f48e8bdab1008346a2f471a5e5abb05b69d8f1f964ccda4bfce117fb6e7e7",
+      "currentPrimarySha256": "fc198baa2e2c12d6bac86e611fd6707f0e0f57ba4c4e0b779af1ed5129118500",
+      "changedArchiveEntryBytes": [
+        "pack.mcmeta"
+      ],
+      "allProductionClassBytesUnchanged": true,
+      "comparisonScope": "Historical pack-only fix before the subsequent HUD early-return correction; not a claim about later main JARs",
+      "archivedPackOnlyGitCommit": "fdadb6376a2978c4be9279f37270e22c613f3e5e",
+      "archivedArtifact": "distribution/0.3.0/neoforge/renderscope-neoforge-0.3.0+mc1.21.11.jar",
+      "currentPrimaryFieldMeaning": "The pack-only artifact SHA at the historical comparison step; later HUD JAR hashes are recorded separately in the current build/package indexes."
+    }
+  ],
+  "binaryComparisonScope": "Historical metadata-only comparisons remain bound to exact pre-HUD hashes and archived Git blobs. The later HUD source correction changes production classes; no unchanged-class claim is made for those later JARs."
+}

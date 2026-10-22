@@ -307,8 +307,17 @@ class RenderProfilerTest {
         f.finish(30_000_000);
         ProfilerSnapshot snapshot = f.profiler.snapshot();
         assertEquals(28, snapshot.performance().measuredRenderMs());
-        assertEquals(28, snapshot.renderers().get(0).stats().averageMs());
-        assertEquals(28, snapshot.renderers().get(0).stats().cpuMs());
+        assertEquals(2, snapshot.renderers().size());
+        assertEquals(28, snapshot.renderers().stream().mapToDouble(row -> row.stats().averageMs()).sum());
+        assertEquals(28, snapshot.renderers().stream().mapToDouble(row -> row.stats().cpuMs()).sum());
+        Statistics vanillaRenderer = snapshot.renderers().stream().filter(row -> row.registryOwner().equals("minecraft"))
+            .findFirst().orElseThrow().stats();
+        Statistics customRenderer = snapshot.renderers().stream().filter(row -> row.registryOwner().equals("custom"))
+            .findFirst().orElseThrow().stats();
+        assertEquals(23, vanillaRenderer.averageMs());
+        assertEquals(23, vanillaRenderer.cpuMs());
+        assertEquals(5, customRenderer.averageMs());
+        assertEquals(5, customRenderer.cpuMs());
         assertEquals(3, snapshot.performance().rendererCallsPerFrame());
         assertEquals(24, snapshot.performance().verticesPerFrame());
         assertEquals(13, objectStats(snapshot, "minecraft:chest").averageMs());

@@ -5,6 +5,8 @@ import dev.renderscope.client.report.ReportExporter;
 import dev.renderscope.client.ui.RenderScopeScreen;
 import dev.renderscope.client.ui.ScreenActions;
 import dev.renderscope.client.world.WorldOverlay;
+import dev.renderscope.client.platform.PlatformAccess;
+import dev.renderscope.client.platform.PlatformServices;
 import dev.renderscope.core.*;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -15,16 +17,12 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 public final class ClientRuntime implements ScreenActions {
     private static final Logger LOGGER = LoggerFactory.getLogger("RenderScope");
@@ -32,7 +30,7 @@ public final class ClientRuntime implements ScreenActions {
     private static final KeyMapping OPEN = new KeyMapping("key.renderscope.open", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_F8, "key.categories.renderscope");
     private final RenderProfiler profiler = new RenderProfiler();
-    private final ProfilerSettings settings = ProfilerSettings.load(FMLPaths.CONFIGDIR.get().resolve("renderscope.json"));
+    private final ProfilerSettings settings = ProfilerSettings.load(PlatformServices.current().configDirectory().resolve("renderscope.json"));
     private final ModOwnership ownership = new ModOwnership();
     private final WorldOverlay overlay = new WorldOverlay(profiler, settings);
     private String captureMeasurementMode = ProfilerSettings.MeasurementMode.TIMING_ONLY.name();
@@ -40,26 +38,21 @@ public final class ClientRuntime implements ScreenActions {
 
     private ClientRuntime() { }
     public static ClientRuntime current() { return instance; }
-    public static void initialize() {
+    public static ClientRuntime initialize(PlatformAccess platform) {
+        PlatformServices.install(platform);
         instance = new ClientRuntime();
         instance.applySettings();
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        bus.addListener((RegisterKeyMappingsEvent event) -> event.register(OPEN));
-        MinecraftForge.EVENT_BUS.addListener(instance::clientTick);
-        MinecraftForge.EVENT_BUS.addListener(instance::pauseMenu);
-        MinecraftForge.EVENT_BUS.addListener(instance::screenKey);
-        MinecraftForge.EVENT_BUS.addListener(instance::renderWorld);
-        MinecraftForge.EVENT_BUS.addListener(instance.overlay::renderHud);
         LOGGER.info("RenderScope ready: F8 / Pause Menu. CPU timing; no server component.");
+        return instance;
     }
+    public static KeyMapping openKey() { return OPEN; }
 
     public RenderProfiler profiler() { return profiler; }
     public ModOwnership ownership() { return ownership; }
     public WorldOverlay overlay() { return overlay; }
     @Override public ProfilerSettings settings() { return settings; }
 
-    private void clientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public void clientTick() {
         while (OPEN.consumeClick()) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.screen instanceof RenderScopeScreen) mc.screen.onClose();
@@ -67,29 +60,28 @@ public final class ClientRuntime implements ScreenActions {
         }
     }
 
-    private void screenKey(ScreenEvent.KeyPressed.Pre event) {
-        if (Minecraft.getInstance().level == null || !OPEN.matches(event.getKeyCode(), event.getScanCode())) return;
-        if (event.getScreen() instanceof KeyBindsScreen || event.getScreen().getFocused() instanceof EditBox) return;
+    public boolean screenKey(Screen screen, int keyCode, int scanCode) {
+        if (Minecraft.getInstance().level == null || !OPEN.matches(keyCode, scanCode)) return false;
+        if (screen instanceof KeyBindsScreen || screen.getFocused() instanceof EditBox) return false;
         while (OPEN.consumeClick()) { /* discard a queued gameplay key press */ }
         OPEN.setDown(false);
-        if (event.getScreen() instanceof RenderScopeScreen) event.getScreen().onClose();
-        else open(event.getScreen());
-        event.setCanceled(true);
+        if (screen instanceof RenderScopeScreen) screen.onClose();
+        else open(screen);
+        return true;
     }
 
     public void open(Screen parent) {
         Minecraft.getInstance().setScreen(new RenderScopeScreen(parent, profiler, this));
     }
 
-    private void pauseMenu(ScreenEvent.Init.Post event) {
-        Screen screen = event.getScreen();
+    public void pauseMenu(Screen screen, List<?> listeners, Consumer<Button> addButton) {
         if (!(screen instanceof PauseScreen) || Minecraft.getInstance().level == null) return;
         // Find an unused 100x20 area; leave all vanilla and other mods' buttons intact.
         int x = 6, y = screen.height - 26;
         outer: for (int candidateY = screen.height - 26; candidateY >= 6; candidateY -= 24) {
             for (int candidateX : new int[]{6, Math.max(6, screen.width - 106)}) {
                 boolean free = true;
-                for (var child : event.getListenersList()) {
+                for (var child : listeners) {
                     if (child instanceof AbstractWidget w && w.visible && candidateX < w.getX()+w.getWidth()
                             && candidateX+100 > w.getX() && candidateY < w.getY()+w.getHeight()
                             && candidateY+20 > w.getY()) { free = false; break; }
@@ -97,18 +89,18 @@ public final class ClientRuntime implements ScreenActions {
                 if (free) { x=candidateX; y=candidateY; break outer; }
             }
         }
-        event.addListener(Button.builder(Component.literal("RenderScope"), button -> open(screen))
+        addButton.accept(Button.builder(Component.literal("RenderScope"), button -> open(screen))
                 .bounds(x,y,100,20).build());
     }
 
-    private void renderWorld(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
-            RenderHooks.worldPass(true);
-            FlywheelGpuTimers.frameStarted(settings.profiling
-                    && settings.mode == ProfilerSettings.MeasurementMode.FULL && hasInstancedRenderer());
-        }
-        overlay.render(event);
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) RenderHooks.worldPass(false);
+    public void beginWorldPass() {
+        if (dev.renderscope.client.integration.ShaderPasses.isShadowPass()) return;
+        RenderHooks.worldPass(true);
+        FlywheelGpuTimers.frameStarted(settings.profiling
+                && settings.mode == ProfilerSettings.MeasurementMode.FULL && hasInstancedRenderer());
+    }
+    public void endWorldPass() {
+        if (!dev.renderscope.client.integration.ShaderPasses.isShadowPass()) RenderHooks.worldPass(false);
     }
 
     private void applySettings() {
@@ -126,7 +118,10 @@ public final class ClientRuntime implements ScreenActions {
     }
     @Override public void saveSettings() { applySettings(); settings.save(); }
     @Override public String modDisplayName(String namespace) { return ModOwnership.displayName(namespace); }
-    @Override public boolean hasInstancedRenderer() { return net.minecraftforge.fml.ModList.get().isLoaded("flywheel"); }
+    @Override public boolean hasInstancedRenderer() {
+        return dev.renderscope.client.integration.IntegrationVersions.supportsFlywheel(
+                dev.renderscope.client.integration.IntegrationVersions.installed());
+    }
     @Override public FlywheelGpuTimers.Snapshot flywheelGpuTiming() { return FlywheelGpuTimers.snapshot(); }
     @Override public void toggleHighlight(InstanceKey key) { overlay.toggleHighlight(key); }
     @Override public void toggleTrack(InstanceKey key) { overlay.toggleTrack(key); }

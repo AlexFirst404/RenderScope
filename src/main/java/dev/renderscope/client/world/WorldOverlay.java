@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.renderscope.client.ProfilerSettings;
+import dev.renderscope.client.ModOwnership;
 import dev.renderscope.core.InstanceKey;
 import dev.renderscope.core.InstanceMetric;
 import dev.renderscope.core.ObjectKind;
@@ -30,10 +31,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.fml.ModList;
+import net.minecraft.client.renderer.culling.Frustum;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
@@ -130,10 +128,9 @@ public final class WorldOverlay {
         }
     }
 
-    public void render(RenderLevelStageEvent event) {
-        // NeoForge 47's AFTER_LEVEL receives the projection-building PoseStack from GameRenderer,
-        // not LevelRenderer's camera/view stack. This stage has the correct world-view transform.
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+    /** Called once with the actual world-view stack, after particles/translucent rendering. */
+    public void render(PoseStack pose, Matrix4f projection, Vec3 camera, Frustum frustum, float partialTick) {
+        if (dev.renderscope.client.integration.ShaderPasses.isShadowPass()) return;
         renderedWorldBoxes = 0;
         renderedWorldLabels = 0;
         renderedBoxKeys.clear();
@@ -145,7 +142,6 @@ public final class WorldOverlay {
 
         ProfilerSnapshot snapshot = profiler.snapshot();
         updateSelectionValues(snapshot);
-        Vec3 camera = event.getCamera().getPosition();
         LinkedHashMap<InstanceKey, DrawTarget> targets = new LinkedHashMap<>();
         if (settings.heatmap) {
             double distanceSquared = settings.maximumDistance * (double) settings.maximumDistance;
@@ -170,7 +166,6 @@ public final class WorldOverlay {
         if (trackedValue != null) targets.put(tracked, new DrawTarget(trackedValue, TRACK_COLOR, true));
         if (targets.isEmpty()) return;
 
-        PoseStack pose = event.getPoseStack();
         GlState previousState = GlState.capture();
         pose.pushPose();
         try {
@@ -179,8 +174,8 @@ public final class WorldOverlay {
             VertexConsumer consumer = buffers.getBuffer(lines);
             List<ResolvedTarget> labels = new ArrayList<>();
             for (DrawTarget target : targets.values()) {
-                AABB box = resolveBox(minecraft, target.metric(), event.getPartialTick());
-                if (box == null || !event.getFrustum().isVisible(box)) continue;
+                AABB box = resolveBox(minecraft, target.metric(), partialTick);
+                if (box == null || (frustum != null && !frustum.isVisible(box))) continue;
                 if (!target.selected() && box.getCenter().distanceToSqr(camera) > settings.maximumDistance * (double) settings.maximumDistance) continue;
                 int color = target.color();
                 LevelRenderer.renderLineBox(pose, consumer, box.inflate(0.006),
@@ -197,7 +192,7 @@ public final class WorldOverlay {
             List<LabelRect> occupied = hudLabelExclusions(minecraft, snapshot);
             int labelsDrawn = 0;
             for (ResolvedTarget label : labels) {
-                LabelPlacement placement = projectLabel(minecraft, pose, label, event.getProjectionMatrix());
+                LabelPlacement placement = projectLabel(minecraft, pose, label, projection);
                 if (placement == null || occupied.stream().anyMatch(rect -> rect.overlaps(placement.rect()))) continue;
                 renderLabel(minecraft, pose, placement);
                 renderedWorldLabels++;
@@ -355,14 +350,12 @@ public final class WorldOverlay {
         }
     }
 
-    /** Draw once at the vanilla debug-text overlay; other overlays each emit their own Post event. */
-    public void renderHud(RenderGuiOverlayEvent.Post event) {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.DEBUG_TEXT.id())) return;
+    /** The platform invokes this once per HUD frame. */
+    public void renderHud(GuiGraphics graphics) {
         Minecraft minecraft = Minecraft.getInstance();
         if (!checkWorld(minecraft) || minecraft.options.hideGui) return;
         ProfilerSnapshot snapshot = profiler.snapshot();
         updateSelectionValues(snapshot);
-        GuiGraphics graphics = event.getGuiGraphics();
         if (snapshot.capture().active()) {
             String recording = "RenderScope Recording \u25cf  " + String.format(Locale.ROOT, "%.1f s", snapshot.capture().elapsedSeconds());
             graphics.fill(5, 5, 15 + minecraft.font.width(recording), 21, 0xB0201111);
@@ -404,10 +397,16 @@ public final class WorldOverlay {
             }
         } else if (minecraft.hitResult instanceof BlockHitResult hit) {
             BlockPos pos = hit.getBlockPos();
+            BlockEntity current = minecraft.level.getBlockEntity(pos);
+            if (current == null || current.isRemoved()) return null;
+            var type = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(current.getType());
+            if (type == null) return null;
+            String registryId = type.toString();
             for (InstanceMetric metric : snapshot.instances()) {
                 InstanceKey key = metric.context().key();
                 Position location = metric.context().position();
                 if (key.kind() == ObjectKind.BLOCK_ENTITY && key.dimension().equals(dimension)
+                        && registryId.equals(metric.context().registryId())
                         && BlockPos.containing(location.x(), location.y(), location.z()).equals(pos)) return metric;
             }
         }
@@ -452,8 +451,7 @@ public final class WorldOverlay {
 
     private String modName(String id) {
         if (id.equals("minecraft")) return "Minecraft";
-        return modNames.computeIfAbsent(id, key -> ModList.get().getModContainerById(key)
-                .map(container -> container.getModInfo().getDisplayName()).orElse("Unknown / " + key));
+        return modNames.computeIfAbsent(id, ModOwnership::displayName);
     }
 
     private static String formatMs(double ms) {
@@ -500,7 +498,7 @@ public final class WorldOverlay {
                             RenderSystem.depthFunc(GL11.GL_LEQUAL);
                         }
                         RenderSystem.lineWidth(2F);
-                    }, () -> {});
+                    }, () -> RenderSystem.depthMask(true));
         }
     }
 

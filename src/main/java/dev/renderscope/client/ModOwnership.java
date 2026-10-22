@@ -1,7 +1,6 @@
 package dev.renderscope.client;
 
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLLoader;
+import dev.renderscope.client.platform.PlatformServices;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,11 +16,7 @@ public final class ModOwnership {
     };
 
     public ModOwnership() {
-        for (var file : FMLLoader.getLoadingModList().getModFiles()) {
-            if (file.getMods().isEmpty()) continue;
-            String owner = file.getMods().get(0).getModId();
-            for (String pkg : file.getFile().getSecureJar().getPackages()) packageOwners.putIfAbsent(pkg, owner);
-        }
+        packageOwners.putAll(PlatformServices.current().packageOwners());
     }
 
     public String rendererOwner(Class<?> renderer) { return classOwners.get(renderer); }
@@ -29,7 +24,6 @@ public final class ModOwnership {
     public static String displayName(String namespace) {
         if (namespace == null || namespace.equals("unknown")) return "Unknown";
         if (namespace.equals("minecraft")) return "Minecraft";
-        return ModList.get().getModContainerById(namespace)
-                .map(mod -> mod.getModInfo().getDisplayName()).orElse(namespace);
+        return PlatformServices.current().displayName(namespace);
     }
 }

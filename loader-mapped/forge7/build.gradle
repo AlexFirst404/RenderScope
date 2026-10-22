@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '7.0.40'
+}
+ext.minecraftTarget=providers.gradleProperty('minecraft_version').get()
+if(minecraftTarget!='1.21.11')throw new GradleException('This project follows the official 1.21.11 Forge7 MDK')
+ext.targetLoader='forge'
+ext.targetLoaderVersion='61.2.0'
+apply from:'../adapter-sources.gradle'
+apply from:'../smoke/native-smoke.gradle'
+minecraft {
+    mappings channel:'official',version:minecraftTarget
+    runs { register('client') { workingDir=layout.projectDirectory.dir("../../run-forge-${minecraftTarget}") } }
+    if (providers.gradleProperty('native_smoke').isPresent()) runs.named('client') {
+        workingDir=layout.projectDirectory.dir("../../run-smoke-forge-${minecraftTarget}")
+        mods { renderscope { source sourceSets.main }; renderscope_native_smoke { source sourceSets.smoke } }
+        systemProperty 'renderscope.modern.smoke.output', file("../../distribution/forge/${minecraftTarget}/development").absolutePath
+        systemProperty 'renderscope.modern.smoke.artifact', tasks.named('jar').flatMap { it.archiveFile }.get().asFile.absolutePath
+    }
+}
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraftTarget}-${targetLoaderVersion}")
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
+}

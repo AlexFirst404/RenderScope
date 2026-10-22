@@ -2,13 +2,25 @@
 
 **Find the render cost. Follow it into your world.**
 
-![RenderScope — live profiling inside Minecraft](distribution/forge/presentation/cover.png)
+![RenderScope](distribution/brand/renderscope-logo-384x384.png)
 
-**Minecraft 1.20.1 · Forge / NeoForge · Java 21 · Client-side**
+**RenderScope 0.3.0 · Minecraft 1.20.1–26.3 · Fabric / Forge / NeoForge · Client-side**
+
+Choose the JAR for your **exact Minecraft version and loader** in the [0.3.0 downloads](distribution/0.3.0/README.md). The [build and game-test matrix](docs/compatibility/SUPPORT-MATRIX.md) records actual build results and the exact hashes tested in Minecraft. Forge has no upstream release for Minecraft 1.20.5 or 1.21.2. Minecraft 26.x requires Java 25; earlier targets use Java 21.
+
+The first page explains which mod has the most measured object-render CPU work and shows its heaviest measured instance. Preliminary measurements are labelled while more samples accumulate. The screen also explains when these objects account for too little work to explain the rest of a slow frame.
+
+Minecraft **1.20.1–1.21.8** adapters use **Start**, with **Find object**, **Show in world** and **Record 10 s**. The newer **1.21.9–26.3** UI uses **Overview**, **Show the instance**, **Inspect measured mods** and **Start Capture**; capture duration is selected in its Capture tab. Both UI families keep detailed tables and world inspection.
+
+![The Start page in the actual Fabric 1.21.8 shader check](distribution/mc21/fabric/1.21.8/renderer-compat/iris/gallery/01-overview.png)
+
+Native Sodium / Embeddium / Rubidium counters, Iris / Oculus shadow handling and Mekanism Extras attribution have explicit version gates. Read the [exact optional-renderer coverage](docs/OPTIONAL-RENDERER-COMPATIBILITY.md) before combining them with Create. Unknown native rendering APIs retain available dispatcher timing and show partial coverage.
 
 [Features](#follow-the-cost) · [Install](#install) · [Русский](#русский) · [Development](#development)
 
 RenderScope connects measured rendering work to a mod, an object type, and a specific instance in your world. Find a costly renderer, select its entity or block entity, and highlight the object you want to investigate.
+
+The rounded Create screenshots and GIFs below are real footage archived from **RenderScope 0.2.0 / Minecraft 1.20.1**. Current **0.3.0** screenshots, captures and exact tested JAR hashes are linked in the [game-test matrix](docs/compatibility/SUPPORT-MATRIX.md).
 
 ---
 
@@ -24,7 +36,7 @@ Per-frame average, P95, peak, calls, renderer implementation and CPU work source
 
 ## See the object in your world
 
-**Highlight** marks your selection in the world. **Track** adds a direction and distance HUD. The **heatmap** compares nearby measured instances using relative green/yellow/red costs; **Inspect** shows the measured object under your crosshair.
+**Highlight** marks your selection in the world. In **1.20.1–1.21.8**, **Track** adds a direction and distance HUD; in **1.21.9–26.3**, it keeps the selected object marked in the world. The **heatmap** compares nearby measured instances using relative green/yellow/red costs; **Inspect** shows the measured object under your crosshair.
 
 ![A real rotating Create shaft, selected with Flywheel instancing enabled](distribution/forge/presentation/create-shaft-live.gif)
 
@@ -34,20 +46,22 @@ Filters cover distance, object categories, minimum cost, object limits, labels a
 
 ## Catch a spike and keep the evidence
 
-**Overview** shows FPS, frame-time percentiles, 1% low and measured offenders. **Timeline** keeps about 30 seconds of frame history; click a frame to inspect its attribution. Record **5 / 10 / 30 seconds** or stop manually, then export a local JSON report.
+**Start / Overview** shows FPS, frame-time percentiles, 1% low and measured offenders. **Timeline** keeps about 30 seconds of frame history; click a frame to inspect its attribution. Record **5 / 10 / 30 seconds** or stop manually, then export a local JSON report.
 
 ![A capture from the real installed Forge test](distribution/forge/presentation/capture.png)
 
 ## Install
 
-Use **Minecraft 1.20.1** and **Java 21**, then place one matching main JAR in your client profile's `mods` folder:
+Place one main JAR from [0.3.0 downloads](distribution/0.3.0/README.md) matching your **exact Minecraft version and loader** in your client profile's `mods` folder. Fabric also requires the matching Fabric API. See the [0.3.0 matrix](docs/compatibility/SUPPORT-MATRIX.md) for individual build and world-test results.
+
+The previous **0.2.0 / Minecraft 1.20.1** builds also remain available:
 
 | Loader | RenderScope 0.2.0 |
 | --- | --- |
 | Forge 47.4.10 | [Download Forge JAR](distribution/forge/renderscope-forge-0.2.0+mc1.20.1.jar) |
 | NeoForge 47.1.106 | [Download NeoForge JAR](distribution/renderscope-neoforge-0.2.0+mc1.20.1.jar) |
 
-Open a world, wait a few seconds, and press **F8**. Rebind it under **Options → Controls → RenderScope**. MixinExtras is bundled. **The server does not need RenderScope.** English and Russian UI are included.
+Open a world, wait a few seconds, and press **F8**. Rebind it under **Options → Controls → RenderScope**. Runtime integration dependencies come from the matching JAR or its loader. **The server does not need RenderScope.** English and Russian UI are included.
 
 ## What the numbers mean
 
@@ -58,7 +72,7 @@ Open a world, wait a few seconds, and press **F8**. Rebind it under **Options �
 | Shared Flywheel GPU | Real asynchronous OpenGL timestamps in Full mode, when supported |
 | Estimated vertex data | Standard BufferBuilder geometry; alternative pipelines can bypass these counters |
 
-**Timing Only** is the default. **Full** adds observed geometry and the live shared Flywheel GPU view. Parallel visual CPU intervals can overlap; their sum can exceed frame latency. GPU time and instanced geometry are not divided among objects, and the live GPU diagnostic is not exported as a capture.
+**Timing Only** is the default. **Full** adds geometry where the adapter can observe it. The supported Minecraft 1.20.1 / Flywheel 1.0.5 integration also provides a live shared GPU view. Parallel visual CPU intervals can overlap; their sum can exceed frame latency. GPU time and instanced geometry are not divided among objects, and the live GPU diagnostic is not exported as a capture.
 
 The installed Forge test used **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80**. These optional mods are not required. Virtual contraption block entities are not individually attributed at world positions; terrain, particles, GUI and standalone shader passes are outside this profiling scope. See [measurement details](docs/MEASUREMENTS.md).
 
@@ -72,11 +86,15 @@ Reports stay in your profile's `renderscope-reports` folder. They include versio
 
 **Найдите конкретный объект, на рендер которого уходит время.** RenderScope связывает измерения с модом, типом объекта и отдельным экземпляром мира.
 
-1. Установите подходящий JAR из таблицы выше: **Minecraft 1.20.1, Forge 47.4.10 либо NeoForge 47.1.106, Java 21**. На сервер мод не нужен.
-2. Откройте **F8** или **Esc → RenderScope**. В **Mods** выберите мод, в **Objects** — тип и экземпляр.
-3. Нажмите **Highlight**, чтобы подсветить объект, **Track** — чтобы отслеживать его, или **Copy Position**, чтобы скопировать координаты.
+Скриншоты и GIF с Create и скруглёнными краями — реальные архивные кадры **RenderScope 0.2.0 / Minecraft 1.20.1**. Актуальные кадры **0.3.0**, отчёты и хеши проверенных сборок доступны в [матрице игровых проверок](docs/compatibility/SUPPORT-MATRIX.md).
 
-**Теплокарта** сравнивает стоимость объектов цветом, **Inspect** показывает объект под прицелом. **Timeline** хранит около 30 секунд истории, **Capture** записывает 5/10/30 секунд или до ручной остановки. Интерфейс доступен на русском и английском.
+1. Выберите JAR **строго под свою версию Minecraft и загрузчик** в [загрузках 0.3.0](distribution/0.3.0/README.md). Результаты игровых проверок указаны в [матрице](docs/compatibility/SUPPORT-MATRIX.md). Для Fabric нужен Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21. На сервер мод не нужен.
+2. Откройте **F8** или **Esc → RenderScope**. После накопления измерений первая страница показывает мод с самой дорогой наблюдаемой CPU-работой отрисовки и конкретный экземпляр.
+3. В адаптерах **1.20.1–1.21.8** это вкладка **Главная**: **Найти объект** открывает подробности, **Показать в мире** включает подсветку и направление, **Записать 10 с** начинает захват. В интерфейсе **1.21.9–26.3** используются **Обзор**, **Показать объект**, **Изучить моды** и **Начать запись**; длительность выбирается на вкладке записи. Подробные таблицы, теплокарта и инспектор доступны в обоих семействах.
+
+Процент сравнивает измеренную CPU-работу объектов. Он не выдаётся за долю всей видеокарты и не обещает прирост FPS после удаления мода. Если измерений мало или основные затраты находятся вне профилируемых объектов, интерфейс прямо об этом сообщает. Для Sodium/Iris/Embeddium/Rubidium и Mekanism Extras указаны [точные версии и результаты совместимости](docs/OPTIONAL-RENDERER-COMPATIBILITY.md).
+
+**Теплокарта** сравнивает стоимость объектов цветом, **Inspect** показывает объект под прицелом. В **1.20.1–1.21.8** режим **Track** показывает направление и расстояние; в **1.21.9–26.3** он сохраняет отметку выбранного объекта в мире. **Timeline** хранит около 30 секунд истории, **Capture** записывает 5/10/30 секунд или до ручной остановки. Интерфейс доступен на русском и английском.
 
 В 0.2.0 поддерживаемые Flywheel visual CPU-задачи связываются с настоящими механизмами при включённом instancing. Общие CPU/GPU batches показываются отдельно: GPU-время и инстансированная геометрия не распределяются между объектами. **Timing Only** собирает время; **Full** добавляет наблюдаемую геометрию и асинхронную GPU-сводку поддерживаемых Flywheel-проходов. Подробности и ограничения — в [методике](docs/MEASUREMENTS.md).
 
@@ -90,6 +108,22 @@ JSON сохраняется локально, без автоматическо�
 <summary>Build, test evidence and architecture</summary>
 
 Use **JDK 21**. The bundled Gradle wrapper is 8.8; output uses Java 17 bytecode for these Minecraft 1.20.1 loaders.
+
+Build an exact 0.3.0 adapter with Python 3.11+ and the JDK requested by its target manifest:
+
+```powershell
+python scripts/build-all.py --minecraft 1.20.1 --loader fabric
+python scripts/build-all.py --minecraft 26.3 --loader neoforge --java25 /path/to/jdk25
+python scripts/build-all.py --all --java21 /path/to/jdk21 --java25 /path/to/jdk25
+```
+
+With no arguments, the script lists the configured targets. It runs their actual Gradle builds and tests, then audits loader/Minecraft metadata, bytecode, Mixin refmaps and bundled legal notices. `--audit-only --package` copies verified main artifacts to `distribution/0.3.0`; separate test harnesses are excluded. `python scripts/generate-support-matrix.py` regenerates the evidence table without treating an upstream version listing as tested compatibility.
+
+The local publication helper, `python scripts/prepare-publication-030.py`, also requires a manual visual review for every exact target before setting `publicationReady=true`. The review must approve aligned world boxes, readable labels and a visible Inspector, and link the current main JAR, the same successful runtime result, and the actual world/Inspector PNGs by SHA-256. Missing or failed reviews, stale hashes, changed images and mixed optional profiles keep publication blocked. Numerical smoke success alone is insufficient. Reviewed manifests, PNGs and results must also match the exact raw Git bytes used for publication. The helper prepares local files; it does not upload them.
+
+After actual platform saves, the [offline platform verifier](docs/PLATFORM-PUBLICATION-VERIFICATION.md) separately checks all 67 submission records, saved file metadata and actual-download fingerprints per site. `Processing` and `Under Review` remain raw moderation states, never inferred approval. The verifier does not upload or download anything.
+
+The modules separate shared profiler/diagnostics from loader hooks and Minecraft API families: `fabric/`, `mc20/`, `mc21/`, `modern/`, `forge20/`, `neo20/`, `loader21/`, `loader-mapped/` and `loader26/`. The original 1.20.1 Forge/NeoForge commands remain:
 
 ```powershell
 .\scripts\build.ps1 -Loader forge
@@ -115,7 +149,7 @@ The source-only `smoke` and `compat` harnesses are separate from the release JAR
 
 ```powershell
 .\gradlew.bat -Ploader=forge compatJar
-python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.2.0+mc1.20.1-compat-harness.jar --launch
+python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.3.0+mc1.20.1-compat-harness.jar --launch
 ```
 
 Raw gameplay evidence remains unchanged. Rounded presentation images and animations are derived from those real captures; their manifests identify their sources. The 24×24 pixel-art logo is preserved and enlarged by exact integer replication, without added borders or canvas.
