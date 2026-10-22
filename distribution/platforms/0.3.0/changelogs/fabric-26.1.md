@@ -6,12 +6,14 @@
 - F8/Pause UI, heatmap, crosshair inspector, timeline, capture and privacy-safe local JSON.
 - Shared renderer classes retain separate registry-owner rows; CPU attribution is not a causal FPS prediction.
 
+- Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
+
 Measurement scope: Exclusive CPU render-state extraction and submission, grouped by source. Later deferred feature batches, geometry and GPU timings are unavailable per object. Zero geometry fields do not mean an object emits no geometry. Terrain, shader execution and shared instancing work are not assigned to objects.
 
-Validation: **60 unit tests**; World verification is pending for this exact artifact hash.
+Validation: **65 unit tests**; World verification is pending for this exact artifact hash.
 
 
-SHA-256: `b28a364cbe4860f1a3fad3d6d97ba97a8a79f5cef54ffbeffbf9eb8c7a748666` (337161 bytes).
+SHA-256: `e791bdb73be8e1de0c511fee40797d5ed54641e7a121c59291013759f7b405d0` (337510 bytes).
 
 ---
 
@@ -21,10 +23,10 @@ SHA-256: `b28a364cbe4860f1a3fad3d6d97ba97a8a79f5cef54ffbeffbf9eb8c7a748666` (337
 
 Обязателен Fabric API **0.145.1+26.1**.
 
-Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. CPU-доли не обещают прирост FPS.
+Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
 Область измерения: Раздельные эксклюзивные CPU-интервалы извлечения render state и submission. Поздние отложенные feature batches, геометрия и GPU-тайминги отдельных объектов недоступны. Нулевые поля геометрии не означают отсутствия геометрии. Terrain, выполнение шейдеров и общий instancing не распределяются между объектами.
 
-Проверено unit-тестов: **60**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **65**. Игровая проверка именно этого хеша ещё не завершена.
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

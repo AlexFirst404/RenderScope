@@ -5,12 +5,14 @@
 - F8/Pause UI, heatmap, crosshair inspector, timeline, capture and privacy-safe local JSON.
 - Shared renderer classes retain separate registry-owner rows; CPU attribution is not a causal FPS prediction.
 
+- Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
+
 Measurement scope: Version-specific entity/block-entity CPU hooks, including extraction where available. Geometry is limited to observed standard buffers; newer Sodium/Iris native geometry is unavailable. GPU work, terrain, shader execution and shared instancing are not assigned to objects. A vanilla baseline does not establish optional-mod or shader compatibility.
 
-Validation: **61 unit tests**; World verification is pending for this exact artifact hash.
+Validation: **66 unit tests**; World verification is pending for this exact artifact hash.
 
 
-SHA-256: `a745fea3cd82f1cd0a9d7c66b1b22da4355f5090490c9b763c6c448ebed9ae62` (411456 bytes).
+SHA-256: `c938b566e515fef8d9561c02d063830b0c2a88d8c820e50b765d9185d69536cd` (411906 bytes).
 
 ---
 
@@ -18,10 +20,10 @@ SHA-256: `a745fea3cd82f1cd0a9d7c66b1b22da4355f5090490c9b763c6c448ebed9ae62` (411
 
 Клиентская сборка для **Minecraft 1.21.6 / forge 56.0.9 / Java 21**. На сервер мод не нужен.
 
-Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. CPU-доли не обещают прирост FPS.
+Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
 Область измерения: Версионные CPU-хуки сущностей и блок-сущностей, включая extraction там, где доступен. Геометрия ограничена наблюдаемыми стандартными буферами; native-геометрия новых Sodium/Iris недоступна. GPU, terrain, выполнение шейдеров и общий instancing не распределяются между объектами. Ванильный прогон не подтверждает совместимость со всеми модами и шейдерами.
 
-Проверено unit-тестов: **61**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **66**. Игровая проверка именно этого хеша ещё не завершена.
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

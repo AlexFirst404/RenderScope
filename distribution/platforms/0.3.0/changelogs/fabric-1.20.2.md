@@ -6,12 +6,14 @@
 - F8/Pause UI, heatmap, crosshair inspector, timeline, capture and privacy-safe local JSON.
 - Shared renderer classes retain separate registry-owner rows; CPU attribution is not a causal FPS prediction.
 
+- Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
+
 Measurement scope: Version-specific entity/block-entity CPU hooks, including extraction where available. Geometry is limited to observed standard buffers; newer Sodium/Iris native geometry is unavailable. GPU work, terrain, shader execution and shared instancing are not assigned to objects. A vanilla baseline does not establish optional-mod or shader compatibility.
 
-Validation: **61 unit tests**; Current hash-matched world evidence: installed-production
+Validation: **66 unit tests**; Current hash-matched world evidence: installed-production
 - [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc20/fabric/1.20.2/installed-verification.json)
 
-SHA-256: `291f835720af885da43996bb0f2b0f963ae7d854cdefefd8834af49dd1c0f46b` (405026 bytes).
+SHA-256: `3c8583c669dc2e634bb7d692a02dfcfb4cc2bc314cb521fe99e62ec9ba8d1f49` (405477 bytes).
 
 ---
 
@@ -21,10 +23,10 @@ SHA-256: `291f835720af885da43996bb0f2b0f963ae7d854cdefefd8834af49dd1c0f46b` (405
 
 Обязателен Fabric API **0.91.6+1.20.2**.
 
-Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. CPU-доли не обещают прирост FPS.
+Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
 Область измерения: Версионные CPU-хуки сущностей и блок-сущностей, включая extraction там, где доступен. Геометрия ограничена наблюдаемыми стандартными буферами; native-геометрия новых Sodium/Iris недоступна. GPU, terrain, выполнение шейдеров и общий instancing не распределяются между объектами. Ванильный прогон не подтверждает совместимость со всеми модами и шейдерами.
 
-Проверено unit-тестов: **61**. Для текущего хеша есть игровой результат: installed-production
+Проверено unit-тестов: **66**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

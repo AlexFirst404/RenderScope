@@ -488,7 +488,7 @@ def main() -> None:
               + f"Область измерения: {ru}\n\nПроверено unit-тестов: **{proof['unitTests']}**. {status_ru}\n\n"
               + f"RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия]({REPO_URL}/blob/main/LICENSE).")
         rows.append({**proof, "fileName": source.name, "sha1": hashlib.sha1(source.read_bytes()).hexdigest(),
-            "sha512": hashlib.sha512(source.read_bytes()).hexdigest(), "versionNumber": "0.3.0+mc" + target["minecraft"],
+            "sha512": hashlib.sha512(source.read_bytes()).hexdigest(), "versionNumber": "0.3.0+mc" + target["minecraft"] + "-" + target["loader"],
             "displayName": f"RenderScope 0.3.0 · {LOADER_NAMES[target['loader']]} {target['minecraft']}",
             "javaRuntime": java, "environment": "client", "clientSide": "required", "serverSide": "unsupported",
             "releaseChannel": args.channel, "packagedArtifact": package.get("packagedArtifact"),
