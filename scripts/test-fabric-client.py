@@ -91,10 +91,16 @@ def choose_java(explicit: str | None, minimum: int) -> tuple[Path, int]:
     if os.environ.get("JAVA_HOME"):
         candidates.append(Path(os.environ["JAVA_HOME"]))
     candidates.extend(sorted((ROOT / ".tools").glob("jdk-*"), reverse=True))
+    candidates.extend(sorted((ROOT / ".tools").glob("jdk*/jdk*"), reverse=True))
     compatible = []
+    seen = set()
     for path in candidates:
         if path.is_dir():
             path = path / "bin" / ("java.exe" if platform.system() == "Windows" else "java")
+        path = path.resolve()
+        if path in seen:
+            continue
+        seen.add(path)
         if path.is_file():
             result = subprocess.run([str(path), "-version"], capture_output=True, text=True)
             match = re.search(r'version "(\d+)', result.stdout + result.stderr)
@@ -294,6 +300,7 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
         if limited_geometry:
             coverage = result.get("nativeGeometryCoverage", {})
             state = result.get("actualShaderState", {})
+            binding = result.get("irisLinePipelineBinding", {})
             if (coverage.get("status") != "unavailable-uninspected-native-abi"
                     or coverage.get("sodiumNativeVerticesAvailable") is not False
                     or coverage.get("irisNativeRenderTypeRequestsAvailable") is not False
@@ -301,6 +308,8 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
                     or result.get("realEntityAndBlockEntitySamples") is not True
                     or result.get("timingOnlyFallback") is not True
                     or not state.get("shaderPackEnabled") or not state.get("shadowDetectionAvailable")
+                    or binding.get("registeredPipelines") != 2 or binding.get("inspectedProfile") is not True
+                    or binding.get("failure") != ""
                     or result.get("actualSodiumNativeBatchesMeasured") is True
                     or result.get("actualShaderBufferRequestsMeasured") is True):
                 raise RuntimeError("Pinned Iris profile lacks honest timing/shader/partial-geometry evidence")

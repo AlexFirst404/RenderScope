@@ -25,9 +25,7 @@ public final class ForgeClientBootstrap {
         MinecraftForge.EVENT_BUS.addListener((RenderLevelStageEvent event) -> {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) runtime.beginWorldPass();
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
-                PoseStack view = new PoseStack();
-                view.mulPose(event.getPoseStack());
-                runtime.overlay().render(view, event.getProjectionMatrix(),
+                NativeWorldOverlay.render(runtime, event.getPoseStack(), event.getProjectionMatrix(),
                         event.getCamera().getPosition(), event.getFrustum(), event.getPartialTick());
             }
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) runtime.endWorldPass();

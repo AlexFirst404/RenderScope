@@ -40,6 +40,11 @@ def main() -> None:
                     raise RuntimeError("Native MC26 classes exceed the upstream Mixin Java 21 language level")
             main_config = json.loads(jar.read("renderscope.modern.mixins.json"))
             qa_config = json.loads(qa.read("renderscope.native-smoke.mixins.json"))
+            expected_format = [84, 0] if target["minecraft"].startswith("26.1") else [88, 0] if target["minecraft"] == "26.2" else [97, 1]
+            for archive in (jar, qa):
+                pack = json.loads(archive.read("pack.mcmeta"))["pack"]
+                if pack.get("min_format") != expected_format or pack.get("max_format") != expected_format:
+                    raise RuntimeError("Pack metadata does not match actual Minecraft resource_major/minor")
             if main_config["compatibilityLevel"] != "JAVA_21" or qa_config["compatibilityLevel"] != "JAVA_21":
                 raise RuntimeError("Native Mixin configuration does not match the official loader language level")
             expected_mouse = [] if target["minecraft"] == "26.3" else ["NativeMouseInvoker"]

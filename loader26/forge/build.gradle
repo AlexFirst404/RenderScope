@@ -28,7 +28,7 @@ sourceSets {
             'dev/renderscope/client/platform/PlatformServices.java', 'dev/renderscope/client/platform/ForgePlatform.java'
         java.exclude 'dev/renderscope/modern/RenderScopeModern.java'
         java.exclude { entry -> entry.file.toPath().startsWith(file('../../src/main/java').canonicalFile.toPath()) && entry.path.replace('\\', '/') == 'dev/renderscope/client/platform/ForgePlatform.java' }
-        resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources']
+        resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources', '../resources']
         resources.exclude 'fabric.mod.json'
     }
     test {
@@ -79,9 +79,11 @@ tasks.withType(Jar).configureEach {
 }
 tasks.named('processResources') {
     def props = [version: project.version, minecraft_version: mcVersion, forge_version: forgeVersion,
-        forge_major: forgeVersion.tokenize('.')[0]]
+        forge_major: forgeVersion.tokenize('.')[0], pack_major: oldLevel ? 84 : mcVersion == '26.2' ? 88 : 97,
+        pack_minor: mcVersion == '26.3' ? 1 : 0]
     inputs.properties props
     filesMatching('META-INF/mods.toml') { expand props }
+    filesMatching('pack.mcmeta') { expand props }
     filesMatching('renderscope.modern.mixins.json') {
         expand worldMixins: oldLevel ? '"LegacyLevelRendererMixin"' : '"LevelExtractorMixin", "LevelRendererMixin"'
         filter { line -> line.replace('"JAVA_25"', '"JAVA_21"') }

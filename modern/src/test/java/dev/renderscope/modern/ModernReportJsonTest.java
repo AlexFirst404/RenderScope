@@ -11,6 +11,25 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModernReportJsonTest {
+    @Test void sharedRendererExportPreservesBothRegistryOwnersWithoutChangingClassIds() {
+        var rows = ModernReportJson.toJson(RendererOwnershipTest.captureWithSharedRenderer(), false)
+            .getAsJsonArray("renderers");
+        assertEquals(2, rows.size());
+        Set<String> owners = new java.util.HashSet<>();
+        for (var element : rows) {
+            JsonObject row = element.getAsJsonObject();
+            String owner = row.get("registryOwner").getAsString();
+            assertTrue(owners.add(owner));
+            assertEquals(RendererOwnershipTest.IMPLEMENTATION, row.get("id").getAsString());
+            assertEquals(RendererOwnershipTest.IMPLEMENTATION, row.get("rendererClass").getAsString());
+            assertEquals("shared_api", row.get("rendererOwner").getAsString());
+            assertEquals(owner.equals("mod_a") ? 1.0 / 3 : 2.0 / 3,
+                row.getAsJsonObject("statistics").get("averageMs").getAsDouble());
+            assertEquals(1, row.getAsJsonObject("statistics").get("calls").getAsLong());
+        }
+        assertEquals(Set.of("mod_a", "mod_b"), owners);
+    }
+
     private static final String IDENTITY = "c2ab0462-1c42-42aa-a111-4edc76299991|C:\\private\\world\\secret";
     private static final String DIMENSION = "private:dimension-sentinel";
 

@@ -550,6 +550,19 @@ public final class NativeSmokeTest {
         RESULTS.addProperty("success", false);
         RESULTS.addProperty("stage", stageName);
         RESULTS.addProperty("error", failure.toString());
+        try {
+            ClientRuntime runtime = ClientRuntime.current();
+            if (runtime != null) RESULTS.add("failurePerformance", GSON.toJsonTree(runtime.profiler().snapshot().performance()));
+            for (Class<?> type : new Class<?>[]{Minecraft.class, net.minecraft.client.renderer.entity.EntityRenderDispatcher.class}) {
+                var injected = java.util.Arrays.stream(type.getDeclaredMethods()).map(java.lang.reflect.Method::getName)
+                        .filter(name -> name.contains("renderscope")).toList();
+                RESULTS.add(type.getSimpleName() + "MixinMethods", GSON.toJsonTree(injected));
+            }
+            RESULTS.add("loadedMixinConfigs", GSON.toJsonTree(org.spongepowered.asm.mixin.Mixins.getConfigs().stream()
+                    .map(Object::toString).toList()));
+        } catch (Throwable diagnosticFailure) {
+            RESULTS.addProperty("diagnosticError", diagnosticFailure.toString());
+        }
         RESULTS.addProperty("completedAt", Instant.now().toString());
         try {
             writeResults();

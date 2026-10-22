@@ -2,6 +2,9 @@ def sharedProperties = new Properties()
 file('../../gradle.properties').withInputStream { sharedProperties.load(it) }
 def mcVersion = project.minecraftTarget
 def identifierApi = mcVersion == '1.21.11'
+// Exact client resource formats from each vanilla client.jar/version.json.
+// Forge's example pack currently uses data formats; these are client assets.
+ext.resourcePackFormat = ['1.21.9':69, '1.21.10':69, '1.21.11':75][mcVersion]
 def commonJava = file('../../src/main/java').canonicalFile.toPath()
 apply from: '../../modern/source-transform.gradle'
 group='dev.renderscope'
@@ -68,9 +71,10 @@ tasks.withType(Jar).configureEach {
 }
 tasks.named('processResources') {
     def props=[version:project.version,minecraft_version:mcVersion,forge_version:targetLoaderVersion,
-        forge_major:targetLoaderVersion.tokenize('.')[0],neo_version:targetLoaderVersion]
+        forge_major:targetLoaderVersion.tokenize('.')[0],neo_version:targetLoaderVersion,
+        resource_format:resourcePackFormat,resource_description:'RenderScope client assets']
     inputs.properties props
-    filesMatching(['META-INF/mods.toml','META-INF/neoforge.mods.toml']) { expand props }
+    filesMatching(['META-INF/mods.toml','META-INF/neoforge.mods.toml','pack.mcmeta']) { expand props }
     from('../../modern/mapped/src/main/resources/renderscope.modern.mixins.json') {
         filter { line -> line.contains('"refmap"')?'':line }
     }

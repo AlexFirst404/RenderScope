@@ -23,8 +23,11 @@ tasks.register('generateNativeSmoke', Exec) {
 }
 tasks.named('compileSmokeJava') { dependsOn 'generateNativeSmoke' }
 tasks.named('processSmokeResources') {
-    inputs.properties forge_major: targetLoaderVersion.tokenize('.')[0]
-    filesMatching('META-INF/mods.toml') { expand forge_major: targetLoaderVersion.tokenize('.')[0] }
+    def props=[forge_major:targetLoaderVersion.tokenize('.')[0],minecraft_version:minecraftTarget,
+        resource_format:resourcePackFormat,resource_description:'RenderScope installed QA resources']
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml','META-INF/neoforge.mods.toml']) { expand props }
+    from('../src/main/resources/pack.mcmeta') { expand props }
 }
 tasks.register('smokeJar', Jar) {
     archiveClassifier = 'native-smoke-harness'

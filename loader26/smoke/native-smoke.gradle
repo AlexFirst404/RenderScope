@@ -21,6 +21,9 @@ tasks.named('processSmokeResources') {
     def mc = providers.gradleProperty('minecraft_version').orElse('26.3').get()
     inputs.property 'minecraft_version', mc
     filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) { expand minecraft_version: mc }
+    filesMatching('pack.mcmeta') {
+        expand pack_major: mc.startsWith('26.1') ? 84 : mc == '26.2' ? 88 : 97, pack_minor: mc == '26.3' ? 1 : 0
+    }
     filesMatching('renderscope.native-smoke.mixins.json') { expand mouse_mixin: mc == '26.3' ? '' : '"NativeMouseInvoker"' }
 }
 tasks.register('smokeJar', Jar) {

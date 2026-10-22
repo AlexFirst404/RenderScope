@@ -434,9 +434,27 @@ public final class FabricSmokeTest implements ClientModInitializer {
                 }
                 case 22 -> {
                     if (tick - since < 45) return;
+                    if (modernIrisTimingPolicy) {
+                        RESULTS.add("heatmapPerformanceAfterWarmup", GSON.toJsonTree(runtime.profiler().snapshot().performance()));
+                        RESULTS.add("heatmapShaderState", GSON.toJsonTree(ShaderPasses.state()));
+                        RESULTS.addProperty("heatmapWaitedTicks", tick - since);
+                        Class<?> bridge = Class.forName("dev.renderscope.client.integration.IrisLinePipelines");
+                        RESULTS.add("heatmapPipelineBindingAfterWarmup", GSON.toJsonTree(bridge.getMethod("state").invoke(null)));
+                        // First-use shader compilation can expire the two-second rolling window.
+                        // Wait for actual new-frame objects; the unchanged assertions below must still pass.
+                        if ((runtime.overlay().renderedWorldBoxes() == 0 || runtime.overlay().renderedWorldLabels() == 0)
+                                && tick - since < 200) return;
+                    }
                     require(runtime.overlay().renderedWorldBoxes() > 0, "Heatmap passed no real objects to world rendering");
                     require(runtime.overlay().renderedWorldLabels() > 0, "Projected world labels were all rejected");
                     RESULTS.addProperty("worldOverlayBoxesSubmitted", runtime.overlay().renderedWorldBoxes());
+                    if (modernIrisTimingPolicy) {
+                        Class<?> bridge = Class.forName("dev.renderscope.client.integration.IrisLinePipelines");
+                        Object binding = bridge.getMethod("state").invoke(null);
+                        RESULTS.add("irisLinePipelineBinding", GSON.toJsonTree(binding));
+                        require((int) binding.getClass().getMethod("registeredPipelines").invoke(binding) == 2,
+                                "Private line pipelines were not registered with the actual Iris public API");
+                    }
                     RESULTS.addProperty("worldOverlayLabelsSubmitted", runtime.overlay().renderedWorldLabels());
                     screenshot("09-world-heatmap.png");
                     advance("world heatmap screenshot");

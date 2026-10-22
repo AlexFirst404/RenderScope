@@ -28,6 +28,10 @@ def main():
         require(artifact.is_file(),'Missing selected QA JAR: '+str(artifact))
         with zipfile.ZipFile(primary) as main,zipfile.ZipFile(artifact) as qa:
             names=set(qa.namelist())
+            resource_format=75 if target['minecraft']=='1.21.11' else 69
+            pack=json.loads(qa.read('pack.mcmeta'))['pack']
+            require(pack.get('min_format')==[resource_format,0] and pack.get('max_format')==[resource_format,0],
+                'QA resource pack must match the selected vanilla client resource format')
             packages=lambda entries:{name.rpartition('/')[0] for name in entries if name.endswith('.class')}
             overlap=packages(main.namelist())&packages(names)
             require(not overlap,'Main/QA Java module packages overlap: '+str(overlap))
@@ -49,9 +53,13 @@ def main():
             metadata_path='META-INF/mods.toml' if target['loader']=='forge' else 'META-INF/neoforge.mods.toml'
             metadata=tomllib.loads(qa.read(metadata_path).decode())
             require(metadata['mods'][0]['modId']=='renderscope_native_smoke','Incorrect separate QA mod identity')
+            dependencies=metadata['dependencies']['renderscope_native_smoke']
+            require(any(item['modId']=='minecraft' and item['versionRange']==f"[{target['minecraft']}]" and item['side']=='CLIENT'
+                for item in dependencies),'QA must target this exact Minecraft client')
         rows.append({'minecraft':target['minecraft'],'loader':target['loader'],
             'artifact':str(artifact.relative_to(REPO)).replace('\\','/'),'bytes':artifact.stat().st_size,
             'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest(),'packagesDisjointFromMain':True,'runtimeVerified':False})
+        rows[-1]['resourcePackFormat']=[resource_format,0]
     print(json.dumps({'scope':'Separate native QA JAR compilation, no Fabric dependency, disjoint Java module packages; not a runtime pass.',
         'artifacts':rows},indent=2))
 

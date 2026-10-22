@@ -8,10 +8,14 @@ source = source.replace('import net.fabricmc.api.ClientModInitializer;', 'import
 source = source.replace('import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;',
     'import net.minecraftforge.common.MinecraftForge;\nimport net.minecraftforge.event.TickEvent;')
 source = source.replace('public final class FabricSmokeTest implements ClientModInitializer {',
-    '@Mod("renderscope_smoke")\npublic final class InstalledSmokeTest {')
+    '@Mod("renderscope_smoke")\npublic final class InstalledSmokeTest {\n'
+    '    private static final java.util.Map<String, Long> WORLD_STAGES = new java.util.LinkedHashMap<>();\n')
 start = source.index('    @Override public void onInitializeClient() {')
 end = source.index('    public static void tick()', start)
 source = source[:start] + '''    public InstalledSmokeTest() {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.RenderLevelStageEvent event) -> {
+            WORLD_STAGES.merge(event.getStage().toString(), 1L, Long::sum);
+        });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END) tick();
         });
@@ -37,6 +41,11 @@ source = source.replace('expectedOptionalMods.has("sodium") && !expectedOptional
     '(expectedOptionalMods.has("sodium") || expectedOptionalMods.has("rubidium") || expectedOptionalMods.has("embeddium")) && !expectedOptionalMods.has("iris")')
 source = source.replace('actualSodiumNativeBatchesMeasured', 'actualFastNativeBatchesMeasured')
 source = source.replace('optional Fabric mod', 'optional Forge mod').replace('Sodium native batches', 'fast native batches')
+source = source.replace('                    require(runtime.overlay().renderedWorldBoxes() > 0, "Heatmap passed no real objects to world rendering");',
+    '                    RESULTS.add("actualForgeWorldStages", GSON.toJsonTree(WORLD_STAGES));\n'
+    '                    RESULTS.add("heatmapActualPerformance", GSON.toJsonTree(runtime.profiler().snapshot().performance()));\n'
+    '                    RESULTS.addProperty("heatmapActualWorldPresent", mc.level != null);\n'
+    '                    require(runtime.overlay().renderedWorldBoxes() > 0, "Heatmap passed no real objects to world rendering");')
 target = root / '.tools/generated-forge-smoke/src/dev/renderscope/smoke/InstalledSmokeTest.java'
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(source, encoding='utf-8', newline='\n')

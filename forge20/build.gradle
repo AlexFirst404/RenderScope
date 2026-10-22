@@ -30,6 +30,7 @@ java.withSourcesJar()
 sourceSets {
     main {
         java.srcDirs = ['../mc20/src/main/java', '../src/main/java']
+        if (mcVersion != '1.20.2') java.srcDir 'src/forge49/java'
         java.exclude { entry ->
             def path = entry.path.replace('\\', '/')
             entry.file.toPath().startsWith(sharedJava) && (unsupportedOptional.contains(path)
@@ -77,7 +78,16 @@ tasks.named('processResources') {
     def props = [version: project.version, minecraft_version: mcVersion, forge_version: forgeVersion,
         forge_major: forgeVersion.tokenize('.')[0], pack_format: mcVersion == '1.20.2' ? 18 : 22]
     inputs.properties props
+    inputs.property 'explicitMixinExtrasBootstrap', mcVersion != '1.20.2'
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+    doLast {
+        if (mcVersion != '1.20.2') {
+            def configFile = destinationDir.toPath().resolve('renderscope.mixins.json').toFile()
+            def config = new groovy.json.JsonSlurper().parse(configFile)
+            config.plugin = 'dev.renderscope.mixin.LegacyForgeMixinPlugin'
+            configFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(config)), 'UTF-8')
+        }
+    }
 }
 tasks.named('test') { useJUnitPlatform() }
 tasks.named('jar') { archiveClassifier = 'slim'; finalizedBy 'reobfJar' }

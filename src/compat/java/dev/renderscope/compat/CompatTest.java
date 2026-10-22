@@ -122,6 +122,9 @@ public final class CompatTest {
     private static Path output;
     private static LoaderInfo loader;
     private static InstanceKey selected;
+    private static SelectionRequest pendingSelection;
+    private static int selectionRequestedAt;
+    private record SelectionRequest(String mod, BlockPos position) { }
     private static String originalBackend;
     private static ForgeConfigSpec.ConfigValue<String> backendConfig;
     private static long deferredBeforeTiming;
@@ -184,6 +187,20 @@ public final class CompatTest {
                     catch (Throwable failure) { ERRORS.add(failure); }
                 });
             }
+            if (pendingSelection != null) {
+                var request = pendingSelection;
+                var measured = findFixture(runtime.profiler().snapshot(), request.mod(), request.position());
+                if (measured.isEmpty()) {
+                    require(ticks - selectionRequestedAt < 200,
+                            "Visible selected fixture produced no actual samples: " + request.mod() + " " + request.position());
+                    return;
+                }
+                selected = measured.get().context().key();
+                runtime.toggleHighlight(selected); runtime.toggleTrack(selected);
+                pendingSelection = null;
+                since = ticks;
+                return;
+            }
             switch (phase) {
                 case BOOT -> {
                     if (mc.screen == null || mc.getOverlay() != null) return;
@@ -206,6 +223,9 @@ public final class CompatTest {
                             .map(mod -> mod.getModInfo().getVersion().toString().equals(expected.getValue().getAsString())).orElse(false), "Missing/wrong optional mod " + expected.getKey());
                     RESULT.add("expectedOptionalMods", expectedMods);
                     RESULT.addProperty("loader", loader.name()); RESULT.addProperty("loaderVersion", loader.version());
+                    String minecraftVersion = net.minecraft.SharedConstants.getCurrentVersion().getName();
+                    require("1.20.1".equals(minecraftVersion), "Compatibility fixture loaded the wrong Minecraft version");
+                    RESULT.addProperty("minecraftVersion", minecraftVersion);
                     String environment = System.getProperty("renderscope.compat.environment", "development");
                     RESULT.addProperty("environment", environment);
                     Path primaryArtifact = ModList.get().getModFileById("renderscope").getFile().getFilePath();
@@ -451,6 +471,10 @@ public final class CompatTest {
                 }
                 case SHAFT_LIST -> {
                     if (age() < 16) return;
+                    boolean measuredShaft = runtime.profiler().snapshot().objects().stream()
+                            .anyMatch(value -> value.id().equals(FIXTURE_TYPES.get("shaft")) && value.stats().calls() > 0);
+                    if (!measuredShaft && age() < 200) return;
+                    require(measuredShaft, "Visible Create shaft did not produce real samples after camera warmup");
                     require(mc.screen.mouseClicked(30, 119, 0), "Create shaft object row did not open");
                     advance(Phase.SHAFT_DETAIL);
                 }
@@ -825,10 +849,15 @@ public final class CompatTest {
     }
 
     private static InstanceMetric fixtureInstanceAt(ProfilerSnapshot snapshot, String mod, BlockPos pos) {
+        return findFixture(snapshot, mod, pos)
+                .orElseThrow(() -> new IllegalStateException("No actual selected fixture instance for " + mod));
+    }
+
+    private static java.util.Optional<InstanceMetric> findFixture(ProfilerSnapshot snapshot, String mod, BlockPos pos) {
         return snapshot.instances().stream().filter(row -> row.context().key().kind() == ObjectKind.BLOCK_ENTITY
                 && row.context().registryOwner().equals(mod) && row.context().position().x() == pos.getX()
                 && row.context().position().y() == pos.getY() && row.context().position().z() == pos.getZ())
-                .findFirst().orElseThrow(() -> new IllegalStateException("No actual selected fixture instance for " + mod));
+                .findFirst();
     }
 
     private static void selectFixture(String mod) {
@@ -842,11 +871,14 @@ public final class CompatTest {
     private static void selectInstance(String mod, BlockPos pos) {
         Minecraft mc = Minecraft.getInstance(); ClientRuntime runtime = ClientRuntime.current();
         runtime.overlay().clear(); runtime.settings().heatmap = false; runtime.settings().inspect = false; runtime.saveSettings();
-        selected = fixtureInstanceAt(runtime.profiler().snapshot(), mod, pos).context().key();
-        runtime.toggleHighlight(selected); runtime.toggleTrack(selected); mc.setScreen(null);
+        mc.setScreen(null);
         MinecraftServer server = mc.getSingleplayerServer();
         int pitch = 12 - (pos.getY() - 64) * 10;
         server.execute(() -> command(server, String.format(Locale.ROOT, "tp @a %.1f 64 %.1f 180 %d", pos.getX() + 0.5, pos.getZ() + 6.5, pitch)));
+        // Native renderers only sample visible objects; warm the real camera
+        // before selecting a target that has expired from the rolling window.
+        pendingSelection = new SelectionRequest(mod, pos);
+        selectionRequestedAt = ticks;
     }
 
     private static void checkSelection(ClientRuntime runtime, String mod) {
@@ -907,6 +939,13 @@ public final class CompatTest {
     }
 
     private static void openObject(String mod) {
+        if (mod.equals("shaft")) {
+            // Native renderers only measure visible objects. The preceding
+            // Extras selection looks away from this shaft for longer than the
+            // rolling window; return the actual camera before searching it.
+            Minecraft.getInstance().getSingleplayerServer().execute(() -> command(
+                    Minecraft.getInstance().getSingleplayerServer(), "tp @a -6.5 64 3.5 180 12"));
+        }
         ClientRuntime.current().open(null); clickTab("objects");
         for (var child : Minecraft.getInstance().screen.children()) if (child instanceof EditBox search) { search.setValue(FIXTURE_TYPES.get(mod)); return; }
         throw new IllegalStateException("No native object search box");

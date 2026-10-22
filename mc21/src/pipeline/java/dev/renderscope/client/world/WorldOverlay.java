@@ -480,6 +480,7 @@ public final class WorldOverlay {
                     .withLocation(ResourceLocation.fromNamespaceAndPath("renderscope", "pipeline/outlines_" + through))
                     .withDepthTestFunction(through ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST)
                     .withDepthWrite(false).withCull(false).build());
+            dev.renderscope.client.integration.IrisLinePipelines.assign(pipeline);
             return RenderType.create("renderscope_outlines_" + through, 65536, pipeline,
                     RenderType.CompositeState.builder().createCompositeState(false));
         }

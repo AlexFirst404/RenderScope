@@ -12,6 +12,12 @@ source = source[:start] + '''runs {
 }
 ''' + source[end:]
 source = source.replace("dependencies {\n", 'dependencies {\n    implementation "net.neoforged:neoforge:${neoVersion}"\n', 1)
+source = source.replace("tasks.named('processResources') {", """tasks.named('processResources') {
+    inputs.property 'dependencySchema', 'fml1-mandatory'
+    // FML 1.0.16 (NeoForge 1.20.2/1.20.3) predates the dependency type field.
+    filesMatching('META-INF/mods.toml') {
+        filter { line -> line.replace('type="required"', 'mandatory=true') }
+    }""")
 source = source.replace("tasks.named('test') { useJUnitPlatform() }", """tasks.named('test') { useJUnitPlatform() }
 
 // Match the other native modules: the unclassified artifact includes nested runtime dependencies.

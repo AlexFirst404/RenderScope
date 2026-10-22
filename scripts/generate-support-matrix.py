@@ -12,32 +12,52 @@ spec.loader.exec_module(builder)
 
 
 def inspect_runtime(entry: dict, sha256: str) -> list[dict]:
+    development_scope = entry["loader"] + "-development-client"
+
+    def matches_identity(record: dict, environment: str | None = None) -> bool:
+        loader = record.get("loader")
+        # The eight modern Fabric development harnesses report their actual
+        # FabricLoader version and explicit scope without a separate loader key.
+        omitted_fabric_development = ("loader" not in record and entry["loader"] == "fabric"
+                                       and environment == "fabric-development-client")
+        return (record.get("success") is True and record.get("minecraftVersion") == entry["minecraft"]
+                and record.get("loaderVersion") == entry["loaderVersion"]
+                and (omitted_fabric_development or isinstance(loader, str) and loader.lower() == entry["loader"]))
+
+    def matches_hash(record: dict) -> bool:
+        values = [record[key] for key in ("primaryJarSha256", "artifactSha256") if key in record]
+        return bool(values) and all(value == sha256 for value in values)
+
+    def is_world_result(record: dict) -> bool:
+        environment = record.get("environment")
+        return (environment in ("installed-production", development_scope)
+                and matches_identity(record, environment) and matches_hash(record)
+                and (environment != "installed-production" or record.get("primaryJarSha256") == sha256))
+
     accepted = []
     for relative in entry.get("runtimeEvidence", []):
         path = ROOT / relative
         if not path.is_file():
             continue
         evidence = json.loads(path.read_text(encoding="utf-8"))
-        if evidence.get("success") is not True or evidence.get("minecraftVersion") != entry["minecraft"]:
-            continue
-        measured_sha = evidence.get("primaryJarSha256", evidence.get("artifactSha256"))
-        if measured_sha != sha256:
-            continue
-        if evidence.get("loader", entry["loader"]).lower() != entry["loader"]:
-            continue
-        if evidence.get("loaderVersion") != entry["loaderVersion"]:
-            continue
         result_name = evidence.get("resultFile")
         if result_name:
+            if (not isinstance(result_name, str) or not matches_identity(evidence, evidence.get("environment"))
+                    or not matches_hash(evidence)):
+                continue
             result = path.parent / result_name
             if Path(result_name).name != result_name or not result.is_file() or builder.digest(result) != evidence.get("resultSha256"):
                 continue
             details = json.loads(result.read_text(encoding="utf-8"))
-            if details.get("success") is not True or details.get("primaryJarSha256") != sha256:
+            if not is_world_result(details):
                 continue
-            environment = details.get("environment", "unknown")
+            environment = details["environment"]
+            if "environment" in evidence and evidence["environment"] != environment:
+                continue
         else:
-            environment = evidence.get("environment", "unknown")
+            if not is_world_result(evidence):
+                continue
+            environment = evidence["environment"]
         accepted.append({"path": relative, "sha256": builder.digest(path), "environment": environment})
     return accepted
 

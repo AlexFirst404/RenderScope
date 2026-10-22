@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 import uuid
 import zipfile
@@ -64,8 +65,15 @@ def request_bytes(url: str) -> bytes:
     if not url.startswith("https://"):
         raise RuntimeError(f"HTTPS is required for vendor download: {url}")
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=90) as response:
-        return response.read()
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=90) as response:
+                return response.read()
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == 2:
+                raise
+            time.sleep(attempt + 1)
+    raise AssertionError("unreachable")
 
 
 def fetch(url: str, path: Path, expected: str, cache: list[Path] = ()) -> Path:
@@ -376,6 +384,8 @@ def check_client_result(output: Path, game: Path, launched_ns: int, primary: dic
         raise RuntimeError("Installed client compatibility checks failed: " + str(result.get("error", result.get("phase", "unknown"))))
     if result.get("loader") != "Forge" or result.get("loaderVersion") != FORGE:
         raise RuntimeError("Compatibility result did not measure the expected Forge runtime.")
+    if result.get("minecraftVersion") != MC:
+        raise RuntimeError("Compatibility result did not measure the exact Minecraft runtime.")
     if result.get("environment") != "installed-production":
         raise RuntimeError("Compatibility result did not identify an installed production client.")
     if result.get("primaryJarSha256") != primary["sha256"]:
@@ -398,8 +408,11 @@ def check_client_result(output: Path, game: Path, launched_ns: int, primary: dic
         if scenario == "vanilla" and any(mod in expected for mod in ("rubidium", "sodium", "embeddium")):
             if result.get("actualFastNativeBatchesMeasured") is not True or result.get("nativeGeometryStoppedInTimingOnly") is not True:
                 raise RuntimeError("Real fast batches and Timing Only evidence are required for the standalone backend")
-    return {"success": True, "runtimeLoader": result["loader"], "runtimeLoaderVersion": result["loaderVersion"],
+    return {"success": True, "minecraftVersion": result["minecraftVersion"],
+            "loader": result["loader"], "loaderVersion": result["loaderVersion"],
+            "runtimeLoader": result["loader"], "runtimeLoaderVersion": result["loaderVersion"],
             "primaryJarSha256": primary["sha256"], "compatibilityResultSha256": digest(path, "sha256"),
+            "resultFile": path.name, "resultSha256": digest(path, "sha256"),
             "verifiedAt": datetime.now(timezone.utc).isoformat()}
 
 

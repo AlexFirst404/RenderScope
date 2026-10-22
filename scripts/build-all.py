@@ -75,20 +75,48 @@ def audit(entry: dict) -> dict:
         if max_class > expected:
             raise RuntimeError(f"JAR bytecode {max_class} exceeds this Minecraft runtime ({expected})")
         if entry["loader"] == "fabric":
+            if "META-INF/mods.toml" in names or "META-INF/neoforge.mods.toml" in names:
+                raise RuntimeError("Fabric artifact contains another loader's descriptor")
             metadata = json.loads(jar.read("fabric.mod.json"))
             if metadata.get("id") != "renderscope" or metadata.get("environment") != "client" or metadata["depends"]["minecraft"].lstrip("=").strip() != entry["minecraft"]:
                 raise RuntimeError("Fabric metadata does not target the exact client Minecraft version")
             mixins = [config if isinstance(config, str) else config["config"] for config in metadata.get("mixins", [])]
         else:
-            descriptor = "META-INF/neoforge.mods.toml" if "META-INF/neoforge.mods.toml" in names else "META-INF/mods.toml"
+            if "fabric.mod.json" in names:
+                raise RuntimeError("Native artifact contains a Fabric descriptor")
+            # NeoForge 47 retains Forge's descriptor and dependency identity;
+            # NeoForge 20.2/20.3/20.4 also retain mods.toml, but depend on neoforge.
+            legacy_neo = entry["loader"] == "neoforge" and entry["minecraft"] == "1.20.1"
+            neo_descriptor = entry["loader"] == "neoforge" and entry["minecraft"] not in ("1.20.1", "1.20.2", "1.20.3", "1.20.4")
+            descriptor = "META-INF/neoforge.mods.toml" if neo_descriptor else "META-INF/mods.toml"
+            opposite = "META-INF/mods.toml" if neo_descriptor else "META-INF/neoforge.mods.toml"
+            if descriptor not in names or opposite in names:
+                raise RuntimeError("Native descriptor does not match the requested loader/API family")
             metadata = tomllib.loads(jar.read(descriptor).decode("utf-8"))
             if not any(mod["modId"] == "renderscope" for mod in metadata["mods"]):
                 raise RuntimeError("Loader descriptor does not register RenderScope")
+            if (entry["loader"] == "neoforge" and entry["minecraft"] in ("1.20.2", "1.20.3")
+                    and any(not isinstance(value.get("mandatory"), bool)
+                            for value in metadata["dependencies"]["renderscope"])):
+                raise RuntimeError("Legacy NeoForge FML dependencies require a boolean mandatory field")
             dependency = next(value for value in metadata["dependencies"]["renderscope"] if value["modId"] == "minecraft")
             version = entry["minecraft"]
             allowed = {"[" + version + "]", "[1.20.1,1.20.2)"} if version == "1.20.1" else {"[" + version + "]"}
             if dependency["versionRange"] not in allowed or dependency.get("side") != "CLIENT":
                 raise RuntimeError("Loader descriptor must declare the exact Minecraft client target")
+            loader_id = "forge" if legacy_neo else entry["loader"]
+            loader_dependencies = [value for value in metadata["dependencies"]["renderscope"]
+                                   if value["modId"] in ("forge", "neoforge")]
+            loader_range = f"[{entry['loaderVersion']},48)" if entry["minecraft"] == "1.20.1" else f"[{entry['loaderVersion']},)"
+            if (len(loader_dependencies) != 1 or loader_dependencies[0]["modId"] != loader_id
+                    or loader_dependencies[0].get("versionRange") != loader_range
+                    or loader_dependencies[0].get("side") != "CLIENT"):
+                raise RuntimeError("Native loader dependency/version does not match the selected target")
+            manifest = dict(line.split(": ", 1) for line in jar.read("META-INF/MANIFEST.MF")
+                            .decode("utf-8").replace("\r\n ", "").splitlines() if ": " in line)
+            if (manifest.get("RenderScope-Loader") != entry["loader"]
+                    or manifest.get("RenderScope-Loader-Version") != entry["loaderVersion"]):
+                raise RuntimeError("Native manifest loader identity/version differs from the selected target")
             mixins = [name for name in names if name.endswith("mixins.json") and "/" not in name]
         for config in mixins:
             mixin = json.loads(jar.read(config))
@@ -117,6 +145,39 @@ def audit(entry: dict) -> dict:
             "unitTests": tests, "classMajor": max_class, "metadataAndLegalNoticesVerified": True}
 
 
+def package_index(proofs: list[dict]) -> None:
+    """Index only the actual audited copies produced by this invocation."""
+    destination = ROOT / "distribution/0.3.0"
+    destination.mkdir(parents=True, exist_ok=True)
+    catalogue = {(proof["minecraft"], proof["loader"]): proof for proof in proofs}
+    versions = sorted({proof["minecraft"] for proof in proofs}, key=lambda version: tuple(map(int, version.split("."))))
+    lines = ["# RenderScope 0.3.0 downloads", "",
+        "Choose **one JAR matching your exact Minecraft version and loader**. Install it on the client; the server does not need RenderScope. Fabric also requires the matching Fabric API.", "",
+        "Minecraft 26.x requires **Java 25**. Earlier targets use **Java 21**. The JARs below passed actual builds, unit tests and packaging checks. See the [game-test matrix](../../docs/compatibility/SUPPORT-MATRIX.md) for the exact runtime evidence and optional-mod limits.", "",
+        "| Minecraft | Fabric | Forge | NeoForge |", "| --- | --- | --- | --- |"]
+    for version in versions:
+        cells = [version]
+        for loader in ("fabric", "forge", "neoforge"):
+            proof = catalogue.get((version, loader))
+            if proof is None:
+                cells.append("—")
+                continue
+            relative = Path(proof["packagedArtifact"]).relative_to("distribution/0.3.0").as_posix()
+            cells.append(f"[JAR]({relative}) · {proof['loaderVersion']}")
+        lines.append("| " + " | ".join(cells) + " |")
+    lines.extend(["", "A dash means this invocation did not package that combination. The full repository matrix explains upstream gaps. [SHA-256 checksums](SHA256SUMS) identify the exact files; QA harnesses are not included.", "",
+        "## Русский", "",
+        "Выберите **один JAR строго под свою версию Minecraft и загрузчик**. Положите его в клиентскую папку `mods`; на сервер мод не нужен. Для Fabric установите подходящий Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21.", "",
+        "Таблица содержит собранные и проверенные артефакты. [Матрица игровых проверок](../../docs/compatibility/SUPPORT-MATRIX.md) отдельно указывает фактические прогоны, совпадение SHA-256 и ограничения совместимости. Отдельные тестовые моды в загрузки не включены.", ""])
+    (destination / "README.md").write_text("\n".join(lines), encoding="utf-8")
+    checksums = []
+    for proof in proofs:
+        relative = Path(proof["packagedArtifact"]).relative_to("distribution/0.3.0").as_posix()
+        checksums.append(proof["sha256"] + "  " + relative)
+    (destination / "SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
+    (destination / "artifacts.json").write_text(json.dumps({"renderscopeVersion": "0.3.0", "artifacts": proofs}, indent=2) + "\n", encoding="utf-8")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--all", action="store_true")
@@ -138,6 +199,7 @@ def main() -> None:
         for version in args.minecraft:
             if not any(entry["minecraft"] == version for entry in selected):
                 raise RuntimeError("No configured target for Minecraft " + version)
+    proofs = []
     for entry in selected:
         if not args.audit_only:
             major = entry["java"]
@@ -173,7 +235,10 @@ def main() -> None:
             shutil.copy2(source, destination)
             proof["packagedArtifact"] = destination.relative_to(ROOT).as_posix()
             destination.with_suffix(".sha256").write_text(proof["sha256"] + "  " + destination.name + "\n", encoding="ascii")
+            proofs.append(proof)
         print(json.dumps(proof, ensure_ascii=False), flush=True)
+    if args.package:
+        package_index(proofs)
 
 
 if __name__ == "__main__":

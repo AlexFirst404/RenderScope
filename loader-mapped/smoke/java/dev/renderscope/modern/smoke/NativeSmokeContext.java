@@ -49,7 +49,21 @@ public final class NativeSmokeContext {
     }
     public void runOnClient(ClientAction action) { computeOnClient(client -> { action.accept(client); return null; }); }
     public void restoreDefaultGameOptions() {
-        runOnClient(client -> { client.options.guiScale().set(2); client.options.renderDistance().set(4); });
+        runOnClient(client -> {
+            client.options.onboardAccessibility = false;
+            client.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
+            client.options.pauseOnLostFocus = false;
+            client.options.framerateLimit().set(120);
+            client.options.bobView().set(false);
+            client.options.gamma().set(1.0);
+            client.options.guiScale().set(2);
+            client.options.renderDistance().set(4);
+            // Use vanilla's actual completion callback only for its first-launch
+            // screen. Loader errors and all other unexpected screens stay visible.
+            if (NativeSmokePlatform.currentScreen(client) instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding)
+                onboarding.onClose();
+            client.options.save();
+        });
     }
     public void waitFor(Predicate<Minecraft> predicate, int maxTicks) {
         long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(Math.max(15_000L, maxTicks * 50L));
@@ -96,7 +110,20 @@ public final class NativeSmokeContext {
     }
     public NativeSmokeContext worldBuilder() { return this; }
     public TestWorld create() {
-        waitFor(client -> NativeSmokePlatform.currentScreen(client) instanceof net.minecraft.client.gui.screens.TitleScreen, 1200);
+        String[] previousScreen = {""};
+        waitFor(client -> {
+            Screen screen = NativeSmokePlatform.currentScreen(client);
+            String name = screen == null ? "none" : screen.getClass().getName();
+            if (!name.equals(previousScreen[0])) {
+                System.out.println("RenderScope native QA first-launch screen: " + name);
+                previousScreen[0] = name;
+            }
+            // Startup can enqueue this screen after the first options reset.
+            // Complete its real callback whenever it appears; do not hide errors.
+            if (screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding)
+                onboarding.onClose();
+            return screen instanceof net.minecraft.client.gui.screens.TitleScreen;
+        }, 1200);
         String name = "RenderScope-native-QA-" + System.currentTimeMillis();
         runOnClient(client -> client.createWorldOpenFlows().createFreshLevel(name,
                 new LevelSettings(name, GameType.CREATIVE, false, Difficulty.PEACEFUL,

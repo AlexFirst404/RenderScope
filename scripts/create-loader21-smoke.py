@@ -15,6 +15,20 @@ text = text.replace('mc.createWorldOpenFlows().loadLevel(mc.screen, WORLD);',
 text = text.replace('.getOrThrow(WorldPresets.FLAT).createWorldDimensions());',
                     '.getOrThrow(WorldPresets.FLAT).createWorldDimensions(), mc.screen);')
 text = text.replace('Real Minecraft 1.20.1 client', 'Real Minecraft client')
+text = text.replace('        RESULTS.addProperty("error", failure.toString());', '''        RESULTS.addProperty("error", failure.toString());
+        try {
+            ClientRuntime runtime = ClientRuntime.current();
+            if (runtime != null) RESULTS.add("failurePerformance", GSON.toJsonTree(runtime.profiler().snapshot().performance()));
+            for (Class<?> type : new Class<?>[]{Minecraft.class, net.minecraft.client.renderer.entity.EntityRenderDispatcher.class}) {
+                var injected = java.util.Arrays.stream(type.getDeclaredMethods()).map(java.lang.reflect.Method::getName)
+                        .filter(name -> name.contains("renderscope")).toList();
+                RESULTS.add(type.getSimpleName() + "MixinMethods", GSON.toJsonTree(injected));
+            }
+            RESULTS.add("loadedMixinConfigs", GSON.toJsonTree(org.spongepowered.asm.mixin.Mixins.getConfigs().stream()
+                    .map(Object::toString).toList()));
+        } catch (Throwable diagnosticFailure) {
+            RESULTS.addProperty("diagnosticError", diagnosticFailure.toString());
+        }''')
 text = text.replace('RESULTS.addProperty("runtimeLoaderVerified", true);', '''RESULTS.addProperty("runtimeLoaderVerified", true);
                     String actualMinecraft = net.minecraft.SharedConstants.getCurrentVersion().getName();
                     require(actualMinecraft.equals(System.getProperty("renderscope.expectedMinecraft", actualMinecraft)), "Wrong Minecraft runtime");

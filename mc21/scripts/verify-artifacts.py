@@ -66,6 +66,34 @@ def verify_runtime(mc: str, artifact_sha: str, required: bool):
             "screenshots": len(screenshots), "completedAt": result["completedAt"]}
 
 
+def verify_optional_profiles(mc: str, artifact_sha: str):
+    evidence = ROOT / "distribution/mc21/fabric" / mc / "renderer-compat/iris"
+    if mc != "1.21.8" or not (evidence / "installed-verification.json").is_file():
+        return {"thirdPartyMatrix": "not_run"}
+    result, verified, visual = [json.loads((evidence / name).read_text(encoding="utf-8"))
+                                for name in ("smoke-result.json", "installed-verification.json", "visual-qa.json")]
+    assert result["success"] is True and verified["success"] is True and visual["overallPassed"] is True
+    assert result["primaryJarSha256"] == verified["primaryJarSha256"] == visual["primaryJarSha256"] == artifact_sha
+    assert verified["resultSha256"] == visual["smokeResultSha256"] == sha256(evidence / "smoke-result.json")
+    assert visual["captureSha256"] == sha256(evidence / "smoke-capture-example.json")
+    assert result["minecraftVersion"] == mc and result["loader"] == "Fabric" and result["loaderVersion"] == "0.19.5"
+    assert result["geometryPolicy"] == "iris-sodium-1.21.8-timing-shadow-v1"
+    assert result["actualShaderShadowPassObserved"] is True
+    assert result["expectedOptionalMods"] == {"sodium": "0.7.2+mc1.21.8", "iris": "1.9.6+mc1.21.8"}
+    for key in ("realEntityAndBlockEntitySamples", "fullModeTimingWithPartialGeometry", "timingOnlyFallback",
+                "captureExportPrivacy", "f8AndControlsRegistration", "pauseMenuButton", "highlightAndTrackState"):
+        assert result.get(key) is True, key
+    assert result["irisLinePipelineBinding"] == {"inspectedProfile": True, "registeredPipelines": 2, "failure": ""}
+    assert result["nativeGeometryCoverage"]["status"] == "unavailable-uninspected-native-abi"
+    assert visual["visualReview"]["boundingBoxesVisibleAndAligned"] is True
+    for name, digest in visual["screenshotsSha256"].items():
+        assert Path(name).name == name and sha256(evidence / "gallery" / name) == digest
+    return {"thirdPartyMatrix": "one_pinned_iris_profile_passed", "optionalCompatibilityProfiles": [{
+        "profile": "fabric-iris-1.21.8", "evidence": evidence.relative_to(ROOT).as_posix(),
+        "geometryPolicy": result["geometryPolicy"], "nativeGeometry": "unavailable",
+        "visualHighlights": "passed", "completedAt": result["completedAt"]}]}
+
+
 def verify(mc: str, version: str, require_runtime: bool = False):
     build = MODULE / "build" / mc
     jar = build / "libs" / f"renderscope-fabric-{version}+mc{mc}.jar"
@@ -74,7 +102,7 @@ def verify(mc: str, version: str, require_runtime: bool = False):
         raise AssertionError(f"{mc}: no successful build log for the last attempt")
     results = [ET.parse(path).getroot() for path in (build / "test-results/test").glob("TEST-*.xml")]
     tests = {key: sum(int(result.get(key, "0")) for result in results) for key in ("tests", "failures", "errors", "skipped")}
-    assert tests["tests"] >= 58 and tests["failures"] == tests["errors"] == tests["skipped"] == 0, (mc, tests)
+    assert tests["tests"] >= 63 and tests["failures"] == tests["errors"] == tests["skipped"] == 0, (mc, tests)
     assert jar.is_file(), jar
     with zipfile.ZipFile(jar) as archive:
         names = set(archive.namelist())
@@ -129,7 +157,7 @@ def verify(mc: str, version: str, require_runtime: bool = False):
                           "loom": "1.10.5" if pipelines else "1.7.4"},
             "artifact": jar.relative_to(ROOT).as_posix(), "bytes": jar.stat().st_size,
             "sha256": artifact_sha, "tests": tests,
-            **verify_runtime(mc, artifact_sha, require_runtime), "thirdPartyMatrix": "not_run"}
+            **verify_runtime(mc, artifact_sha, require_runtime), **verify_optional_profiles(mc, artifact_sha)}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

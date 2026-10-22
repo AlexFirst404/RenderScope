@@ -6,9 +6,13 @@
 
 **RenderScope 0.3.0 · Minecraft 1.20.1–26.3 · Fabric / Forge / NeoForge · Client-side**
 
-Choose the JAR for your **exact Minecraft version and loader** in the [build and game-test matrix](docs/compatibility/SUPPORT-MATRIX.md). It records actual build results and the exact hashes tested in Minecraft. Forge has no upstream release for Minecraft 1.20.5 or 1.21.2. Minecraft 26.x requires Java 25; earlier targets use Java 21.
+Choose the JAR for your **exact Minecraft version and loader** in the [0.3.0 downloads](distribution/0.3.0/README.md). The [build and game-test matrix](docs/compatibility/SUPPORT-MATRIX.md) records actual build results and the exact hashes tested in Minecraft. Forge has no upstream release for Minecraft 1.20.5 or 1.21.2. Minecraft 26.x requires Java 25; earlier targets use Java 21.
 
-The new **Start** page explains which mod has the most measured object-render CPU work, shows its heaviest instance and offers **Find object**, **Show in world**, and **Record 10 s**. Preliminary measurements are labelled while more samples accumulate. The screen also explains when the measured objects account for too little work to explain the rest of a slow frame.
+The first page explains which mod has the most measured object-render CPU work and shows its heaviest measured instance. Preliminary measurements are labelled while more samples accumulate. The screen also explains when these objects account for too little work to explain the rest of a slow frame.
+
+Minecraft **1.20.1–1.21.8** adapters use **Start**, with **Find object**, **Show in world** and **Record 10 s**. The newer **1.21.9–26.3** UI uses **Overview**, **Show the instance**, **Inspect measured mods** and **Start Capture**; capture duration is selected in its Capture tab. Both UI families keep detailed tables and world inspection.
+
+![The Start page in the actual Fabric 1.21.8 shader check](distribution/mc21/fabric/1.21.8/renderer-compat/iris/gallery/01-overview.png)
 
 Native Sodium / Embeddium / Rubidium counters, Iris / Oculus shadow handling and Mekanism Extras attribution have explicit version gates. Read the [exact optional-renderer coverage](docs/OPTIONAL-RENDERER-COMPATIBILITY.md) before combining them with Create. Unknown native rendering APIs retain available dispatcher timing and show partial coverage.
 
@@ -40,15 +44,15 @@ Filters cover distance, object categories, minimum cost, object limits, labels a
 
 ## Catch a spike and keep the evidence
 
-**Overview** shows FPS, frame-time percentiles, 1% low and measured offenders. **Timeline** keeps about 30 seconds of frame history; click a frame to inspect its attribution. Record **5 / 10 / 30 seconds** or stop manually, then export a local JSON report.
+**Start / Overview** shows FPS, frame-time percentiles, 1% low and measured offenders. **Timeline** keeps about 30 seconds of frame history; click a frame to inspect its attribution. Record **5 / 10 / 30 seconds** or stop manually, then export a local JSON report.
 
 ![A capture from the real installed Forge test](distribution/forge/presentation/capture.png)
 
 ## Install
 
-Place one main JAR matching your **exact Minecraft version and loader** in your client profile's `mods` folder. Fabric also requires the matching Fabric API. See the [0.3.0 matrix](docs/compatibility/SUPPORT-MATRIX.md) for individual build and world-test results.
+Place one main JAR from [0.3.0 downloads](distribution/0.3.0/README.md) matching your **exact Minecraft version and loader** in your client profile's `mods` folder. Fabric also requires the matching Fabric API. See the [0.3.0 matrix](docs/compatibility/SUPPORT-MATRIX.md) for individual build and world-test results.
 
-The previous published **0.2.0 / Minecraft 1.20.1** artifacts remain available:
+The previous **0.2.0 / Minecraft 1.20.1** builds also remain available:
 
 | Loader | RenderScope 0.2.0 |
 | --- | --- |
@@ -66,7 +70,7 @@ Open a world, wait a few seconds, and press **F8**. Rebind it under **Options �
 | Shared Flywheel GPU | Real asynchronous OpenGL timestamps in Full mode, when supported |
 | Estimated vertex data | Standard BufferBuilder geometry; alternative pipelines can bypass these counters |
 
-**Timing Only** is the default. **Full** adds observed geometry and the live shared Flywheel GPU view. Parallel visual CPU intervals can overlap; their sum can exceed frame latency. GPU time and instanced geometry are not divided among objects, and the live GPU diagnostic is not exported as a capture.
+**Timing Only** is the default. **Full** adds geometry where the adapter can observe it. The supported Minecraft 1.20.1 / Flywheel 1.0.5 integration also provides a live shared GPU view. Parallel visual CPU intervals can overlap; their sum can exceed frame latency. GPU time and instanced geometry are not divided among objects, and the live GPU diagnostic is not exported as a capture.
 
 The installed Forge test used **Create 6.0.8 / Flywheel 1.0.5 / Ponder 1.0.91 and Mekanism 10.4.16.80**. These optional mods are not required. Virtual contraption block entities are not individually attributed at world positions; terrain, particles, GUI and standalone shader passes are outside this profiling scope. See [measurement details](docs/MEASUREMENTS.md).
 
@@ -80,9 +84,9 @@ Reports stay in your profile's `renderscope-reports` folder. They include versio
 
 **Найдите конкретный объект, на рендер которого уходит время.** RenderScope связывает измерения с модом, типом объекта и отдельным экземпляром мира.
 
-1. Выберите JAR **строго под свою версию Minecraft и загрузчик** в [матрице 0.3.0](docs/compatibility/SUPPORT-MATRIX.md). Для Fabric нужен Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21. На сервер мод не нужен.
-2. Откройте **F8** или **Esc → RenderScope**. На стартовой странице сразу виден мод с самой дорогой измеренной работой отрисовки и конкретный объект.
-3. **Найти объект** откроет подробности; **Показать в мире** включит подсветку и направление. **Записать 10 с** сохранит захват для дальнейшего анализа. Подробные таблицы, теплокарта и инспектор остаются доступны.
+1. Выберите JAR **строго под свою версию Minecraft и загрузчик** в [загрузках 0.3.0](distribution/0.3.0/README.md). Результаты игровых проверок указаны в [матрице](docs/compatibility/SUPPORT-MATRIX.md). Для Fabric нужен Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21. На сервер мод не нужен.
+2. Откройте **F8** или **Esc → RenderScope**. После накопления измерений первая страница показывает мод с самой дорогой наблюдаемой CPU-работой отрисовки и конкретный экземпляр.
+3. В адаптерах **1.20.1–1.21.8** это вкладка **Главная**: **Найти объект** открывает подробности, **Показать в мире** включает подсветку и направление, **Записать 10 с** начинает захват. В интерфейсе **1.21.9–26.3** используются **Обзор**, **Показать объект**, **Изучить моды** и **Начать запись**; длительность выбирается на вкладке записи. Подробные таблицы, теплокарта и инспектор доступны в обоих семействах.
 
 Процент сравнивает измеренную CPU-работу объектов. Он не выдаётся за долю всей видеокарты и не обещает прирост FPS после удаления мода. Если измерений мало или основные затраты находятся вне профилируемых объектов, интерфейс прямо об этом сообщает. Для Sodium/Iris/Embeddium/Rubidium и Mekanism Extras указаны [точные версии и результаты совместимости](docs/OPTIONAL-RENDERER-COMPATIBILITY.md).
 
@@ -137,7 +141,7 @@ The source-only `smoke` and `compat` harnesses are separate from the release JAR
 
 ```powershell
 .\gradlew.bat -Ploader=forge compatJar
-python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.2.0+mc1.20.1-compat-harness.jar --launch
+python .\scripts\test-installed-client.py --harness .\build\forge\libs\renderscope-forge-0.3.0+mc1.20.1-compat-harness.jar --launch
 ```
 
 Raw gameplay evidence remains unchanged. Rounded presentation images and animations are derived from those real captures; their manifests identify their sources. The 24×24 pixel-art logo is preserved and enlarged by exact integer replication, without added borders or canvas.

@@ -13,6 +13,25 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReportExporterTest {
+    @Test void sharedRendererExportPreservesSeparateOwnerRowsAndUnchangedClassIds() {
+        JsonArray rows = ReportExporter.toJson(RendererOwnershipTest.captureWithSharedRenderer(), false,
+            "Timing Only", false).getAsJsonArray("renderers");
+        assertEquals(2, rows.size());
+        Set<String> owners = new java.util.HashSet<>();
+        for (JsonElement element : rows) {
+            JsonObject row = element.getAsJsonObject();
+            String owner = row.get("registryOwner").getAsString();
+            assertTrue(owners.add(owner));
+            assertEquals(RendererOwnershipTest.IMPLEMENTATION, row.get("id").getAsString());
+            assertEquals(RendererOwnershipTest.IMPLEMENTATION, row.get("rendererClass").getAsString());
+            assertEquals("shared_api", row.get("rendererOwner").getAsString());
+            assertEquals(owner.equals("mod_a") ? 1.0 / 3 : 2.0 / 3,
+                row.getAsJsonObject("statistics").get("averageMs").getAsDouble());
+            assertEquals(1, row.getAsJsonObject("statistics").get("calls").getAsLong());
+        }
+        assertEquals(Set.of("mod_a", "mod_b"), owners);
+    }
+
     private static final String PRIVATE_IDENTITY = "123e4567-e89b-12d3-a456-426614174000|C:\\Sensitive\\PlayerSecret\\world-save";
     private static final String PRIVATE_SPIKE_IDENTITY = "987e6543-e21b-12d3-a456-426614174000|/home/secretplayer/.minecraft/world";
     private static final String DIMENSION = "private_world:dimension_sentinel";

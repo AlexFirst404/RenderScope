@@ -61,7 +61,9 @@ After a completed check, run `py -3 mc21/scripts/verify-artifacts.py <versions> 
 
 For RenderScope 0.3.0, all eleven targets above passed 59 tests each and the installed production scenario with 28 screenshots per target. `port-status.json` records each actual JAR hash, capture hash, runtime version and evidence path; `targets.json` supplies the exact build and evidence paths for the repository's build matrix.
 
-The optional Flywheel, Mekanism deferred and alternative fast-vertex adapters inspected on Minecraft 1.20.1 are not enabled here. Their Minecraft-specific descriptors are omitted from this module's mixin configuration, and the shared integration whitelist checks the Minecraft version. Ordinary dispatcher CPU timing remains available; custom or instanced paths can bypass geometry counters. No third-party compatibility matrix or per-object GPU attribution is claimed for these targets.
+The optional Flywheel, Mekanism deferred and alternative fast-vertex adapters inspected on Minecraft 1.20.1 are not enabled here. Their Minecraft-specific descriptors are omitted from this module's mixin configuration, and the shared integration whitelist checks the Minecraft version. Ordinary dispatcher CPU timing remains available; custom or instanced paths can bypass geometry counters. Per-object GPU attribution is not claimed.
+
+The pinned Fabric 1.21.8 profile with Sodium 0.7.2, Iris 1.9.6 and active Complementary Reimagined r5.9.3 passed a separate installed-client check for real renderer CPU timings, shadow-pass detection, capture/privacy, UI and visible world highlights. Its native geometry counters remain explicitly unavailable. The exact Iris API binding assigns the two private line pipelines to `IrisProgram.LINES`; loader metadata guards the inspected version. See the [profile report and actual images](../distribution/mc21/fabric/1.21.8/renderer-compat/iris/README.md). Other optional-mod combinations and shader packs are not covered by that proof.
 
 The mod is client-only, requires no server component, and retains the report privacy defaults and custom source-available license from the repository root.
 

@@ -8,7 +8,11 @@ def patch = pre121 || mcVersion == '1.21' ? 0 : mcVersion.tokenize('.').last().t
 ext.renderStates = !pre121 && patch >= 2
 ext.pipelines = !pre121 && patch >= 5
 ext.extractedGui = !pre121 && patch >= 6
+// Forge 50.2.0 bundles upstream Sponge 0.8.5, whose enum predates JAVA_21.
+// The game, compiler and runtime remain Java 21; this target's own classes use Java 17 bytecode.
+def legacySponge = project.targetLoader == 'forge' && mcVersion == '1.20.6'
 def adapters = []
+adapters.add("../src/${renderStates ? 'direct-view' : 'shader'}/java")
 if (project.targetLoader == 'forge' && patch >= 3) {
     adapters.add('../src/forge-state/java')
     adapters.add("../src/forge-world${patch >= 6 ? '126' : patch >= 4 ? '124' : '123'}/java")
@@ -48,6 +52,13 @@ base { archivesName = "renderscope-${project.targetLoader}" }
 layout.buildDirectory = file("build/${mcVersion}")
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 java.withSourcesJar()
+if (legacySponge) {
+    // Dependency selection describes the actual Java 21 game/runtime, independently
+    // of the lower bytecode level needed by Sponge's legacy Mixin parser.
+    configurations.configureEach {
+        attributes.attribute(org.gradle.api.attributes.java.TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+    }
+}
 sourceSets {
     main {
         java.srcDirs = adapters
@@ -93,7 +104,7 @@ if (vendorIndex.isFile()) {
         filter { modules.each { entry -> def parts = entry.coordinate.tokenize(':'); includeVersion(parts[0], parts[1], parts[2]) } }
     }
 }
-tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = legacySponge ? 17 : 21 }
 tasks.withType(Jar).configureEach {
     from('../../LICENSE') { into 'META-INF' }
     from('../../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
@@ -107,13 +118,15 @@ tasks.named('processResources') {
     def props = [version:project.version, minecraft_version:mcVersion, loader_version:project.targetLoaderVersion,
         loader_major:project.targetLoaderVersion.tokenize('.')[0], pack_format:packFormats[mcVersion]]
     inputs.properties props
+    inputs.property 'legacySpongeCompatibility', legacySponge
     filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml', 'pack.mcmeta']) { expand props }
     if (pipelines) from('../pipeline/accesstransformer.cfg') { into 'META-INF' }
     doLast {
-        if ((project.targetLoader == 'forge' && patch >= 3) || (project.targetLoader == 'neoforge' && patch >= 6)) {
+        if (legacySponge || (project.targetLoader == 'forge' && patch >= 3) || (project.targetLoader == 'neoforge' && patch >= 6)) {
             def configFile = destinationDir.toPath().resolve('renderscope.mixins.json').toFile()
             def config = new groovy.json.JsonSlurper().parse(configFile)
-            if (!config.client.contains('ForgeLevelRendererMixin')) config.client.add('ForgeLevelRendererMixin')
+            if (legacySponge) config.compatibilityLevel = 'JAVA_17'
+            else if (!config.client.contains('ForgeLevelRendererMixin')) config.client.add('ForgeLevelRendererMixin')
             configFile.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(config)), 'UTF-8')
         }
     }

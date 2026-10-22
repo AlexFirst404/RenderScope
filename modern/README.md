@@ -16,7 +16,7 @@ For the mapped family:
 .\gradlew.bat -p mapped '-Pminecraft_version=1.21.11' build compileGametestJava
 ```
 
-Its outputs and runtime evidence are isolated below `mapped/build/<minecraft>/` and `mapped/validation/<minecraft>/`. All eight selected versions have completed compilation, artifact construction and 56 tests. Runtime status is separate: use `python verify-build.py --minecraft <version> --require-runtime` to require a completed world test matching the exact artifact SHA-256. Omitting that flag checks packaging/tests and does not assert a runtime pass.
+Its outputs and runtime evidence are isolated below `mapped/build/<minecraft>/` and `mapped/validation/<minecraft>/`. All eight selected versions completed compilation, artifact construction, 56 tests and their real integrated-world **development-client** runs. Each run has thirteen screenshots, an actual five-second capture and a matching main-artifact SHA-256; this is separate from installed-production testing. The results are indexed in `validation/runtime-batch.json` and `validation/build-matrix.json`. Use `python verify-build.py --minecraft <version> --require-runtime` to require the completed world test and exact artifact hash. Omitting that flag checks packaging/tests and does not assert a runtime pass.
 
 The profiler intercepts the concrete entity/block-entity renderer's **CPU state extraction** and **CPU state submission** calls separately. A bounded weak identity map carries value-only world identity and the original frame handle between them. It excludes preview entities, virtual block entities and calls outside the actual world pass. Nested calls use the core's exclusive accounting. State associations clear every frame and measurements clear on disconnect/world replacement.
 

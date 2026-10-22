@@ -25,9 +25,7 @@ public final class NeoForgeClientBootstrap {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) runtime.beginWorldPass();
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
                 // These versions expose the actual view separately; the event pose may be an empty fallback.
-                PoseStack view = new PoseStack();
-                view.mulPose(event.getModelViewMatrix());
-                runtime.overlay().render(view, event.getProjectionMatrix(), event.getCamera().getPosition(),
+                NativeWorldOverlay.render(runtime, event.getModelViewMatrix(), event.getProjectionMatrix(), event.getCamera().getPosition(),
                         event.getFrustum(), event.getPartialTick());
             }
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) runtime.endWorldPass();

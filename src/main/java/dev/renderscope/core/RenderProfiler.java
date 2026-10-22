@@ -204,10 +204,11 @@ public final class RenderProfiler {
         sample.observe(token, elapsed, cpu, vertices, estimatedBytes, renderTypes, failure);
         sample.lastSeen = nanoClock.getAsLong();
         // One instance can have both a classic BER and a visual: preserve each implementation.
-        CallSample renderer = current.renderers.get(token.context.rendererClass());
+        RendererKey rendererKey = new RendererKey(token.context.registryOwner(), token.context.rendererClass());
+        CallSample renderer = current.renderers.get(rendererKey);
         if (renderer == null && current.renderers.size() < MAX_FRAME_INSTANCES) {
             renderer = new CallSample(token.context);
-            current.renderers.put(token.context.rendererClass(), renderer);
+            current.renderers.put(rendererKey, renderer);
         }
         if (renderer != null) {
             renderer.observe(token, elapsed, cpu, vertices, estimatedBytes, renderTypes, failure);
@@ -436,12 +437,15 @@ public final class RenderProfiler {
         }
     }
 
+    /** A shared implementation can render objects registered by several mods. */
+    private record RendererKey(String registryOwner, String rendererClass) { }
+
     private static final class Frame {
         final long id;
         final long started;
         final Map<InstanceKey, CallSample> instances = new HashMap<>();
         final Map<String, CallSample> mods = new HashMap<>();
-        final Map<String, CallSample> renderers = new HashMap<>();
+        final Map<RendererKey, CallSample> renderers = new HashMap<>();
         final Map<String, CallSample> objects = new HashMap<>();
         final Map<String, CallSample> phases = new HashMap<>();
         long ended;
@@ -612,7 +616,7 @@ public final class RenderProfiler {
     private static final class Aggregation {
         final boolean exact;
         final Map<String, MetricAccumulator> mods = new HashMap<>();
-        final Map<String, MetricAccumulator> renderers = new HashMap<>();
+        final Map<RendererKey, MetricAccumulator> renderers = new HashMap<>();
         final Map<String, MetricAccumulator> objects = new HashMap<>();
         final Map<InstanceKey, MetricAccumulator> instances = new HashMap<>();
         final Map<String, MetricAccumulator> phases = new HashMap<>();
@@ -649,7 +653,7 @@ public final class RenderProfiler {
             observe(renderers, frame.renderers, false);
             observe(objects, frame.objects, true);
             observe(phases, frame.phases, false);
-            for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) {
+            for (Map.Entry<RendererKey, CallSample> entry : frame.renderers.entrySet()) {
                 for (InstanceKey key : entry.getValue().seenInstances) trackInstance(renderers.get(entry.getKey()), key);
             }
             for (Map.Entry<InstanceKey, CallSample> entry : frame.instances.entrySet()) {
@@ -696,8 +700,8 @@ public final class RenderProfiler {
                 removeMetric(instances, key, sample);
             }
             for (Map.Entry<String, CallSample> entry : frame.mods.entrySet()) removeMetric(mods, entry.getKey(), entry.getValue());
-            for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) removeMetric(renderers, entry.getKey(), entry.getValue());
-            for (Map.Entry<String, CallSample> entry : frame.renderers.entrySet()) {
+            for (Map.Entry<RendererKey, CallSample> entry : frame.renderers.entrySet()) removeMetric(renderers, entry.getKey(), entry.getValue());
+            for (Map.Entry<RendererKey, CallSample> entry : frame.renderers.entrySet()) {
                 for (InstanceKey key : entry.getValue().seenInstances) untrackInstance(renderers.get(entry.getKey()), key);
             }
             for (Map.Entry<String, CallSample> entry : frame.objects.entrySet()) removeMetric(objects, entry.getKey(), entry.getValue());
@@ -720,14 +724,15 @@ public final class RenderProfiler {
             else metric.instances.put(key, count - 1);
         }
 
-        private void observe(Map<String, MetricAccumulator> destination, Map<String, CallSample> source,
+        private <K> void observe(Map<K, MetricAccumulator> destination, Map<K, CallSample> source,
                              boolean object) {
-            for (Map.Entry<String, CallSample> entry : source.entrySet()) {
+            for (Map.Entry<K, CallSample> entry : source.entrySet()) {
                 CallSample sample = entry.getValue();
                 MetricAccumulator metric = destination.get(entry.getKey());
                 if (metric == null) {
                     if (!exact && destination.size() >= MAX_CAPTURE_KEYS) { dropped++; continue; }
-                    String id = object ? sample.context.registryId() : entry.getKey();
+                    String id = object ? sample.context.registryId()
+                        : entry.getKey() instanceof RendererKey key ? key.rendererClass() : entry.getKey().toString();
                     metric = new MetricAccumulator(id, object ? sample.context.key().kind() : null,
                         sample.context, exact);
                     destination.put(entry.getKey(), metric);
@@ -757,7 +762,7 @@ public final class RenderProfiler {
                 .sorted(Comparator.comparingDouble((PhaseMetric m) -> m.stats().averageMs()).reversed()).toList();
         }
 
-        private List<AggregateMetric> aggregates(Map<String, MetricAccumulator> map) {
+        private <K> List<AggregateMetric> aggregates(Map<K, MetricAccumulator> map) {
             List<AggregateMetric> result = new ArrayList<>(map.size());
             for (MetricAccumulator metric : map.values()) {
                 result.add(new AggregateMetric(metric.id, metric.kind, metric.context.registryOwner(),

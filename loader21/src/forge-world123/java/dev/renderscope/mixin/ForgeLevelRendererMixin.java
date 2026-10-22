@@ -32,9 +32,7 @@ public abstract class ForgeLevelRendererMixin {
         ClientRuntime runtime = ClientRuntime.current();
         if (runtime == null) return;
         try {
-            PoseStack pose = new PoseStack();
-            pose.mulPose(view);
-            runtime.overlay().render(pose, projection, camera.getPosition(), cullingFrustum,
+            dev.renderscope.client.platform.NativeWorldOverlay.render(runtime, view, projection, camera.getPosition(), cullingFrustum,
                     delta.getGameTimeDeltaPartialTick(false));
         } finally {
             runtime.endWorldPass();

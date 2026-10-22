@@ -42,6 +42,9 @@ for minecraft in versions:
         "gameDirectory": "run-fabric-smoke-" + minecraft,
         "verificationStatusPath": "mc21/port-status.json",
     })
+    if minecraft == "1.21.8":
+        targets[-1]["runtimeEvidence"].append(
+            "distribution/mc21/fabric/1.21.8/renderer-compat/iris/installed-verification.json")
 document = {"schemaVersion": 1, "module": "mc21", "renderscopeVersion": version,
             "versionSource": "gradle.properties#mod_version", "targets": targets}
 (MODULE / "targets.json").write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")

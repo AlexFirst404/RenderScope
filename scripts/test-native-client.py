@@ -63,6 +63,9 @@ def inspect_mod(path: Path, mc: str, loader: str, primary: bool = False) -> dict
             raise RuntimeError("Expected one mod in isolated test JAR: " + path.name)
         mod = metadata["mods"][0]
         dependencies = metadata.get("dependencies", {}).get(mod["modId"], [])
+        if loader == "neoforge" and mc in ("1.20.2", "1.20.3"):
+            if any(type(item.get("mandatory")) is not bool for item in dependencies):
+                raise RuntimeError("NeoForge FML 1 requires boolean mandatory in every dependency: " + path.name)
         minecraft = next((item for item in dependencies if item["modId"] == "minecraft"), None)
         accepted = {"[" + mc + "]"}
         if mc == "1.20.1":
@@ -388,6 +391,11 @@ def main() -> None:
         "user_type": "legacy", "user_properties": "{}", "clientid": "00000000-0000-0000-0000-000000000000", "auth_xuid": "0",
         "resolution_width": "1280", "resolution_height": "720"}
     jvm = vendor.expand_arguments(vanilla["arguments"]["jvm"] + profile.get("arguments", {}).get("jvm", []), replacements)
+    # Forge's newer bootstrap resolves the transformed game via LibraryFinder.
+    # With a separate gameDir, its default relative "libraries" is not the
+    # verified installer directory used by this isolated launcher.
+    if not any(value.startswith("-DlibraryDirectory=") for value in jvm):
+        jvm.append("-DlibraryDirectory=" + (install / "libraries").as_posix())
     # Production bootstrap owns the transformed Minecraft module. The inherited
     # vanilla filename must join its official ignoreList to prevent duplicate modules.
     for index, value in enumerate(jvm):

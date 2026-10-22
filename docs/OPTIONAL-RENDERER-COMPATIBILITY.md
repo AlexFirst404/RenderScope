@@ -1,6 +1,16 @@
-# Optional renderer integrations: Minecraft 1.20.1
+# Optional renderer integrations
 
 These adapters observe renderer CPU work and immediate-mode vertex emission. They do not assign terrain batches, shader execution, or shared GPU work to individual mods. An inspected adapter is not a runtime compatibility claim; successful installed-client evidence is required for each tested combination.
+
+## Minecraft 1.21.8: Sodium and active Iris
+
+The installed Fabric 1.21.8 client passed the real-world scenario with **Sodium 0.7.2+mc1.21.8**, **Iris 1.9.6+mc1.21.8** and **Complementary Reimagined r5.9.3**. The [exact verification](../distribution/mc21/fabric/1.21.8/renderer-compat/iris/installed-verification.json) identifies the measured production JAR and result hash. It covers actual entity/block-entity timings, an API-confirmed shadow pass, native F8/pause UI, visible instance boxes and labels, tracking/Inspector, a five-second capture, Timing Only and private report export.
+
+Custom line pipelines must be registered with the public `IrisApi.assignPipeline(..., IrisProgram.LINES)` API for that inspected version. Before the fix, labels appeared while the boxes were invisible under the shader pack. The fixed [world screenshot](../distribution/mc21/fabric/1.21.8/renderer-compat/iris/gallery/09-world-heatmap.png) shows the real aligned boxes. The adapter uses actual platform mod metadata and the public API, without Iris implementation hooks. The registration contract was checked against the [pinned official Iris API](https://github.com/IrisShaders/Iris/blob/c86b6a250ed1bb85bbcad6404fae99fc08be6c68/common/src/api/java/net/irisshaders/iris/api/v0/IrisApi.java).
+
+**Native Sodium vertex counts and native Iris RenderType requests are unavailable on this newer ABI.** Observed standard-buffer vertices are partial and are not labelled total geometry. This scenario uses the explicit `iris-sodium-1.21.8-timing-shadow-v1` QA policy; it does not weaken the native-geometry assertions for the inspected 1.20.1 adapters. The same registration code is included in matching native-loader builds, but this shader combination was tested on Fabric; no untested native-loader shader result is implied.
+
+## Minecraft 1.20.1 adapters
 
 | Component | Inspected artifact | Integration |
 | --- | --- | --- |
@@ -48,3 +58,13 @@ The real Sodium test exposed that the cloud-dependent `AFTER_TRANSLUCENT` hook d
 - [Public Iris API source](https://github.com/IrisShaders/Iris/blob/1.7.2%2B1.20.1/src/main/java/net/irisshaders/iris/api/v0/IrisApi.java), [Iris 1.7.6 artifact metadata](https://api.modrinth.com/v2/version/s5eFLITc), and [Oculus 1.8.0 artifact metadata](https://api.modrinth.com/v2/version/iQ1SwGc3). The API signatures were also checked directly in both exact JARs.
 - [Mekanism Extras 1.5.0 source](https://github.com/lostmyself8/Mekanism-Extras/tree/v1.5.0-1.20.1), including its [native deferred energy-cube renderer](https://github.com/lostmyself8/Mekanism-Extras/blob/v1.5.0-1.20.1/src/main/java/com/jerry/mekanism_extras/client/render/tileentity/RenderExtraEnergyCube.java), and [official artifact metadata](https://api.modrinth.com/v2/version/9T6CetkG). The exact project is `lostmyself8/Mekanism-Extras`, Modrinth `HUZkxNTQ`, mod ID `mekanism_extras`; it is not a Fabric addon.
 - [Complementary Reimagined r5.3 metadata](https://api.modrinth.com/v2/version/71Hn3myZ).
+
+## Русский
+
+Поддержка оптимизаций проверяется для конкретного сочетания версий. **Minecraft 1.21.8 / Fabric / Sodium 0.7.2 / Iris 1.9.6 / Complementary Reimagined r5.9.3** прошёл установленный игровой сценарий с настоящим shadow pass: замеры сущностей и блок-сущностей, видимые цветные рамки, подписи, tracking, инспектор, захват и приватный экспорт. В [JSON проверки](../distribution/mc21/fabric/1.21.8/renderer-compat/iris/installed-verification.json) указан хеш фактически загруженного JAR; [скриншот](../distribution/mc21/fabric/1.21.8/renderer-compat/iris/gallery/09-world-heatmap.png) показывает результат исправления custom line pipeline через публичный Iris API.
+
+На этой версии native-геометрия Sodium и native-запросы RenderType Iris **недоступны**. Наблюдаемые стандартные вершины дают только частичную оценку. Работа terrain, shader passes и общие GPU-затраты не распределяются между отдельными модами и объектами.
+
+Для **1.20.1** отдельные адаптеры проверяют native-буферы Sodium 0.5.13, Embeddium 0.3.31 и Rubidium 0.7.1, Iris 1.7.6 / Oculus 1.8.0 и отложенную работу Mekanism Extras 1.5.0. Установка Embeddium и настоящего Rubidium одновременно некорректна; совместимый ID `rubidium`, который публикует сам Embeddium, не означает наличие второго backend. Rubidium 0.7.1 вместе с Create 6 не проходит upstream-требование Flywheel к Sodium; отдельный тест Rubidium проводится без Create. Эти ограничения не обходятся изменением метаданных сторонних модов.
+
+Поздние Minecraft-адаптеры сохраняют доступные CPU-замеры через подходящие dispatcher/render-state API. Неизвестная внутренняя ABI не включается по сходству имени или номера версии. Базовый игровой прогон и отдельная проверка шейдеров — разные результаты; [матрица](compatibility/SUPPORT-MATRIX.md) показывает актуальное соответствие хешей.

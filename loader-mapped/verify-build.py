@@ -21,6 +21,10 @@ def main():
     require(artifact.is_file(),'Selected artifact is missing')
     with zipfile.ZipFile(artifact) as jar:
         names=set(jar.namelist())
+        resource_format=75 if args.minecraft=='1.21.11' else 69
+        pack=json.loads(jar.read('pack.mcmeta'))['pack']
+        require(pack.get('min_format')==[resource_format,0] and pack.get('max_format')==[resource_format,0],
+            'Resource pack metadata must match the selected vanilla client resource format')
         require('fabric.mod.json' not in names,'Fabric metadata leaked into native loader artifact')
         require(not any('/smoke/' in name or 'gametest' in name.lower() or 'NativeSmoke' in name or 'NativeModernSmoke' in name for name in names),'Test harness leaked into artifact')
         require(jar.read('META-INF/LICENSE')==(REPO/'LICENSE').read_bytes(),'Embedded license bytes differ')
@@ -67,6 +71,7 @@ def main():
     result={'minecraft':args.minecraft,'loader':args.loader,'loaderVersion':target['loaderVersion'],
         'artifact':target['artifact'],'bytes':artifact.stat().st_size,'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest(),
         'tests':counts['tests'],'runtimeVerified':False}
+    result['resourcePackFormat']=[resource_format,0]
     if args.require_runtime:
         path=args.runtime_evidence or REPO/f'distribution/{args.loader}/{args.minecraft}/development/smoke-result.json'
         require(path.is_file(),'Selected runtime result is missing')
