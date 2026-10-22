@@ -10,7 +10,7 @@ args = parser.parse_args()
 
 source = (ROOT / 'modern/src/gametest/java/dev/renderscope/modern/smoke/ModernClientSmoke.java').read_text(encoding='utf-8')
 source = '\n'.join(line for line in source.splitlines() if not line.startswith('import net.fabricmc.'))
-source = source.replace('ModernSmokePlatform.currentScreen(', 'NativeSmokePlatform.currentScreen(')
+source = source.replace('ModernSmokePlatform', 'NativeSmokePlatform')
 source = source.replace('ModernClientSmoke implements FabricClientGameTest', 'NativeModernSmoke')
 source = source.replace('@Override public void runTest(ClientGameTestContext context)', 'public void runTest(NativeSmokeContext context)')
 source = source.replace('ClientGameTestContext context', 'NativeSmokeContext context')

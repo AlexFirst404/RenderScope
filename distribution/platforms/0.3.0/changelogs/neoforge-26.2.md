@@ -7,12 +7,15 @@
 
 - Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
 
+- Inspector HUD visibility and F1 hide/restore are verified using actual HUD draw counts and framebuffer frames.
+- Fixed NeoForge block-entity extraction profiling by targeting its concrete Frustum overload; verified positive entity and block-entity extraction/submission calls in installed Minecraft.
+
 Measurement scope: Exclusive CPU render-state extraction and submission, grouped by source. Later deferred feature batches, geometry and GPU timings are unavailable per object. Zero geometry fields do not mean an object emits no geometry. Terrain, shader execution and shared instancing work are not assigned to objects.
 
-Validation: **65 unit tests**; World verification is pending for this exact artifact hash.
+Validation: **65 unit tests**; Current hash-matched world evidence: installed-production
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/neoforge/26.2/installed/installed-verification.json)
 
-
-SHA-256: `833ff0b0ae50f0ce92d2075653eaee9f33889cb077ca4e46b2d9a387a242b9be` (156655 bytes).
+SHA-256: `50a9f58a9691267938dd78de07d2727af51f5a9ff46c1e3743577f1634f9dd39` (156935 bytes).
 
 ---
 
@@ -22,8 +25,11 @@ SHA-256: `833ff0b0ae50f0ce92d2075653eaee9f33889cb077ca4e46b2d9a387a242b9be` (156
 
 Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
+- Видимость Inspector HUD и скрытие/возврат через F1 проверены по реальным вызовам HUD и кадрам игры.
+- Исправлено профилирование извлечения состояния блок-сущностей NeoForge: выбрана нужная перегрузка с Frustum; в установленном Minecraft проверены положительные вызовы extraction/submission для сущностей и блок-сущностей.
+
 Область измерения: Раздельные эксклюзивные CPU-интервалы извлечения render state и submission. Поздние отложенные feature batches, геометрия и GPU-тайминги отдельных объектов недоступны. Нулевые поля геометрии не означают отсутствия геометрии. Terrain, выполнение шейдеров и общий instancing не распределяются между объектами.
 
-Проверено unit-тестов: **65**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **65**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

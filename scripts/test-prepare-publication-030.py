@@ -268,6 +268,17 @@ class PublicationManualVisualGateTest(unittest.TestCase):
         rows[-1]["minecraft"] = rows[0]["minecraft"]
         self.assertFalse(p.publication_ready(rows, {"passed": True}))
 
+    def test_modern_publication_row_requires_real_hud_validation_even_with_manual_boolean(self):
+        rows = [{"loader": "forge", "minecraft": f"fixture-{i}", "sha256": self.primary,
+                 "worldVerified": True, "packageIndexMatches": True, "rendererOwnerIsolationPresent": True,
+                 "rendererOwnerRegressions": {"passed": True, "blockEntityReplacement": {"passed": True}},
+                 "visuallyVerified": True, "manualVisualReview": {"passed": True, "primaryJarSha256": self.primary}}
+                for i in range(67)]
+        rows[-1]["minecraft"] = "1.21.9"
+        self.assertFalse(p.publication_ready(rows, {"passed": True}))
+        rows[-1]["modernInspectorHudFrameValidationVerified"] = True
+        self.assertTrue(p.publication_ready(rows, {"passed": True}))
+
     def test_missing_or_malformed_manual_manifest_does_not_approve_runtime(self):
         for raw in (None, "not JSON", "[]", "{}"):
             with self.subTest(raw=raw):
@@ -292,6 +303,111 @@ class PublicationManualVisualGateTest(unittest.TestCase):
         with zipfile.ZipFile(artifact, "w") as jar:
             jar.writestr("dev/renderscope/client/world/WorldOverlay.class", b"old single-pass descriptor fixture")
         self.assertEqual(([], []), p.target_release_fixes(target, artifact, {"passed": True}))
+
+    def modern_result(self):
+        self.target["minecraft"] = "1.21.9"
+        self.row["minecraft"] = "1.21.9"
+        self.result["minecraftVersion"] = "1.21.9"
+
+    def refresh_result(self):
+        self.write_json(self.result_path, self.result)
+        self.row["smokeResultSha256"] = self.sha(self.result_path)
+
+    def test_modern_manual_review_requires_real_draw_f1_hide_restore_and_positive_counter(self):
+        self.modern_result()
+        self.refresh_result()
+        self.assertFalse(self.verify()["passed"])
+        flags = {"actualInspectorHudDrawn": True, "f1HidesInspectorHud": True,
+                 "inspectorResumesAfterF1": True, "inspectorHudDrawPasses": 3}
+        self.result.update(flags)
+        self.refresh_result()
+        self.assertTrue(self.verify()["passed"])
+        for flag in flags:
+            with self.subTest(flag=flag):
+                self.result[flag] = 0 if flag == "inspectorHudDrawPasses" else False
+                self.refresh_result()
+                self.assertFalse(self.verify()["passed"])
+                self.result[flag] = flags[flag]
+
+    def test_modern_hud_note_is_bound_to_actual_current_jar_and_same_verified_result(self):
+        self.modern_result()
+        artifact = p.ROOT / "hud-fixture.jar"
+        artifact.write_bytes(b"offline current JAR fingerprint fixture")
+        self.primary = self.sha("hud-fixture.jar")
+        self.row["primaryJarSha256"] = self.primary
+        self.result.update({"primaryJarSha256": self.primary, "actualInspectorHudDrawn": True,
+                            "f1HidesInspectorHud": True, "inspectorResumesAfterF1": True, "inspectorHudDrawPasses": 7})
+        self.refresh_result()
+        visual = self.verify()
+        self.assertTrue(visual["passed"])
+        self.assertTrue(p.modern_inspector_fix_verified(self.target, artifact, visual))
+        en, ru = p.target_release_fixes(self.target, artifact, visual)
+        self.assertTrue(any("early-return" in note and "F1" in note for note in en))
+        self.assertTrue(any("F1" in note for note in ru))
+        self.result["inspectorHudDrawPasses"] = 0
+        self.write_json(self.result_path, self.result)
+        self.assertFalse(p.modern_inspector_fix_verified(self.target, artifact, visual))
+        self.result["inspectorHudDrawPasses"] = 7
+        self.write_json(self.result_path, self.result)
+        artifact.write_bytes(b"a different rebuilt JAR")
+        self.assertFalse(p.modern_inspector_fix_verified(self.target, artifact, visual))
+
+    def test_earlier_manual_review_contract_stays_valid_without_modern_fields(self):
+        self.assertTrue(self.verify()["passed"])
+        for minecraft in ("1.20.1", "1.20.6", "1.21", "1.21.8"):
+            self.assertFalse(p.modern_inspector_result_verified(minecraft, {
+                "actualInspectorHudDrawn": True, "f1HidesInspectorHud": True,
+                "inspectorResumesAfterF1": True, "inspectorHudDrawPasses": 1}))
+
+    def neo_selector_fixture(self, minecraft, boolean=False, short_selector=False):
+        self.target.update({"minecraft": minecraft, "loader": "neoforge",
+                            "loaderVersion": p.NEOFORGE_BLOCK_ENTITY_SELECTOR_TARGETS[minecraft]})
+        self.row.update({"minecraft": minecraft, "loader": "neoforge"})
+        artifact = p.ROOT / "neo-selector-fixture.jar"
+        descriptor = ("tryExtractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;F"
+                      "Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;"
+                      + ("Z" if boolean else "") + "Lnet/minecraft/client/renderer/culling/Frustum;)"
+                      "Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;")
+        with zipfile.ZipFile(artifact, "w") as jar:
+            jar.writestr("dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.class",
+                         b"tryExtractRenderState" if short_selector else descriptor.encode("ascii"))
+        self.primary = self.sha("neo-selector-fixture.jar")
+        self.row["primaryJarSha256"] = self.primary
+        self.result.update({"minecraftVersion": minecraft, "loader": "NeoForge",
+            "loaderVersion": self.target["loaderVersion"], "primaryJarSha256": self.primary,
+            "actualInspectorHudDrawn": True, "f1HidesInspectorHud": True,
+            "inspectorResumesAfterF1": True, "inspectorHudDrawPasses": 5,
+            "entityExtractionCalls": 7, "entitySubmissionCalls": 7,
+            "blockEntityExtractionCalls": 11, "blockEntitySubmissionCalls": 11})
+        self.refresh_result()
+        return artifact, self.verify()
+
+    def test_neo_note_requires_exact_pinned_frumstum_overload_and_four_positive_runtime_sources(self):
+        for minecraft in p.NEOFORGE_BLOCK_ENTITY_SELECTOR_TARGETS:
+            with self.subTest(minecraft=minecraft):
+                artifact, visual = self.neo_selector_fixture(minecraft, boolean=minecraft in ("26.2", "26.3"))
+                self.assertTrue(visual["passed"])
+                self.assertTrue(p.neoforge_block_entity_selector_verified(self.target, artifact, visual))
+                en, ru = p.target_release_fixes(self.target, artifact, visual)
+                self.assertTrue(any("Frustum" in note for note in en))
+                self.assertTrue(any("Frustum" in note for note in ru))
+        artifact, _ = self.neo_selector_fixture("1.21.9")
+        for field in ("entityExtractionCalls", "entitySubmissionCalls", "blockEntityExtractionCalls", "blockEntitySubmissionCalls"):
+            with self.subTest(field=field):
+                good = self.result[field]
+                self.result[field] = 0
+                self.refresh_result()
+                self.assertFalse(p.neoforge_block_entity_selector_verified(self.target, artifact, self.verify()))
+                self.result[field] = good
+
+    def test_neo_delegating_selector_wrong_boolean_or_uninspected_loader_cannot_claim_fix(self):
+        artifact, visual = self.neo_selector_fixture("1.21.9", short_selector=True)
+        self.assertFalse(p.neoforge_block_entity_selector_verified(self.target, artifact, visual))
+        artifact, visual = self.neo_selector_fixture("26.3", boolean=False)
+        self.assertFalse(p.neoforge_block_entity_selector_verified(self.target, artifact, visual))
+        artifact, visual = self.neo_selector_fixture("26.3", boolean=True)
+        self.assertFalse(p.neoforge_block_entity_selector_verified({**self.target, "loaderVersion": "unknown"}, artifact, visual))
+        self.assertFalse(p.neoforge_block_entity_selector_verified({**self.target, "loader": "forge"}, artifact, visual))
 
 
 if __name__ == "__main__":

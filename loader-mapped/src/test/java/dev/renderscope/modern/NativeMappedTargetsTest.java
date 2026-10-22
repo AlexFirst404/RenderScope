@@ -18,8 +18,50 @@ class NativeMappedTargetsTest {
         exactlyOnce(ENTITY+"EntityRenderDispatcher","submit",ENTITY+"EntityRenderer","submit","(L"+ENTITY+"state/EntityRenderState;"+SUBMIT+")V");
     }
     @Test void blockEntityConcreteExtractionAndSubmissionCallsArePresentOnce() throws IOException {
+        String selector=extractionSelector();
+        if(!selector.contains("(")) selector=firstOverloadSelector(BLOCK+"BlockEntityRenderDispatcher",selector);
+        assertEquals(1,calls(BLOCK+"BlockEntityRenderDispatcher",selector).stream()
+            .filter(call->call.owner.equals(BLOCK+"BlockEntityRenderer")&&call.name.equals("extractRenderState")).count(),
+            "The actual compiled Mixin selector must reach the renderer invocation, not a delegating overload");
         exactlyOnce(BLOCK+"BlockEntityRenderDispatcher","tryExtractRenderState",BLOCK+"BlockEntityRenderer","extractRenderState","(Lnet/minecraft/world/level/block/entity/BlockEntity;L"+BLOCK+"state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;L"+ROOT+"feature/ModelFeatureRenderer$CrumblingOverlay;)V");
         exactlyOnce(BLOCK+"BlockEntityRenderDispatcher","submit",BLOCK+"BlockEntityRenderer","submit","(L"+BLOCK+"state/BlockEntityRenderState;"+SUBMIT+")V");
+    }
+    private static String firstOverloadSelector(String owner,String method)throws IOException {
+        List<String> matches=new ArrayList<>();
+        try(var input=NativeMappedTargetsTest.class.getClassLoader().getResourceAsStream(owner+".class")) {
+            assertNotNull(input);
+            new ClassReader(input).accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override public MethodVisitor visitMethod(int access,String name,String descriptor,String signature,String[] exceptions) {
+                    if(name.equals(method))matches.add(name+descriptor);return null;
+                }
+            },ClassReader.SKIP_CODE);
+        }
+        assertFalse(matches.isEmpty());return matches.getFirst();
+    }
+    private static String extractionSelector() throws IOException {
+        List<String> selectors=new ArrayList<>();
+        try(var input=NativeMappedTargetsTest.class.getClassLoader().getResourceAsStream("dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.class")) {
+            assertNotNull(input);
+            new ClassReader(input).accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override public MethodVisitor visitMethod(int access,String name,String descriptor,String signature,String[] exceptions) {
+                    if(!name.equals("renderscope$extract"))return null;
+                    return new MethodVisitor(Opcodes.ASM9) {
+                        @Override public AnnotationVisitor visitAnnotation(String type,boolean visible) {
+                            if(!type.endsWith("/WrapOperation;"))return null;
+                            return new AnnotationVisitor(Opcodes.ASM9) {
+                                @Override public AnnotationVisitor visitArray(String name) {
+                                    if(!name.equals("method"))return null;
+                                    return new AnnotationVisitor(Opcodes.ASM9) {
+                                        @Override public void visit(String name,Object value) {selectors.add((String)value);}
+                                    };
+                                }
+                            };
+                        }
+                    };
+                }
+            },ClassReader.SKIP_CODE|ClassReader.SKIP_DEBUG|ClassReader.SKIP_FRAMES);
+        }
+        assertEquals(1,selectors.size());return selectors.getFirst();
     }
     @Test void worldExtractsBeforeExecutingItsSameFrameSubmissionGraph() throws IOException {
         var calls=calls(ROOT+"LevelRenderer","renderLevel");
@@ -43,9 +85,12 @@ class NativeMappedTargetsTest {
         try(var input=NativeMappedTargetsTest.class.getClassLoader().getResourceAsStream(owner+".class")) {
             assertNotNull(input,owner);
             List<Call> result=new ArrayList<>();
+            int separator=method.indexOf('(');
+            String selectedName=separator<0?method:method.substring(0,separator);
+            String selectedDescriptor=separator<0?null:method.substring(separator);
             new ClassReader(input).accept(new ClassVisitor(Opcodes.ASM9) {
                 @Override public MethodVisitor visitMethod(int access,String name,String descriptor,String signature,String[] exceptions) {
-                    if(!name.equals(method))return null;
+                    if(!name.equals(selectedName)||(selectedDescriptor!=null&&!descriptor.equals(selectedDescriptor)))return null;
                     return new MethodVisitor(Opcodes.ASM9) {
                         @Override public void visitMethodInsn(int opcode,String target,String called,String type,boolean isInterface) {result.add(new Call(target,called,type));}
                     };

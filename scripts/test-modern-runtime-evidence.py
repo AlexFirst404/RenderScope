@@ -73,11 +73,12 @@ class ModernRuntimeEvidenceTest(unittest.TestCase):
         runtime.update(artifactBytes=123, primaryJarBytes=123, captureSeconds=5.1, captureFrames=600,
                        heatmapGizmoBoxes=5, extractionScopes=30, submissionScopes=30,
                        harness="modern-installed-v1", geometryAvailable=False, gpuTimingAvailable=False,
-                       screenshots=[f"world-{i}.png" for i in range(13)])
+                       inspectorHudDrawPasses=12, screenshots=[f"world-{i}.png" for i in range(13)]+["inspector-hidden.png"])
         for field in ("entityAndBlockEntityExtractionAndSubmission", "f8NativeScreen", "pauseNativeButton",
                       "selectedGizmoBoxAndLabels", "realCrosshairInspector", "reportPrivacy", "disconnectClearsInstances",
                       "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton",
-                      "actualPrimaryOriginVerified", "runtimeLoaderVerified"):
+                      "actualPrimaryOriginVerified", "runtimeLoaderVerified", "actualInspectorHudDrawn",
+                      "f1HidesInspectorHud", "inspectorResumesAfterF1"):
             runtime[field] = True
         if change:
             change(runtime)
@@ -179,7 +180,9 @@ class ModernRuntimeEvidenceTest(unittest.TestCase):
         mutations = [("actualPrimaryOriginVerified", False), ("runtimeLoaderVerified", False),
                      ("rendererClassCopy", False), ("reportPrivacy", False), ("highlightNativeButton", False),
                      ("artifactBytes", 124), ("primaryJarBytes", 124), ("geometryAvailable", True),
-                     ("gpuTimingAvailable", True), ("extractionScopes", 0), ("submissionScopes", 0)]
+                     ("gpuTimingAvailable", True), ("extractionScopes", 0), ("submissionScopes", 0),
+                     ("actualInspectorHudDrawn", False), ("f1HidesInspectorHud", False),
+                     ("inspectorResumesAfterF1", False), ("inspectorHudDrawPasses", 0)]
         for key, value in mutations:
             with self.subTest(field=key):
                 self.complete_runtime(target, change=lambda runtime: runtime.update({key: value}))

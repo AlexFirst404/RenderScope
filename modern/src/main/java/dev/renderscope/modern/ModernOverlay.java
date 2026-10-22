@@ -21,10 +21,13 @@ public final class ModernOverlay {
     private static final Map<InstanceKey, Long> SELECTED = new LinkedHashMap<>();
     private static final Set<InstanceKey> TRACKED = new LinkedHashSet<>();
     private static int queuedBoxes, queuedLabels;
+    private static long hudDrawPasses, inspectorDrawPasses;
     private ModernOverlay() { }
-    public static void clear() { SELECTED.clear(); TRACKED.clear(); queuedBoxes = queuedLabels = 0; }
+    public static void clear() { SELECTED.clear(); TRACKED.clear(); queuedBoxes = queuedLabels = 0; hudDrawPasses = inspectorDrawPasses = 0; }
     public static int queuedBoxes() { return queuedBoxes; }
     public static int queuedLabels() { return queuedLabels; }
+    public static long hudDrawPasses() { return hudDrawPasses; }
+    public static long inspectorDrawPasses() { return inspectorDrawPasses; }
     public static boolean highlighted(InstanceKey key) { return SELECTED.containsKey(key); }
     public static boolean tracked(InstanceKey key) { return TRACKED.contains(key); }
     public static void toggleHighlight(InstanceKey key) {
@@ -118,19 +121,24 @@ public final class ModernOverlay {
     }
     public static void extractHud(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
+        // RETURN also covers loader-specific early exits. Respect vanilla F1
+        // before submitting any overlay primitives on those paths.
+        if (mc.level == null || ModernPlatform.hudHidden(mc)) return;
+        hudDrawPasses++;
         ProfilerSnapshot snapshot = ModernHooks.PROFILER.snapshot();
-        if (snapshot.capture().active()) graphics.text(mc.font, "RenderScope Recording ●", 8, 8, 0xffff6575);
-        if (!ModernHooks.SETTINGS.inspect) return;
+        if (snapshot.capture().active()) graphics.text(mc.font, "RenderScope Recording в—Џ", 8, 8, 0xffff6575);
+        if (!ModernHooks.SETTINGS.inspect || ModernPlatform.currentScreen(mc) != null) return;
         inspected().ifPresent(metric -> {
             int y = snapshot.capture().active() ? 25 : 8;
             graphics.fill(6, y - 3, 284, y + 65, 0xcc101820);
-            graphics.text(mc.font, "RenderScope Inspector · CPU", 10, y, 0xff65d9ff);
+            graphics.text(mc.font, "RenderScope Inspector В· CPU", 10, y, 0xff65d9ff);
             graphics.text(mc.font, metric.context().registryId(), 10, y + 12, 0xffffffff);
             graphics.text(mc.font, ModCatalog.displayName(metric.context().registryOwner()), 10, y + 24, 0xffb5c9d5);
             graphics.text(mc.font, String.format(Locale.ROOT, "Avg %.3f  P95 %.3f  Peak %.3f ms", metric.stats().averageMs(),
                 metric.stats().p95Ms(), metric.stats().peakMs()), 10, y + 36, 0xffffffff);
-            graphics.text(mc.font, "Calls " + metric.stats().calls() + " · extract + submit", 10, y + 48, 0xffb5c9d5);
+            graphics.text(mc.font, "Calls " + metric.stats().calls() + " В· extract + submit", 10, y + 48, 0xffb5c9d5);
+            // Counts actual submitted HUD primitives, not a data-only hit test.
+            inspectorDrawPasses++;
         });
     }
     private static boolean selected(InstanceKey key) { return SELECTED.containsKey(key) || TRACKED.contains(key); }

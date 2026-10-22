@@ -32,6 +32,11 @@ VISUAL_MANIFESTS = (
     "loader21/validation/world-visual-review.json",
     "modern/validation/world-visual-review.json",
 )
+NEOFORGE_BLOCK_ENTITY_SELECTOR_TARGETS = {
+    "1.21.9": "21.9.16-beta", "1.21.10": "21.10.64", "1.21.11": "21.11.48",
+    "26.1": "26.1.0.19-beta", "26.1.1": "26.1.1.15-beta", "26.1.2": "26.1.2.122",
+    "26.2": "26.2.0.93", "26.3": "26.3.0.95",
+}
 
 
 def module(name: str, relative: str):
@@ -183,6 +188,13 @@ def load_visual_reviews() -> list[dict]:
     return reviews
 
 
+def modern_inspector_result_verified(minecraft: str, result: dict) -> bool:
+    modern = minecraft in ("1.21.9", "1.21.10", "1.21.11") or minecraft.startswith("26.")
+    return (modern and all(result.get(flag) is True for flag in (
+        "actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1"))
+        and type(result.get("inspectorHudDrawPasses")) is int and result["inspectorHudDrawPasses"] > 0)
+
+
 def manual_visual_review(target: dict, primary_sha: str, evidence: list[dict], reviews: list[dict]) -> dict:
     """Require one complete review of the same current, accepted runtime result.
 
@@ -245,6 +257,9 @@ def manual_visual_review(target: dict, primary_sha: str, evidence: list[dict], r
             if linked is None:
                 raise ValueError("Manual review is not linked to this exact accepted runtime result")
             result_path, result_sha, result = linked
+            if (target["minecraft"] in ("1.21.9", "1.21.10", "1.21.11") or target["minecraft"].startswith("26.")):
+                if not modern_inspector_result_verified(target["minecraft"], result):
+                    raise ValueError("Modern Inspector requires actual HUD draws, F1 hiding and restoration in the same runtime result")
             allowed_images = set()
             for name in result.get("screenshots", []):
                 if not isinstance(name, str) or Path(name).is_absolute() or PureWindowsPath(name).is_absolute():
@@ -285,6 +300,46 @@ def manual_visual_review(target: dict, primary_sha: str, evidence: list[dict], r
             "rejectedCandidates": rejected}
 
 
+def modern_inspector_fix_verified(target: dict, artifact: Path, visual: dict) -> bool:
+    if not visual.get("passed"):
+        return False
+    try:
+        result_path = repository_file(visual["resultFile"])
+        if hashlib.sha256(result_path.read_bytes()).hexdigest() != visual["resultSha256"]:
+            return False
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        return (result.get("success") is True and result.get("minecraftVersion") == target["minecraft"]
+                and str(result.get("loader", "")).lower() == target["loader"]
+                and result.get("loaderVersion") == target["loaderVersion"]
+                and result.get("primaryJarSha256") == visual["primaryJarSha256"]
+                == hashlib.sha256(artifact.read_bytes()).hexdigest()
+                and modern_inspector_result_verified(target["minecraft"], result))
+    except (ValueError, KeyError, TypeError, OSError):
+        return False
+
+
+def neoforge_block_entity_selector_verified(target: dict, artifact: Path, visual: dict) -> bool:
+    if (target["loader"] != "neoforge"
+            or target["minecraft"] not in NEOFORGE_BLOCK_ENTITY_SELECTOR_TARGETS
+            or NEOFORGE_BLOCK_ENTITY_SELECTOR_TARGETS.get(target["minecraft"]) != target.get("loaderVersion")
+            or not modern_inspector_fix_verified(target, artifact, visual)):
+        return False
+    try:
+        result = json.loads(repository_file(visual["resultFile"]).read_text(encoding="utf-8"))
+        fields = ("entityExtractionCalls", "entitySubmissionCalls", "blockEntityExtractionCalls", "blockEntitySubmissionCalls")
+        if not all(type(result.get(field)) is int and result[field] > 0 for field in fields):
+            return False
+        boolean = "Z" if target["minecraft"] in ("26.2", "26.3") else ""
+        selector = ("tryExtractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;F"
+                    "Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;" + boolean
+                    + "Lnet/minecraft/client/renderer/culling/Frustum;)"
+                    "Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;")
+        with zipfile.ZipFile(artifact) as jar:
+            return selector.encode("ascii") in jar.read("dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.class")
+    except (ValueError, KeyError, TypeError, OSError, zipfile.BadZipFile):
+        return False
+
+
 def target_release_fixes(target: dict, artifact: Path, visual: dict) -> tuple[list[str], list[str]]:
     en, ru = [], []
     if not visual["passed"]:
@@ -299,6 +354,16 @@ def target_release_fixes(target: dict, artifact: Path, visual: dict) -> tuple[li
     if target["loader"] in ("forge", "neoforge") and target["minecraft"] in ("1.21.9", "1.21.10", "1.21.11"):
         en.append("Corrected the native resource-pack metadata for this Minecraft version; verified through an installed-client world.")
         ru.append("Исправлены нативные метаданные resource pack для этой версии Minecraft; проверено в мире установленного клиента.")
+    if modern_inspector_fix_verified(target, artifact, visual):
+        if target["loader"] == "forge":
+            en.append("Fixed a missing Inspector HUD on Forge's early-return render path. F1 hides and restores the overlay; verified actual HUD draw counts and framebuffer frames.")
+            ru.append("Исправлено исчезновение Inspector HUD при раннем выходе из отрисовки Forge. F1 скрывает и возвращает оверлей; проверены реальные вызовы HUD и кадры игры.")
+        else:
+            en.append("Inspector HUD visibility and F1 hide/restore are verified using actual HUD draw counts and framebuffer frames.")
+            ru.append("Видимость Inspector HUD и скрытие/возврат через F1 проверены по реальным вызовам HUD и кадрам игры.")
+    if neoforge_block_entity_selector_verified(target, artifact, visual):
+        en.append("Fixed NeoForge block-entity extraction profiling by targeting its concrete Frustum overload; verified positive entity and block-entity extraction/submission calls in installed Minecraft.")
+        ru.append("Исправлено профилирование извлечения состояния блок-сущностей NeoForge: выбрана нужная перегрузка с Frustum; в установленном Minecraft проверены положительные вызовы extraction/submission для сущностей и блок-сущностей.")
     return en, ru
 
 
@@ -310,6 +375,9 @@ def publication_ready(rows: list[dict], git_identity: dict) -> bool:
                     and row.get("rendererOwnerRegressions", {}).get("passed") is True
                     and row.get("rendererOwnerRegressions", {}).get("blockEntityReplacement", {}).get("passed") is True
                     and row.get("visuallyVerified") is True
+                    and (row["minecraft"] not in ("1.21.9", "1.21.10", "1.21.11")
+                         and not row["minecraft"].startswith("26.")
+                         or row.get("modernInspectorHudFrameValidationVerified") is True)
                     and row.get("manualVisualReview", {}).get("passed") is True
                     and row["manualVisualReview"].get("primaryJarSha256") == row["sha256"]
                     for row in rows))
@@ -661,6 +729,8 @@ def main() -> None:
                         and packaged.is_file() and builder.digest(packaged) == proof["sha256"])
         evidence = support.inspect_runtime(target, proof["sha256"])
         visual = manual_visual_review(target, proof["sha256"], evidence, visual_reviews)
+        modern_hud_verified = modern_inspector_fix_verified(target, source, visual)
+        neo_be_verified = neoforge_block_entity_selector_verified(target, source, visual)
         fixes_en, fixes_ru = target_release_fixes(target, source, visual)
         regressions = ownership_regressions(target)
         en, ru = limitations(target["minecraft"])
@@ -697,6 +767,8 @@ def main() -> None:
             "rendererOwnerRegressions": regressions,
             "runtimeEvidence": evidence, "worldVerified": bool(evidence), "manualVisualReview": visual,
             "visuallyVerified": visual["passed"], "verifiedTargetFixes": {"en": fixes_en, "ru": fixes_ru},
+            "modernInspectorHudFrameValidationVerified": modern_hud_verified,
+            "neoforgeBlockEntitySelectorVerified": neo_be_verified,
             "changelog": "distribution/platforms/0.3.0/" + changelog,
             "measurementScope": {"en": en, "ru": ru}, "fabricApi": dependency,
             "modrinth": {"projectId": "LyIIxCef", "gameVersions": [target["minecraft"]], "loaders": [target["loader"]],
@@ -709,6 +781,8 @@ def main() -> None:
             "remoteState": "Not queried by local preparation; canonical platform status is recorded separately"})
     world_count = sum(row["worldVerified"] for row in rows)
     visual_count = sum(row["visuallyVerified"] for row in rows)
+    modern_hud_count = sum(row["modernInspectorHudFrameValidationVerified"] for row in rows)
+    neo_be_count = sum(row["neoforgeBlockEntitySelectorVerified"] for row in rows)
     package_count = sum(row["packageIndexMatches"] for row in rows)
     regression_count = sum(row["rendererOwnerRegressions"]["passed"] for row in rows)
     replacement_count = sum(row["rendererOwnerRegressions"]["blockEntityReplacement"]["passed"] for row in rows)
@@ -720,6 +794,8 @@ def main() -> None:
         "publicationReady": ready, "publicationPerformed": False, "releaseChannel": args.channel,
         "minecraftReleaseCount": 23, "artifactCount": 67, "worldVerifiedTargets": world_count,
         "manuallyVisuallyVerifiedTargets": visual_count,
+        "modernInspectorHudFrameValidationVerifiedTargets": modern_hud_count,
+        "neoforgeBlockEntitySelectorVerifiedTargets": neo_be_count,
         "packageIndexMatchedTargets": package_count,
         "rendererOwnerRegressionVerifiedTargets": regression_count,
         "blockEntityReplacementRegressionVerifiedTargets": replacement_count,
@@ -784,6 +860,10 @@ def main() -> None:
            if sum(bool(row["verifiedTargetFixes"]["en"]) for row in rows if row["minecraft"] == "1.21.6") == 3 else "")
         + ("- Corrected Forge/NeoForge 1.21.9–1.21.11 resource-pack metadata; installed-client worlds verified.\n\n"
            if sum(row["visuallyVerified"] for row in rows if row["minecraft"] in ("1.21.9", "1.21.10", "1.21.11") and row["loader"] != "fabric") == 6 else "")
+        + ("- Fixed Inspector HUD on Forge early-return paths; actual HUD visibility and F1 hide/restore verified across all 24 Minecraft 1.21.9–26.3 builds.\n\n"
+           if modern_hud_count == 24 else "")
+        + ("- Corrected NeoForge block-entity extraction hooks for its Frustum overload; all eight exact Minecraft 1.21.9–26.3 targets verified with real entity/block-entity calls.\n\n"
+           if neo_be_count == 8 else "")
         + validation + "\n\n[Exact dependencies](DEPENDENCIES.md) · [Per-artifact evidence](release-manifest.json)\n\n"
         "## Русский\n\n67 отдельных клиентских сборок для 23 стабильных версий Minecraft. "
         "Диагностика ведёт от измеренной CPU-работы к конкретному объекту; общие renderer-классы учитываются отдельно для каждого registry owner. "
@@ -794,6 +874,10 @@ def main() -> None:
            if sum(bool(row["verifiedTargetFixes"]["ru"]) for row in rows if row["minecraft"] == "1.21.6") == 3 else "")
         + ("Исправлены resource-pack метаданные Forge/NeoForge 1.21.9–1.21.11; проверены миры установленных клиентов.\n\n"
            if sum(row["visuallyVerified"] for row in rows if row["minecraft"] in ("1.21.9", "1.21.10", "1.21.11") and row["loader"] != "fabric") == 6 else "")
+        + ("Исправлен Inspector HUD при раннем выходе из отрисовки Forge; реальная видимость HUD и скрытие/возврат через F1 проверены на всех 24 сборках Minecraft 1.21.9–26.3.\n\n"
+           if modern_hud_count == 24 else "")
+        + ("Исправлены хуки извлечения состояния блок-сущностей NeoForge для перегрузки с Frustum; на всех восьми точных целях Minecraft 1.21.9–26.3 проверены реальные вызовы сущностей и блок-сущностей.\n\n"
+           if neo_be_count == 8 else "")
         + f"Для текущих хешей есть {world_count}/67 игровых результатов, {visual_count}/67 ручных визуальных проверок; совпадает {package_count}/67 упакованных JAR. "
         "Установленный клиент и dev-среда различаются в доказательствах. "
         + ("Все цели прошли локальную проверку готовности. Фактическая публикация и модерация платформ учитываются отдельно.\n\n"
@@ -814,6 +898,7 @@ def main() -> None:
         "All 67 identities additionally require a manual review with explicit aligned-box/readable-label/visible-inspector approval, "
         "the current primary JAR SHA-256, the same accepted runtime-result SHA-256, and the actual world/selection plus Inspector PNG paths and hashes. "
         "A missing, failed, stale, mixed-profile or changed-image review keeps the gate false. "
+        "For Minecraft 1.21.9–26.3, the same result must also confirm actual Inspector HUD draws, F1 hiding/restoration and a positive draw counter. "
         "After staging the generated metadata, run `python scripts/prepare-publication-030.py --verify-git-evidence`; "
         "after tagging, repeat with `--git-ref v0.3.0` to check the exact public reference. "
         "Generated remoteState is not a claim about uploaded files; actual platform state remains in the separate canonical status record.\n")

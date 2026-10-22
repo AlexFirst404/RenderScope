@@ -18,16 +18,35 @@ base { archivesName = 'renderscope-neoforge' }
 layout.buildDirectory = file("build/${mcVersion}")
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 java.withSourcesJar()
+def commonModernJava = file('../../modern/src/main/java').canonicalFile.toPath()
+def neoMixinSources = layout.buildDirectory.dir('generated/neoforge-mixin')
+tasks.register('generateNeoBlockEntityMixin') {
+    inputs.file '../../modern/src/main/java/dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java'
+    inputs.property 'minecraft', mcVersion
+    outputs.dir neoMixinSources
+    doLast {
+        def source=file('../../modern/src/main/java/dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java').getText('UTF-8')
+        // The short Neo overload delegates; only this exact Frustum overload
+        // contains the renderer invocation. 26.2 adds a boolean before Frustum.
+        def boolArg=oldLevel ? '' : 'Z'
+        def selector='tryExtractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;'+boolArg+'Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;'
+        source=source.replace('method = "tryExtractRenderState"','method = "'+selector+'"')
+        def target=neoMixinSources.get().file('dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java').asFile
+        target.parentFile.mkdirs()
+        target.setText(source,'UTF-8')
+    }
+}
 sourceSets {
     main {
         java.srcDirs = ['src/main/java', '../../modern/src/main/java', "../../modern/src/${inputAdapter}/java",
-            "../../modern/src/${worldAdapter}/java", '../../src/main/java']
+            "../../modern/src/${worldAdapter}/java", '../../src/main/java', neoMixinSources]
         java.include 'dev/renderscope/modern/**', 'dev/renderscope/core/**',
             'dev/renderscope/client/ProfilerSettings.java', 'dev/renderscope/client/LoaderInfo.java',
             'dev/renderscope/client/ModOwnership.java', 'dev/renderscope/client/platform/PlatformAccess.java',
             'dev/renderscope/client/platform/PlatformServices.java', 'dev/renderscope/client/platform/NeoForgePlatform.java',
             'dev/renderscope/client/integration/ShaderPasses.java'
         java.exclude 'dev/renderscope/modern/RenderScopeModern.java'
+        java.exclude { entry -> entry.file.toPath().startsWith(commonModernJava) && entry.path.replace('\\','/')=='dev/renderscope/modern/mixin/BlockEntityDispatcherMixin.java' }
         resources.srcDirs = ['src/main/resources', '../../modern/src/main/resources', '../resources']
         resources.exclude 'fabric.mod.json'
     }
@@ -37,6 +56,8 @@ sourceSets {
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
 }
+tasks.named('compileJava') { dependsOn 'generateNeoBlockEntityMixin' }
+tasks.named('sourcesJar') { dependsOn 'generateNeoBlockEntityMixin' }
 apply from: '../smoke/native-smoke.gradle'
 ['compileClasspath', 'smokeCompileClasspath', 'runtimeClasspath', 'smokeRuntimeClasspath'].each { name ->
     configurations.named(name) { attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25) }

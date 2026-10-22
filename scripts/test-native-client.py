@@ -323,6 +323,15 @@ def nested_runtime(libraries: list[dict], install: Path) -> list[dict]:
     return found
 
 
+def verify_modern_inspector(minecraft: str, result: dict) -> None:
+    if minecraft not in ("1.21.9", "1.21.10", "1.21.11") and not minecraft.startswith("26."):
+        return
+    flags = ("actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1")
+    passes = result.get("inspectorHudDrawPasses")
+    if any(result.get(flag) is not True for flag in flags) or type(passes) is not int or passes <= 0:
+        raise RuntimeError("Modern native Inspector was not actually drawn, hidden by F1, and restored with positive draw passes")
+
+
 def verify(args, launched_ns: int, mods: list[dict]) -> dict:
     result_file = args.output / "smoke-result.json"
     if not result_file.is_file() or result_file.stat().st_mtime_ns < launched_ns:
@@ -336,6 +345,7 @@ def verify(args, launched_ns: int, mods: list[dict]) -> dict:
         raise RuntimeError("Actual Minecraft/native loader differs from the requested exact versions")
     if result.get("environment") != "installed-production" or result.get("primaryJarSha256") != mods[0]["sha256"]:
         raise RuntimeError("Native harness did not measure the staged production artifact")
+    verify_modern_inspector(args.minecraft, result)
     for mod in mods:
         if vendor.digest(args.game_dir / "mods" / mod["file"], "sha256") != mod["sha256"]:
             raise RuntimeError("Staged mod changed during the native run")

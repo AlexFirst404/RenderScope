@@ -40,6 +40,10 @@ def verify_runtime(target, artifact, runtime_support):
     for name in screenshots:
         require(isinstance(name, str) and Path(name).name == name and (path.parent / name).is_file(), f"Screenshot missing: {name}")
     if proof["environment"] == "installed-production":
+        for field in ("actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1"):
+            require(runtime.get(field) is True, "Installed HUD assertion missing: " + field)
+        require(runtime.get("inspectorHudDrawPasses", 0) > 0 and "inspector-hidden.png" in screenshots,
+                "Actual Inspector HUD/F1 framebuffer proof is missing")
         require(runtime.get("harness") == "modern-installed-v1", "Unknown installed Fabric harness")
         require(runtime.get("actualPrimaryOriginVerified") is True and runtime.get("runtimeLoaderVerified") is True,
                 "Installed runtime did not verify the actual loaded primary origin and loader")

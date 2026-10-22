@@ -10,8 +10,10 @@
 
 Measurement scope: Version-specific entity/block-entity CPU hooks, including extraction where available. Geometry is limited to observed standard buffers; newer Sodium/Iris native geometry is unavailable. GPU work, terrain, shader execution and shared instancing are not assigned to objects. A vanilla baseline does not establish optional-mod or shader compatibility.
 
-Validation: **68 unit tests**; World verification is pending for this exact artifact hash.
-
+Validation: **68 unit tests**; Current hash-matched world evidence: installed-production
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.8/installed-verification.json)
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.8/smoke-result.json)
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.8/renderer-compat/iris/installed-verification.json)
 
 SHA-256: `1c8cc1bc6fd24c4a771465593d72cb4af802e7caf41b38992bd382054cdb3396` (409710 bytes).
 
@@ -27,6 +29,6 @@ SHA-256: `1c8cc1bc6fd24c4a771465593d72cb4af802e7caf41b38992bd382054cdb3396` (409
 
 Область измерения: Версионные CPU-хуки сущностей и блок-сущностей, включая extraction там, где доступен. Геометрия ограничена наблюдаемыми стандартными буферами; native-геометрия новых Sodium/Iris недоступна. GPU, terrain, выполнение шейдеров и общий instancing не распределяются между объектами. Ванильный прогон не подтверждает совместимость со всеми модами и шейдерами.
 
-Проверено unit-тестов: **68**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **68**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

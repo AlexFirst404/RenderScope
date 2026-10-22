@@ -1,0 +1,972 @@
+{
+  "scope": "Read-only exact NeoForge dispatcher ABI review; installed patched client preferred, MDG compile counterpart shown separately. Vanilla client-srg is not substituted for patched classes.",
+  "targets": [
+    {
+      "minecraft": "1.21.9",
+      "loaderVersion": "21.9.16-beta",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-1.21.9-21.9.16-beta/libraries/net/neoforged/neoforge/21.9.16-beta/neoforge-21.9.16-beta-client.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "e77915c26428cff6d59d6e56a160aadef832d9ced3194d3c84717209bcf90399",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #150,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #154,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #179,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "178618a6ad7caa57a381320db991a35dfa3aee3adec8dc790316a4eb4e4f4455",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #255                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #336                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader-mapped/neoforge/build/1.21.9/moddev/artifacts/neoforge-21.9.16-beta.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "da3d90302370adb5f0803b600c485379044f6a81ffca99cd05e40d5bf456e2eb",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #117,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #121,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #128,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "d0cae57d6bcf7c69c41b4ef3d67719e165800762e046850baa0c9ebedfd6b794",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.10",
+      "loaderVersion": "21.10.64",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-1.21.10-21.10.64/libraries/net/neoforged/minecraft-client-patched/21.10.64/minecraft-client-patched-21.10.64.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "e77915c26428cff6d59d6e56a160aadef832d9ced3194d3c84717209bcf90399",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #150,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #154,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #179,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "178618a6ad7caa57a381320db991a35dfa3aee3adec8dc790316a4eb4e4f4455",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #255                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #336                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader-mapped/neoforge/build/1.21.10/moddev/artifacts/neoforge-21.10.64.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "da3d90302370adb5f0803b600c485379044f6a81ffca99cd05e40d5bf456e2eb",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #117,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #121,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #128,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "d0cae57d6bcf7c69c41b4ef3d67719e165800762e046850baa0c9ebedfd6b794",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "1.21.11",
+      "loaderVersion": "21.11.48",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-1.21.11-21.11.48/libraries/net/neoforged/minecraft-client-patched/21.11.48/minecraft-client-patched-21.11.48.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "9fd0dfec02b1fb36575de92cb7bb678f6b3eb843ce7b9a3d87d030971d163a01",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #150,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #154,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #179,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "4ee37ad366336cc7fea4e715406270e601900804aa57bda30bb864bedc8db9c7",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #253                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #334                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader-mapped/neoforge/build/1.21.11/moddev/artifacts/neoforge-21.11.48.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "947655a3aec4f9aada0f33bb61af77638e86aa4b09b7e43988b2dea29feeef74",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #117,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #121,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #128,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "26b64511699daac460ef00d3ef673ccc7e085bbb539ac1554cd26c8f4ca9f112",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "26.1",
+      "loaderVersion": "26.1.0.19-beta",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-26.1-26.1.0.19-beta/libraries/net/neoforged/minecraft-client-patched/26.1.0.19-beta/minecraft-client-patched-26.1.0.19-beta.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "82cea042472841146e9aecfff3187bbb4e8bbfab4a9966647329f08cfaeb126e",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #93,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #97,  6           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #104,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "cc435d849c2b5ae7c15324b342309152c4f212b09dbc277d423756a1fb577015",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader26/neoforge/build/26.1/moddev/artifacts/minecraft-patched-26.1.0.19-beta.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "72083b09c541c7155e671d218fce4041fe35cd96d6686b3fb6c7734da1b8a326",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #136,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #140,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #158,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "3302b4f3e73a465a4722550ca8fd8957331390269c60957e0423f9dd578701d8",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #241                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #325                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "26.1.1",
+      "loaderVersion": "26.1.1.15-beta",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-26.1.1-26.1.1.15-beta/libraries/net/neoforged/minecraft-client-patched/26.1.1.15-beta/minecraft-client-patched-26.1.1.15-beta.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "82cea042472841146e9aecfff3187bbb4e8bbfab4a9966647329f08cfaeb126e",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #93,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #97,  6           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #104,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "cc435d849c2b5ae7c15324b342309152c4f212b09dbc277d423756a1fb577015",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader26/neoforge/build/26.1.1/moddev/artifacts/minecraft-patched-26.1.1.15-beta.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "72083b09c541c7155e671d218fce4041fe35cd96d6686b3fb6c7734da1b8a326",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #136,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #140,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #158,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "3302b4f3e73a465a4722550ca8fd8957331390269c60957e0423f9dd578701d8",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #241                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #325                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "26.1.2",
+      "loaderVersion": "26.1.2.122",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-26.1.2-26.1.2.122/libraries/net/neoforged/minecraft-client-patched/26.1.2.122/minecraft-client-patched-26.1.2.122.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "82cea042472841146e9aecfff3187bbb4e8bbfab4a9966647329f08cfaeb126e",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #93,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #97,  6           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #104,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "cc435d849c2b5ae7c15324b342309152c4f212b09dbc277d423756a1fb577015",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader26/neoforge/build/26.1.2/moddev/artifacts/minecraft-patched-26.1.2.122.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "72083b09c541c7155e671d218fce4041fe35cd96d6686b3fb6c7734da1b8a326",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "85: invokeinterface #136,  1          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "101: invokeinterface #140,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #158,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "3302b4f3e73a465a4722550ca8fd8957331390269c60957e0423f9dd578701d8",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #241                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #325                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "26.2",
+      "loaderVersion": "26.2.0.93",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-26.2-26.2.0.93/libraries/net/neoforged/minecraft-client-patched/26.2.0.93/minecraft-client-patched-26.2.0.93.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "bcc8aadd8fcd4aee1bea4cf6e912d682fe459024072bcfe6d97aa3134343a4a5",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Z)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;ZLnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "99: invokeinterface #96,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "115: invokeinterface #100,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #107,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "ab7ea285ccd597fc997ebfd579c055590e295e2fddc61c8dd9a550b1d4639c59",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader26/neoforge/build/26.2/moddev/artifacts/minecraft-patched-26.2.0.93.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "bcc8aadd8fcd4aee1bea4cf6e912d682fe459024072bcfe6d97aa3134343a4a5",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Z)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;ZLnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "99: invokeinterface #96,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "115: invokeinterface #100,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #107,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "ab7ea285ccd597fc997ebfd579c055590e295e2fddc61c8dd9a550b1d4639c59",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #160                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #235                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minecraft": "26.3",
+      "loaderVersion": "26.3.0.95",
+      "artifacts": [
+        {
+          "kind": "installed_patched",
+          "jar": ".tools/installed-neoforge-26.3-26.3.0.95/libraries/net/neoforged/minecraft-client-patched/26.3.0.95/minecraft-client-patched-26.3.0.95.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "bcc8aadd8fcd4aee1bea4cf6e912d682fe459024072bcfe6d97aa3134343a4a5",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Z)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;ZLnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "99: invokeinterface #96,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "115: invokeinterface #100,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #107,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "afe40061dc7c7f4c3b305ffae95a1d99185e7b4b2efc555f400bbf1aa968f85c",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #158                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #233                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "mdg_compile",
+          "jar": "loader26/neoforge/build/26.3/moddev/artifacts/minecraft-patched-26.3.0.95.jar",
+          "classes": [
+            {
+              "class": "net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher",
+              "classSha256": "bcc8aadd8fcd4aee1bea4cf6e912d682fe459024072bcfe6d97aa3134343a4a5",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Z)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [],
+                  "exactExtractionInvocationCount": 0
+                },
+                {
+                  "declaration": "public <E extends net.minecraft.world.level.block.entity.BlockEntity, S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> S tryExtractRenderState(E, float, net.minecraft.client.renderer.feature.ModelFeatureRenderer$CrumblingOverlay, boolean, net.minecraft.client.renderer.culling.Frustum);",
+                  "descriptor": "(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;ZLnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "99: invokeinterface #96,  1           // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.createRenderState:()Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;",
+                    "115: invokeinterface #100,  6          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.extractRenderState:(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> void submit(S, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector, net.minecraft.client.renderer.state.level.CameraRenderState);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                  "concreteRendererInvocations": [
+                    "19: invokeinterface #107,  5          // InterfaceMethod net/minecraft/client/renderer/blockentity/BlockEntityRenderer.submit:(Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            },
+            {
+              "class": "net.minecraft.client.renderer.entity.EntityRenderDispatcher",
+              "classSha256": "afe40061dc7c7f4c3b305ffae95a1d99185e7b4b2efc555f400bbf1aa968f85c",
+              "methods": [
+                {
+                  "declaration": "public <E extends net.minecraft.world.entity.Entity> net.minecraft.client.renderer.entity.state.EntityRenderState extractEntity(E, float);",
+                  "descriptor": "(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;",
+                  "concreteRendererInvocations": [
+                    "9: invokevirtual #158                // Method net/minecraft/client/renderer/entity/EntityRenderer.createRenderState:(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"
+                  ],
+                  "exactExtractionInvocationCount": 1
+                },
+                {
+                  "declaration": "public <S extends net.minecraft.client.renderer.entity.state.EntityRenderState> void submit(S, net.minecraft.client.renderer.state.level.CameraRenderState, double, double, double, com.mojang.blaze3d.vertex.PoseStack, net.minecraft.client.renderer.SubmitNodeCollector);",
+                  "descriptor": "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                  "concreteRendererInvocations": [
+                    "68: invokevirtual #233                // Method net/minecraft/client/renderer/entity/EntityRenderer.submit:(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V"
+                  ],
+                  "exactExtractionInvocationCount": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "implementation": {
+    "scope": "NeoForge only; Fabric and Forge dispatchers retain their original single-overload selector",
+    "mappedGenerator": "loader-mapped/adapter-sources.gradle",
+    "native26Generator": "loader26/neoforge/build.gradle",
+    "strictness": "Default required injection remains enabled. One exact Frustum overload and one concrete renderer extraction invocation; no delegate interception or duplicate measurement.",
+    "regression": "Both actual dependency bytecode tests resolve the compiled Mixin selector and require its selected method to contain the concrete extraction invocation."
+  }
+}

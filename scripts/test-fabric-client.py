@@ -296,7 +296,8 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
             raise RuntimeError("Requested modern installed harness did not produce this result")
         for field in ("actualPrimaryOriginVerified", "runtimeLoaderVerified", "entityAndBlockEntityExtractionAndSubmission",
                       "f8NativeScreen", "pauseNativeButton", "selectedGizmoBoxAndLabels", "realCrosshairInspector",
-                      "reportPrivacy", "disconnectClearsInstances", "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton"):
+                      "reportPrivacy", "disconnectClearsInstances", "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton",
+                      "actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1"):
             if result.get(field) is not True:
                 raise RuntimeError("Modern installed assertion is missing: " + field)
         primary_bytes = (args.game_dir / "mods" / mods[0]["file"]).stat().st_size
@@ -304,10 +305,11 @@ def verify_result(args: argparse.Namespace, launched_ns: int, mods: list[dict]) 
                 or result.get("primaryJarBytes") != primary_bytes or result.get("geometryAvailable") is not False
                 or result.get("gpuTimingAvailable") is not False or result.get("captureSeconds", 0) < 5
                 or result.get("captureFrames", 0) <= 20 or result.get("heatmapGizmoBoxes", 0) < 3
-                or result.get("extractionScopes", 0) <= 0 or result.get("submissionScopes", 0) <= 0):
+                or result.get("extractionScopes", 0) <= 0 or result.get("submissionScopes", 0) <= 0
+                or result.get("inspectorHudDrawPasses", 0) <= 0):
             raise RuntimeError("Modern installed measurements/capture/actual-origin assertions are incomplete")
         screenshots = result.get("screenshots", [])
-        if (len(screenshots) < 13 or len(set(screenshots)) != len(screenshots)
+        if (len(screenshots) < 14 or "inspector-hidden.png" not in screenshots or len(set(screenshots)) != len(screenshots)
                 or any(not isinstance(name, str) or Path(name).name != name or not (args.output / name).is_file() for name in screenshots)):
             raise RuntimeError("Modern installed screenshot evidence is incomplete")
     if args.extra_mod_manifest:

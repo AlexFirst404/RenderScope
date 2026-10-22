@@ -9,4 +9,6 @@ final class ModernPlatform {
     static InputConstants.Type keyboardType() { return InputConstants.Type.KEYBOARD; }
     static net.minecraft.client.gui.screens.Screen currentScreen(Minecraft client) { return client.gui.screen(); }
     static Gizmos.TemporaryCollection collectGizmos() { return Minecraft.getInstance().levelExtractor.collectPerFrameMainThreadGizmos(); }
+    static boolean hudHidden(Minecraft client) { return client.gui.hud.isHidden(); }
+
 }

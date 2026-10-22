@@ -54,3 +54,23 @@ The optional `downloadedArtifact` points to the retained download under a reposi
 The report separates `submittedCount`, `metadataVerifiedCount`, `downloadVerifiedCount`, `downloadCacheRehashedCount`, missing identities, raw status counts and errors. Recorded historical downloads and newly rehashed local cache files are different facts. This offline tool validates the records and available bytes; the producer remains responsible for obtaining UI observations and downloads from the actual platform.
 
 Regression fixtures exist only in temporary folders created by `scripts/test-verify-platform-030.py`. They are never written to the real submission ledgers.
+
+## Inbound download helper
+
+After recording a real saved file and its observed CDN URL, run:
+
+```powershell
+python scripts/download-platform-030.py --platform modrinth
+python scripts/download-platform-030.py --platform curseforge
+python scripts/download-platform-030.py --platform both
+```
+
+This helper performs inbound public GETs only. It requires the current-ready manifest and matching ledger manifest hash, and processes only `submitted` entries with verified post-save metadata. Partial ledgers are accepted; unsaved records and absent links remain pending. It never constructs a URL from a file ID, requests upload/authentication APIs, uses account cookies, or operates a browser.
+
+Only recorded HTTPS URLs on `cdn.modrinth.com` or the CurseForge CDN hosts `edge.forgecdn.net`, `media.forgecdn.net` and `mediafilez.forgecdn.net` are allowed. Every redirect and final response URL must remain on the same platform's exact allowlist. The response is streamed with an expected-size cap, and actual SHA-256/byte count must match before a cache file and ledger proof are committed. Network errors and mismatches stop the sequential run explicitly; they never manufacture verified fields.
+
+The cache is `.tools/platform-downloads-030/<platform>/`. Resume rehashes the actual retained bytes and requires either an existing actual-download ledger proof or the helper's provenance sidecar from a prior completed GET. A matching copy of the upload JAR without remote provenance is not accepted as a download. An interrupted ledger update can resume from a verified GET sidecar. Corrupted cache bytes fail explicitly.
+
+Both the downloader and Root's UI ledger writers use an exclusive `fs.open(..., 'wx')`/`O_EXCL` lock at `.tools/platform-downloads-030/<platform>/ledger.lock`. Acquire it for each initial ledger read and each short read/modify/write; never hold it during UI interaction or a network request. Contention waits at most approximately five seconds; never delete another writer's lock automatically. After a GET, the downloader re-reads the latest ledger, checks the same identity/remote ID/metadata/URL/current manifest, and updates only that matching row. New submissions and unrelated publisher fields survive. Its atomic replacement also checks that the locked ledger bytes have not changed. All writers must honor this protocol; an unsynchronized writer cannot be made safe by atomic replacement alone.
+
+`scripts/test-download-platform-030.py` uses only temporary fixtures and mocked HTTP responses, including concurrent publisher additions, changed targets, bad hashes, unsafe redirects, atomic-write failure and verified-cache recovery. Running the tests makes no actual CDN requests.

@@ -8,12 +8,15 @@
 
 - Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
 
+- Fixed Minecraft 1.21.6 world-label depth: text stays readable above its background.
+
 Measurement scope: Version-specific entity/block-entity CPU hooks, including extraction where available. Geometry is limited to observed standard buffers; newer Sodium/Iris native geometry is unavailable. GPU work, terrain, shader execution and shared instancing are not assigned to objects. A vanilla baseline does not establish optional-mod or shader compatibility.
 
-Validation: **68 unit tests**; World verification is pending for this exact artifact hash.
+Validation: **68 unit tests**; Current hash-matched world evidence: installed-production
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.6/installed-verification.json)
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.6/smoke-result.json)
 
-
-SHA-256: `78338e872b6555743c28a416ecc208b7e72e8ecdbe20f4e14c02a4e3f0ce4cd5` (409717 bytes).
+SHA-256: `cf7ffc13cbe8fbfff9c23eb07b9e738490f237616213e47fa8a69439df3e014b` (409889 bytes).
 
 ---
 
@@ -25,8 +28,10 @@ SHA-256: `78338e872b6555743c28a416ecc208b7e72e8ecdbe20f4e14c02a4e3f0ce4cd5` (409
 
 Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
+- Исправлена глубина мировых меток Minecraft 1.21.6: текст остаётся читаемым поверх фона.
+
 Область измерения: Версионные CPU-хуки сущностей и блок-сущностей, включая extraction там, где доступен. Геометрия ограничена наблюдаемыми стандартными буферами; native-геометрия новых Sodium/Iris недоступна. GPU, terrain, выполнение шейдеров и общий instancing не распределяются между объектами. Ванильный прогон не подтверждает совместимость со всеми модами и шейдерами.
 
-Проверено unit-тестов: **68**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **68**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

@@ -7,12 +7,15 @@
 
 - Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.
 
+- Corrected the native resource-pack metadata for this Minecraft version; verified through an installed-client world.
+- Fixed a missing Inspector HUD on Forge's early-return render path. F1 hides and restores the overlay; verified actual HUD draw counts and framebuffer frames.
+
 Measurement scope: Exclusive CPU render-state extraction and submission, grouped by source. Later deferred feature batches, geometry and GPU timings are unavailable per object. Zero geometry fields do not mean an object emits no geometry. Terrain, shader execution and shared instancing work are not assigned to objects.
 
-Validation: **65 unit tests**; World verification is pending for this exact artifact hash.
+Validation: **67 unit tests**; Current hash-matched world evidence: installed-production
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/forge/1.21.10/installed/smoke-result.json)
 
-
-SHA-256: `4aaeb38faf708653434ab2c3cc57e7fc9ebc9cae4d4a119c3f3bde2cd9643a1c` (168680 bytes).
+SHA-256: `2d5bd81105a1e5f03e1964c2e90cc1ed2e2dd5ed96e901ea0882b57b51a88bb2` (168935 bytes).
 
 ---
 
@@ -22,8 +25,11 @@ SHA-256: `4aaeb38faf708653434ab2c3cc57e7fc9ebc9cae4d4a119c3f3bde2cd9643a1c` (168
 
 Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.
 
+- Исправлены нативные метаданные resource pack для этой версии Minecraft; проверено в мире установленного клиента.
+- Исправлено исчезновение Inspector HUD при раннем выходе из отрисовки Forge. F1 скрывает и возвращает оверлей; проверены реальные вызовы HUD и кадры игры.
+
 Область измерения: Раздельные эксклюзивные CPU-интервалы извлечения render state и submission. Поздние отложенные feature batches, геометрия и GPU-тайминги отдельных объектов недоступны. Нулевые поля геометрии не означают отсутствия геометрии. Terrain, выполнение шейдеров и общий instancing не распределяются между объектами.
 
-Проверено unit-тестов: **65**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **67**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).

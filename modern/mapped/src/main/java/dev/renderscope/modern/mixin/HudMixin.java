@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 abstract class HudMixin {
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "render", at = @At("RETURN"))
     private void renderscope$hud(GuiGraphics graphics, DeltaTracker delta, CallbackInfo ci) { ModernOverlay.extractHud(graphics); }
 }

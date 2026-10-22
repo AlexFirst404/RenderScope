@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.ClassModel;
+import java.lang.classfile.AnnotationValue;
+import java.lang.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
+import java.lang.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import java.lang.classfile.instruction.InvokeInstruction;
 import java.util.List;
 
@@ -24,10 +27,32 @@ class ModernVanillaTargetsTest {
             "(L"+ENTITY+"state/EntityRenderState;"+POSE+COLLECTOR+CAMERA+")V");
     }
     @Test void blockEntityExtractionAndSubmissionEachHaveExactlyOneConcreteRendererInvocation() throws IOException {
+        String selector=extractionSelector();
+        ClassModel dispatcher=model(BLOCK+"BlockEntityRenderDispatcher");
+        if(!selector.contains("(")) {
+            var first=dispatcher.methods().stream().filter(method->method.methodName().equalsString("tryExtractRenderState")).findFirst().orElseThrow();
+            selector=first.methodName().stringValue()+first.methodType().stringValue();
+        }
+        assertEquals(1,calls(BLOCK+"BlockEntityRenderDispatcher",selector).stream()
+            .filter(call->call.owner().asInternalName().equals(BLOCK+"BlockEntityRenderer")&&call.name().equalsString("extractRenderState")).count(),
+            "The actual compiled Mixin selector must reach the renderer invocation, not a delegating overload");
         assertCall(BLOCK+"BlockEntityRenderDispatcher", "tryExtractRenderState", BLOCK+"BlockEntityRenderer", "extractRenderState",
             "(Lnet/minecraft/world/level/block/entity/BlockEntity;L"+BLOCK+"state/BlockEntityRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V");
         assertCall(BLOCK+"BlockEntityRenderDispatcher", "submit", BLOCK+"BlockEntityRenderer", "submit",
             "(L"+BLOCK+"state/BlockEntityRenderState;"+POSE+COLLECTOR+CAMERA+")V");
+    }
+    private static String extractionSelector() throws IOException {
+        var method=model("dev/renderscope/modern/mixin/BlockEntityDispatcherMixin").methods().stream()
+            .filter(entry->entry.methodName().equalsString("renderscope$extract")).findFirst().orElseThrow();
+        var annotations=method.attributes().stream().flatMap(attribute -> switch(attribute) {
+            case RuntimeInvisibleAnnotationsAttribute invisible -> invisible.annotations().stream();
+            case RuntimeVisibleAnnotationsAttribute visible -> visible.annotations().stream();
+            default -> java.util.stream.Stream.<java.lang.classfile.Annotation>empty();
+        });
+        var annotation=annotations.filter(entry->entry.className().equalsString("Lcom/llamalad7/mixinextras/injector/wrapoperation/WrapOperation;")).findFirst().orElseThrow();
+        var value=annotation.elements().stream().filter(entry->entry.name().equalsString("method")).findFirst().orElseThrow().value();
+        var selectors=((AnnotationValue.OfArray)value).values();
+        assertEquals(1,selectors.size());return ((AnnotationValue.OfString)selectors.getFirst()).stringValue();
     }
     @Test void vanillaExtractsAndSubmitsWithinTheSameFrameBeforeStateAssociationsAreCleared() throws IOException {
         List<InvokeInstruction> calls = calls("net/minecraft/client/Minecraft", "renderFrame");
@@ -56,12 +81,18 @@ class ModernVanillaTargetsTest {
             &&call.name().equalsString(name)&&call.type().equalsString(type)).count(),container+'.'+method+" interception changed");
     }
     private static List<InvokeInstruction> calls(String owner,String method) throws IOException {
-        try(var input=ModernVanillaTargetsTest.class.getClassLoader().getResourceAsStream(owner+".class")) {
-            assertNotNull(input,"Missing actual Minecraft class "+owner);
-            ClassModel model=ClassFile.of().parse(input.readAllBytes());
-            return model.methods().stream().filter(entry->entry.methodName().equalsString(method))
+        int separator=method.indexOf('(');
+        String selectedName=separator<0?method:method.substring(0,separator);
+        String selectedDescriptor=separator<0?null:method.substring(separator);
+        return model(owner).methods().stream().filter(entry->entry.methodName().equalsString(selectedName)
+                &&(selectedDescriptor==null||entry.methodType().equalsString(selectedDescriptor)))
                 .flatMap(entry->entry.code().stream()).flatMap(code->code.elementStream())
                 .filter(element->element instanceof InvokeInstruction).map(element->(InvokeInstruction)element).toList();
+    }
+    private static ClassModel model(String owner) throws IOException {
+        try(var input=ModernVanillaTargetsTest.class.getClassLoader().getResourceAsStream(owner+".class")) {
+            assertNotNull(input,"Missing actual Minecraft class "+owner);
+            return ClassFile.of().parse(input.readAllBytes());
         }
     }
 }

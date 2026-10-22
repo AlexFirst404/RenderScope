@@ -28,10 +28,11 @@ class ModernFabricLauncherTest(unittest.TestCase):
                        "primaryJarSha256": sha, "artifactSha256": sha, "artifactBytes": primary.stat().st_size,
                        "primaryJarBytes": primary.stat().st_size, "geometryAvailable": False, "gpuTimingAvailable": False,
                        "captureSeconds": 5.1, "captureFrames": 600, "heatmapGizmoBoxes": 5, "extractionScopes": 30, "submissionScopes": 30,
-                       "screenshots": [f"frame-{i}.png" for i in range(13)]}
+                       "inspectorHudDrawPasses": 12, "screenshots": [f"frame-{i}.png" for i in range(13)]+["inspector-hidden.png"]}
         for field in ("actualPrimaryOriginVerified", "runtimeLoaderVerified", "entityAndBlockEntityExtractionAndSubmission", "f8NativeScreen",
                       "pauseNativeButton", "selectedGizmoBoxAndLabels", "realCrosshairInspector", "reportPrivacy", "disconnectClearsInstances",
-                      "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton"):
+                      "selectedInstanceOwnerDetails", "rendererClassCopy", "highlightNativeButton",
+                      "actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1"):
             self.result[field] = True
         for name in self.result["screenshots"]:
             (self.root / name).write_bytes(b"offline screenshot placeholder")
@@ -47,7 +48,8 @@ class ModernFabricLauncherTest(unittest.TestCase):
         self.assertTrue(self.verify()["success"])
 
     def test_success_flag_cannot_replace_ui_origin_or_privacy_assertions(self):
-        for field in ("actualPrimaryOriginVerified", "f8NativeScreen", "rendererClassCopy", "reportPrivacy", "disconnectClearsInstances"):
+        for field in ("actualPrimaryOriginVerified", "f8NativeScreen", "rendererClassCopy", "reportPrivacy", "disconnectClearsInstances",
+                      "actualInspectorHudDrawn", "f1HidesInspectorHud", "inspectorResumesAfterF1"):
             with self.subTest(field=field):
                 self.result[field] = False
                 with self.assertRaises(RuntimeError):
@@ -56,6 +58,11 @@ class ModernFabricLauncherTest(unittest.TestCase):
 
     def test_old_development_scope_is_never_installed_evidence(self):
         self.result["environment"] = "fabric-development-client"
+        with self.assertRaises(RuntimeError):
+            self.verify()
+
+    def test_data_inspection_without_real_hud_passes_is_not_a_rendered_inspector(self):
+        self.result["inspectorHudDrawPasses"] = 0
         with self.assertRaises(RuntimeError):
             self.verify()
 

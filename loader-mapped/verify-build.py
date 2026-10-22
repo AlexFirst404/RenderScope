@@ -91,6 +91,8 @@ def main():
         if environment=='installed-production':
             require(runtime.get('primaryJarSha256')==result['sha256'] and runtime.get('primaryJarBytes')==result['bytes'],
                 'Actual installed main origin did not match the release artifact')
+            require(all(runtime.get(field) is True for field in ('actualInspectorHudDrawn','f1HidesInspectorHud','inspectorResumesAfterF1'))
+                and runtime.get('inspectorHudDrawPasses',0)>0,'Actual Inspector HUD/F1 rendering was not exercised')
         for field in ('entityAndBlockEntityExtractionAndSubmission','f8NativeScreen','pauseNativeButton',
             'selectedGizmoBoxAndLabels','realCrosshairInspector','reportPrivacy','disconnectClearsInstances',
             'selectedInstanceOwnerDetails','rendererClassCopy','highlightNativeButton'):

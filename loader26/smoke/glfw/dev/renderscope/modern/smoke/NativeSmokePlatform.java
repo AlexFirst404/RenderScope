@@ -8,4 +8,6 @@ final class NativeSmokePlatform {
     static com.mojang.blaze3d.pipeline.RenderTarget mainTarget(net.minecraft.client.Minecraft client) {
         return client.getMainRenderTarget();
     }
+    public static void setHudHidden(net.minecraft.client.Minecraft client, boolean hidden) { client.options.hideGui = hidden; }
+
 }

@@ -6,4 +6,6 @@ public final class ModernSmokePlatform {
     public static net.minecraft.client.gui.screens.Screen currentScreen(net.minecraft.client.Minecraft client) {
         return client.gui.screen();
     }
+    public static void setHudHidden(net.minecraft.client.Minecraft client, boolean hidden) { if (client.gui.hud.isHidden() != hidden) client.gui.hud.toggle(); }
+
 }

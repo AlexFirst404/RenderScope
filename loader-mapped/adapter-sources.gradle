@@ -30,7 +30,14 @@ tasks.register('generateAdapterSources') {
                 def relative=file(directory).toPath().relativize(source.toPath()).toString()
                 def target=generated.get().file(relative).asFile
                 target.parentFile.mkdirs()
-                target.setText(transformRenderScopeSource(source.name,source.getText('UTF-8'),mcVersion),'UTF-8')
+                def text=transformRenderScopeSource(source.name,source.getText('UTF-8'),mcVersion)
+                if(targetLoader=='neoforge' && source.name=='BlockEntityDispatcherMixin.java') {
+                    // Neo's short overload only delegates. Intercept the concrete renderer
+                    // invocation in its Frustum overload (exact installed + MDG ABI).
+                    text=text.replace('method = "tryExtractRenderState"',
+                        'method = "tryExtractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;FLnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;Lnet/minecraft/client/renderer/culling/Frustum;)Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;"')
+                }
+                target.setText(text,'UTF-8')
             }
         }
     }

@@ -19,9 +19,9 @@ RenderScope connects object-render CPU work to a mod, a type and a specific enti
 
 1. Read the first page's largest **measured object CPU** contributor. Early results are marked preliminary.
 2. Open **Mods → Objects**, select a type, then inspect an instance. Registry ownership and renderer implementation ownership stay visible separately.
-3. Use **Highlight** to see its box, **Track** for direction and distance, **Heatmap** to compare nearby measured objects, or **Inspect** for the object under your crosshair.
+3. Use **Highlight** to see its box, **Track** to keep it marked, **Heatmap** to compare nearby measured objects, or **Inspect** for the object under your crosshair.
 
-The 1.20.1–1.21.8 UI also offers **Find object / Show in world**. The 1.21.9–26.3 UI offers **Show the instance / Inspect measured mods**. English and Russian are included.
+In **1.20.1–1.21.8**, **Track** also shows a direction and distance HUD, and the UI offers **Find object / Show in world**. In **1.21.9–26.3**, **Track** keeps the selected object marked in the world; the UI offers **Show the instance / Inspect measured mods**. English and Russian are included.
 
 ### Metrics and recording
 

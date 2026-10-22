@@ -6,4 +6,6 @@ final class NativeSmokePlatform {
         ((dev.renderscope.modern.smoke.mixin.NativeMouseInvoker)client.mouseHandler).renderscope$move(client.getWindow().handle(), x, y);
     }
     static com.mojang.blaze3d.pipeline.RenderTarget mainTarget(net.minecraft.client.Minecraft client) { return client.gameRenderer.mainRenderTarget(); }
+    public static void setHudHidden(net.minecraft.client.Minecraft client, boolean hidden) { if (client.gui.hud.isHidden() != hidden) client.gui.hud.toggle(); }
+
 }

@@ -121,6 +121,8 @@ With no arguments, the script lists the configured targets. It runs their actual
 
 The local publication helper, `python scripts/prepare-publication-030.py`, also requires a manual visual review for every exact target before setting `publicationReady=true`. The review must approve aligned world boxes, readable labels and a visible Inspector, and link the current main JAR, the same successful runtime result, and the actual world/Inspector PNGs by SHA-256. Missing or failed reviews, stale hashes, changed images and mixed optional profiles keep publication blocked. Numerical smoke success alone is insufficient. Reviewed manifests, PNGs and results must also match the exact raw Git bytes used for publication. The helper prepares local files; it does not upload them.
 
+After actual platform saves, the [offline platform verifier](docs/PLATFORM-PUBLICATION-VERIFICATION.md) separately checks all 67 submission records, saved file metadata and actual-download fingerprints per site. `Processing` and `Under Review` remain raw moderation states, never inferred approval. The verifier does not upload or download anything.
+
 The modules separate shared profiler/diagnostics from loader hooks and Minecraft API families: `fabric/`, `mc20/`, `mc21/`, `modern/`, `forge20/`, `neo20/`, `loader21/`, `loader-mapped/` and `loader26/`. The original 1.20.1 Forge/NeoForge commands remain:
 
 ```powershell

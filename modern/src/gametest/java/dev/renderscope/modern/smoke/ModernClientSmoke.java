@@ -60,6 +60,16 @@ public final class ModernClientSmoke implements FabricClientGameTest {
                 ProfilerSnapshot snapshot = context.computeOnClient(mc -> ModernHooks.PROFILER.snapshot());
                 require(snapshot.instances().stream().allMatch(metric -> metric.stats().verticesPerFrame()==0),"Unavailable geometry must not become invented counts");
                 results.addProperty("entityAndBlockEntityExtractionAndSubmission",true);
+                for (var kind : ObjectKind.values()) {
+                    String prefix=kind==ObjectKind.BLOCK_ENTITY?"blockEntity":"entity";
+                    for (var source : new MeasurementSource[]{MeasurementSource.RENDER_EXTRACTION,MeasurementSource.RENDER_SUBMISSION}) {
+                        long calls=snapshot.instances().stream().filter(metric->metric.context().key().kind()==kind)
+                            .map(metric->metric.stats().sources().get(source)).filter(java.util.Objects::nonNull)
+                            .mapToLong(SourceMetric::calls).sum();
+                        require(calls>0,"Missing actual "+prefix+" "+source+" calls");
+                        results.addProperty(prefix+(source==MeasurementSource.RENDER_EXTRACTION?"ExtractionCalls":"SubmissionCalls"),calls);
+                    }
+                }
                 results.addProperty("extractionScopes",ModernHooks.extractionCalls());
                 results.addProperty("submissionScopes",ModernHooks.submissionCalls());
                 screenshot(context,"world-baseline.png");
@@ -121,14 +131,30 @@ public final class ModernClientSmoke implements FabricClientGameTest {
                 screenshot(context,"heatmap.png");
                 int heatmapBoxes=context.computeOnClient(mc -> ModernOverlay.queuedBoxes());
                 results.addProperty("heatmapGizmoBoxes",heatmapBoxes);
+                long inspectorBefore=context.computeOnClient(mc -> ModernOverlay.inspectorDrawPasses());
                 context.runOnClient(mc -> { ModernHooks.SETTINGS.heatmap=false; ModernHooks.SETTINGS.inspect=true; ModernHooks.applySettings(); });
                 lookAtChest(context);
-                context.waitFor(mc -> ModernOverlay.inspected().isPresent(),500);
+                context.waitFor(mc -> ModernOverlay.inspected().isPresent() && ModernOverlay.inspectorDrawPasses()>inspectorBefore,500);
+                long[] hiddenBefore=context.computeOnClient(mc -> {
+                    ModernSmokePlatform.setHudHidden(mc,true);
+                    return new long[]{ModernOverlay.hudDrawPasses(),ModernOverlay.inspectorDrawPasses()};
+                });
+                try {
+                    context.waitTicks(2);
+                    require(context.computeOnClient(mc -> ModernOverlay.hudDrawPasses()==hiddenBefore[0]
+                            && ModernOverlay.inspectorDrawPasses()==hiddenBefore[1]),"F1 hidden HUD still submitted RenderScope primitives");
+                    screenshot(context,"inspector-hidden.png");
+                } finally { context.runOnClient(mc -> ModernSmokePlatform.setHudHidden(mc,false)); }
+                context.waitFor(mc -> ModernOverlay.inspectorDrawPasses()>hiddenBefore[1],500);
                 // The data predicate may already be true on the settings tick.
                 // Wait for actual HUD extraction/rendering before framebuffer readback.
                 context.waitTicks(2);
                 screenshot(context,"inspector.png");
                 results.addProperty("realCrosshairInspector",true);
+                results.addProperty("actualInspectorHudDrawn",true);
+                results.addProperty("f1HidesInspectorHud",true);
+                results.addProperty("inspectorResumesAfterF1",true);
+                results.addProperty("inspectorHudDrawPasses",context.computeOnClient(mc -> ModernOverlay.inspectorDrawPasses())-inspectorBefore);
 
                 context.runOnClient(mc -> ModernHooks.PROFILER.startCapture(5));
                 context.waitFor(mc -> ModernHooks.PROFILER.lastCapture()!=null,10000);
@@ -166,6 +192,8 @@ public final class ModernClientSmoke implements FabricClientGameTest {
         return ModernHooks.PROFILER.snapshot().instances().stream().anyMatch(metric -> metric.context().registryId().equals(registryId)
             &&metric.stats().sources().containsKey(MeasurementSource.RENDER_EXTRACTION)
             &&metric.stats().sources().containsKey(MeasurementSource.RENDER_SUBMISSION)
+            &&metric.stats().sources().get(MeasurementSource.RENDER_EXTRACTION).calls()>0
+            &&metric.stats().sources().get(MeasurementSource.RENDER_SUBMISSION).calls()>0
             &&metric.stats().averageMs()>0);
     }
     private static String clickFirstRow(ClientGameTestContext context) {
