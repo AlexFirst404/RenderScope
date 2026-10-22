@@ -36,7 +36,7 @@ Per-frame average, P95, peak, calls, renderer implementation and CPU work source
 
 ## See the object in your world
 
-**Highlight** marks your selection in the world. **Track** adds a direction and distance HUD. The **heatmap** compares nearby measured instances using relative green/yellow/red costs; **Inspect** shows the measured object under your crosshair.
+**Highlight** marks your selection in the world. In **1.20.1–1.21.8**, **Track** adds a direction and distance HUD; in **1.21.9–26.3**, it keeps the selected object marked in the world. The **heatmap** compares nearby measured instances using relative green/yellow/red costs; **Inspect** shows the measured object under your crosshair.
 
 ![A real rotating Create shaft, selected with Flywheel instancing enabled](distribution/forge/presentation/create-shaft-live.gif)
 
@@ -94,7 +94,7 @@ Reports stay in your profile's `renderscope-reports` folder. They include versio
 
 Процент сравнивает измеренную CPU-работу объектов. Он не выдаётся за долю всей видеокарты и не обещает прирост FPS после удаления мода. Если измерений мало или основные затраты находятся вне профилируемых объектов, интерфейс прямо об этом сообщает. Для Sodium/Iris/Embeddium/Rubidium и Mekanism Extras указаны [точные версии и результаты совместимости](docs/OPTIONAL-RENDERER-COMPATIBILITY.md).
 
-**Теплокарта** сравнивает стоимость объектов цветом, **Inspect** показывает объект под прицелом. **Timeline** хранит около 30 секунд истории, **Capture** записывает 5/10/30 секунд или до ручной остановки. Интерфейс доступен на русском и английском.
+**Теплокарта** сравнивает стоимость объектов цветом, **Inspect** показывает объект под прицелом. В **1.20.1–1.21.8** режим **Track** показывает направление и расстояние; в **1.21.9–26.3** он сохраняет отметку выбранного объекта в мире. **Timeline** хранит около 30 секунд истории, **Capture** записывает 5/10/30 секунд или до ручной остановки. Интерфейс доступен на русском и английском.
 
 В 0.2.0 поддерживаемые Flywheel visual CPU-задачи связываются с настоящими механизмами при включённом instancing. Общие CPU/GPU batches показываются отдельно: GPU-время и инстансированная геометрия не распределяются между объектами. **Timing Only** собирает время; **Full** добавляет наблюдаемую геометрию и асинхронную GPU-сводку поддерживаемых Flywheel-проходов. Подробности и ограничения — в [методике](docs/MEASUREMENTS.md).
 

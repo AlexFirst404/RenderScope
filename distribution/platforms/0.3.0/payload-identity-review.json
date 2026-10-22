@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "renderscopeVersion": "0.3.0",
+  "scope": "Independent local read-only review of publication identities against the actual packaged/source JAR bytes and metadata. No uploads, gameplay, Gradle or platform mutations were performed.",
+  "status": "identity_fields_passed",
+  "targetCount": 67,
+  "minecraftReleaseCount": 23,
+  "fabricApiPinCount": 23,
+  "sourceSnapshot": [
+    {
+      "path": "distribution/platforms/0.3.0/release-manifest.json",
+      "sha256": "03c7534a556597b712a4ab5c23aff65dc6df94d576fbf562f778018948e4bf9e"
+    },
+    {
+      "path": "distribution/0.3.0/artifacts.json",
+      "sha256": "1c69438b28468ad89a7134c93b8bd374fd6dffc1a33bd3f853fb53b09204fa50"
+    },
+    {
+      "path": "distribution/platforms/0.3.0/fabric-api-dependencies.json",
+      "sha256": "b1268f9804dc851f1b382f68cd53924df702f3b9ea91bdc808e3c22577042b0d"
+    },
+    {
+      "path": ".tools/fabric-api-official-versions.json",
+      "sha256": "7b9a5f30ca96c76002f380df18a2bae19912ca73616629fe2f1fa85093f37eaa"
+    },
+    {
+      "path": "fabric/build.gradle",
+      "sha256": "37072fef79bb9d87f7db7354addcc7479742cd0982d63a75855000cc4a471f80"
+    },
+    {
+      "path": "mc20/build.gradle",
+      "sha256": "a1458413354e097471bfc1549f4b73c309b9adc12be15d7733759264753b1ad7"
+    },
+    {
+      "path": "mc21/build.gradle",
+      "sha256": "9d7fc01380b4c7febe9bf394291d0fc8898246e602b4de126bba610985c0e0f3"
+    },
+    {
+      "path": "modern/build.gradle",
+      "sha256": "ddcee0150a295e0329950fb8369ae1deb51628d87a38b1111aa7f32d55590d3a"
+    },
+    {
+      "path": "modern/mapped/build.gradle",
+      "sha256": "0fe767097fc7adb2323770a8e8e90cc8ae9446f8ec352b7c03e331465e595d67"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cf2bc5c60fc35b9f87e8c001367cd7073a52c5604daf5a93437798900d1a94b6"
+    }
+  ],
+  "artifactIdentitySetSha256": "c34c8a04089aba221dcf39ce5f22373bfa04f7496135ab76fd0d1189366ab0b9",
+  "executedChecks": {
+    "api": {
+      "count": 232,
+      "fields": "23 Gradle build pins, official cached Modrinth project/version/MC/loader/release-type/primary-file SHA-512, exact required Modrinth version IDs and CurseForge required project 306612; no Fabric dependency on Forge/NeoForge."
+    },
+    "identity": {
+      "count": 204,
+      "fields": "67 unique loader/MC pairs,23 Minecraft releases, source/package paths, exact main filename/version."
+    },
+    "hash": {
+      "count": 201,
+      "fields": "Actual source and packaged bytes against package index and manifest SHA-256/SHA-1/SHA-512/length."
+    },
+    "scope": {
+      "count": 134,
+      "fields": "Payload client-required/server-unsupported and Java matrix; no primary dev/renderscope/smoke or dev/renderscope/compat classes."
+    },
+    "platform": {
+      "count": 134,
+      "fields": "Single exact Minecraft tag, single exact loader, project identity, Release channel, CurseForge file-level Client and Java tag."
+    },
+    "jar": {
+      "count": 446,
+      "fields": "Actual manifest loader/version, implementation version, class bytecode ceiling, Fabric/TOML Minecraft/client/loader dependency metadata."
+    },
+    "license": {
+      "count": 201,
+      "fields": "LicenseRef-RenderScope-Source-Available-1.0 metadata, bundled license presence and exact bytes matching repository LICENSE."
+    },
+    "text": {
+      "count": 291,
+      "fields": "EN/RU per-file changelog identity, Java/hash, required API pin, paid-use written-permission terms; no MIT/open-source/placeholder claim."
+    }
+  },
+  "executedCheckCount": 1843,
+  "errors": [],
+  "coordinatedJavaReview": {
+    "target": "forge/1.21.11",
+    "runtime": 21,
+    "buildLauncher": 25,
+    "scope": "Separate review by profiler_core, relayed by root; not re-executed as part of this 1843-check audit. Root reported official Mojang Java 21, 113 selected runtime JARs at class major<=65, bootstrap 2.1.8 major60, and ForgeGradle7 MDK target 21."
+  },
+  "knownPendingTextRegeneration": "The authorized family-specific Track wording was corrected in README.md and prepare-publication-030.py EN/RU; generated platform descriptions intentionally remain unchanged until root regenerates final publication material.",
+  "notValidated": [
+    "The draft 8/67 world count and publicationReady flag; final readiness remains a separate gate.",
+    "Remote uploaded/moderation state or current upstream availability; official API information was checked against its existing cache.",
+    "Final release-tag/raw-Git byte identity; to be checked after final staging/tag creation."
+  ],
+  "snapshotMeaning": "This review records the inspected snapshot, not authority to publish. Source hashes permit detection of later manifest or metadata regeneration."
+}
