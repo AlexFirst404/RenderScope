@@ -8,8 +8,9 @@
 
 Measurement scope: Version-specific entity/block-entity CPU hooks, including extraction where available. Geometry is limited to observed standard buffers; newer Sodium/Iris native geometry is unavailable. GPU work, terrain, shader execution and shared instancing are not assigned to objects. A vanilla baseline does not establish optional-mod or shader compatibility.
 
-Validation: **63 unit tests**; World verification is pending for this exact artifact hash.
-
+Validation: **63 unit tests**; Current hash-matched world evidence: installed-production
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.5/installed-verification.json)
+- [Evidence](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/distribution/mc21/fabric/1.21.5/smoke-result.json)
 
 SHA-256: `07f302812656b437686141153a906e5f6b8c3e55aaed5c8681646f0428d7701e` (409122 bytes).
 
@@ -25,6 +26,6 @@ SHA-256: `07f302812656b437686141153a906e5f6b8c3e55aaed5c8681646f0428d7701e` (409
 
 Область измерения: Версионные CPU-хуки сущностей и блок-сущностей, включая extraction там, где доступен. Геометрия ограничена наблюдаемыми стандартными буферами; native-геометрия новых Sodium/Iris недоступна. GPU, terrain, выполнение шейдеров и общий instancing не распределяются между объектами. Ванильный прогон не подтверждает совместимость со всеми модами и шейдерами.
 
-Проверено unit-тестов: **63**. Игровая проверка именно этого хеша ещё не завершена.
+Проверено unit-тестов: **63**. Для текущего хеша есть игровой результат: installed-production
 
 RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия](https://github.com/AlexFirst404/RenderScope/blob/v0.3.0/LICENSE).
