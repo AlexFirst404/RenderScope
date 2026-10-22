@@ -181,7 +181,7 @@ def main():
     records = [verify(mc, version, args.require_runtime) for mc in args.minecraft]
     if args.write:
         (MODULE / "port-status.json").write_text(json.dumps({"schemaVersion":1,"renderscopeVersion":version,
-            "targets":records},indent=2)+"\n", encoding="utf-8")
+            "targets":records},indent=2)+"\n", encoding="utf-8", newline="\n")
     for record in records:
         print(record["minecraft"], "PASS", record["tests"]["tests"], "tests", record["sha256"])
 

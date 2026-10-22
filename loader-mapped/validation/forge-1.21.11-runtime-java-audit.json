@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "auditKind": "Static official-profile and bytecode audit; no client launched; not world evidence",
+  "auditedAt": "2026-10-22T20:26:15.910208+00:00",
+  "minecraftVersion": "1.21.11",
+  "loader": "Forge",
+  "loaderVersion": "61.2.0",
+  "runtimeMinimumJava": 21,
+  "selectedBuildJvm": 25,
+  "modClassJava": 21,
+  "officialInstaller": {
+    "url": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.21.11-61.2.0/forge-1.21.11-61.2.0-installer.jar",
+    "sha1": "ca682f0d537c65e9a112e1e7ab337095d486298f"
+  },
+  "officialVanillaProfile": {
+    "javaVersion": {
+      "component": "java-runtime-delta",
+      "majorVersion": 21
+    },
+    "sha256": "e1174d4c351a37ebe004e41fe50a6f871a3bec4f437318f84fc321792c194baf",
+    "clientMainClassMajor": 65
+  },
+  "officialForgeProfile": {
+    "inheritsFrom": "1.21.11",
+    "javaVersionOverride": null,
+    "mainClass": "net.minecraftforge.bootstrap.ForgeBootstrap",
+    "sha256": "3e18c1dc1fb9fc21662dc2a4fc90f23346c80b78e9e1836e87ef532f30f7f836"
+  },
+  "selectedRuntimeClassScan": {
+    "jars": 113,
+    "allArtifactSha1Matched": true,
+    "baseClasses": 40214,
+    "multiReleaseClasses": 70,
+    "classesAboveMajor65": 0,
+    "baseClassMajorMax": 65,
+    "multiReleaseClassMajorMax": 61,
+    "canonicalInventorySha256": "80b9ab52b2a42d419f56eb3e10600ad3eed1e66ca26b1bbdc93f4d28a3251d49",
+    "criticalLibraries": [
+      {
+        "coordinate": "net.minecraftforge:forge:1.21.11-61.2.0:universal",
+        "sha1": "684d4cf385f66d2757c114cd513ad370f3465090",
+        "baseClassMajorMax": 65,
+        "multiReleaseClassMajorMax": 0
+      },
+      {
+        "coordinate": "net.minecraftforge:forge:1.21.11-61.2.0:client",
+        "sha1": "632ace45e535291c7576764c1c8d6388b73c9a75",
+        "baseClassMajorMax": 65,
+        "multiReleaseClassMajorMax": 0
+      },
+      {
+        "coordinate": "net.minecraftforge:bootstrap:2.1.8",
+        "sha1": "7ce55508387cf35eeb0eb4895bd84bec854ead93",
+        "baseClassMajorMax": 60,
+        "multiReleaseClassMajorMax": 0
+      }
+    ]
+  },
+  "bootstrap": {
+    "library": "net.minecraftforge:bootstrap:2.1.8",
+    "class": "net.minecraftforge.bootstrap.ForgeBootstrap",
+    "classMajor": 60,
+    "artifactSha1": "7ce55508387cf35eeb0eb4895bd84bec854ead93"
+  },
+  "preparedClientJavaRuntime": 21,
+  "clientLaunched": false,
+  "officialReferences": [
+    "https://forums.minecraftforge.net/topic/125488-rules-and-frequently-asked-questions-faq/",
+    "https://github.com/MinecraftForge/MDKExamples/blob/master/traditional-mdk/fg7/build.gradle"
+  ],
+  "conclusion": "Java 21 is the pinned client runtime requirement. The target manifest java=25 selects the build JVM and must not be interpreted as a Java 25 client minimum."
+}
