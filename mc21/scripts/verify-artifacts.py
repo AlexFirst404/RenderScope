@@ -102,7 +102,18 @@ def verify(mc: str, version: str, require_runtime: bool = False):
         raise AssertionError(f"{mc}: no successful build log for the last attempt")
     results = [ET.parse(path).getroot() for path in (build / "test-results/test").glob("TEST-*.xml")]
     tests = {key: sum(int(result.get(key, "0")) for result in results) for key in ("tests", "failures", "errors", "skipped")}
-    assert tests["tests"] >= 63 and tests["failures"] == tests["errors"] == tests["skipped"] == 0, (mc, tests)
+    assert tests["tests"] >= 68 and tests["failures"] == tests["errors"] == tests["skipped"] == 0, (mc, tests)
+    replacement_cases = {
+        ("dev.renderscope.core.BlockEntityReplacementTest", name) for name in (
+            "sampleContextQualifiesLegacyBlockKeysAndLiveLookupUsesTheSameIdentity()",
+            "rollingInstancesAndDiagnosticDrilldownKeepEachActualOwnersCosts()",
+            "capturePreservesReplacedHistoryWhileRollingExpiryAndZeroFramesRemainCorrect()",
+            "differentTypesAtOnePositionInTheSameFrameKeepTheirObjectAndModGroups()")
+    } | {("dev.renderscope.client.report.ReportExporterTest",
+          "replacedBlockTypesKeepSeparateCapturedInstancesWithoutExposingTheirKeys()")}
+    actual_cases = {(case.get("classname"), case.get("name"))
+                    for result in results for case in result.findall("testcase")}
+    assert replacement_cases <= actual_cases, (mc, "Missing block-replacement regressions", replacement_cases - actual_cases)
     assert jar.is_file(), jar
     with zipfile.ZipFile(jar) as archive:
         names = set(archive.namelist())

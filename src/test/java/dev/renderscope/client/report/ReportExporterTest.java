@@ -13,6 +13,24 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReportExporterTest {
+    @Test void replacedBlockTypesKeepSeparateCapturedInstancesWithoutExposingTheirKeys() {
+        JsonObject report = ReportExporter.toJson(BlockEntityReplacementTest.captureWithReplacement(), false,
+            "Timing Only", false);
+        JsonArray rows = report.getAsJsonArray("instances");
+        assertEquals(2, rows.size());
+        for (JsonElement element : rows) {
+            JsonObject row = element.getAsJsonObject();
+            String id = row.get("registryId").getAsString();
+            assertEquals(id.startsWith("old_mod:") ? 8.0 / 3 : 1.0 / 3,
+                row.getAsJsonObject("statistics").get("averageMs").getAsDouble());
+            assertFalse(row.has("key")); assertFalse(row.has("identity"));
+            assertFalse(row.has("position")); assertFalse(row.has("dimension"));
+        }
+        assertEquals(Set.of("old_mod:machine", "new_mod:machine"),
+            Set.of(rows.get(0).getAsJsonObject().get("registryId").getAsString(),
+                rows.get(1).getAsJsonObject().get("registryId").getAsString()));
+    }
+
     @Test void sharedRendererExportPreservesSeparateOwnerRowsAndUnchangedClassIds() {
         JsonArray rows = ReportExporter.toJson(RendererOwnershipTest.captureWithSharedRenderer(), false,
             "Timing Only", false).getAsJsonArray("renderers");

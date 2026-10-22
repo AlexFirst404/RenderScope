@@ -4,7 +4,7 @@ All classes below are `dev.renderscope.core`, Java 17 compatible, with no Minecr
 
 ```java
 enum ObjectKind { ENTITY, BLOCK_ENTITY }
-record InstanceKey(ObjectKind kind, String dimension, String identity) {}
+record InstanceKey(ObjectKind kind, String dimension, String identity, String registryId) {}
 record Position(double x, double y, double z) {}
 record Bounds(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {}
 record SampleContext(InstanceKey key, String registryId, String registryOwner,
@@ -69,6 +69,8 @@ CaptureReport report = profiler.stopCapture(); // null if no capture exists
 CaptureReport report = profiler.lastCapture(); // null until capture has completed
 profiler.clear(); // world/dimension session change; stops capture, releases all contexts
 ```
+
+The compatible three-argument `InstanceKey` constructor leaves its registry qualifier empty. `SampleContext` idempotently qualifies block-entity keys with its registry ID, so replacing one registry type with another at the same coordinate preserves separate rolling and capture rows. Live block lookups must qualify the current registry type as well; raw keys are never exported. Entity identity semantics are unchanged.
 
 Lists are sorted by descending average render time. Mods use registry namespace as `id`; renderer metrics use renderer class name; object metrics use registry id plus separate `kind`. The adapter resolves display names through the loader. Instance identities are opaque (entity numeric ID or block coordinate string); do not display or export identity or dimension by default. Core retains only value records, never game object references. Per-frame averages and percentiles include zero for frames in which the key did not render. The adapter calls `excludeNestedCall(parent, child)` after completing a nested call to keep timings exclusive. Exclusion uses the child's raw inclusive interval, so grandchildren are removed exactly once from every ancestor; repeated, stale and cross-thread exclusions are ignored. Capture statistics cover every frame from capture start until completion, independent of the rolling window. Capture percentiles use a bounded logarithmic histogram; rolling percentiles are exact. Vertices and byte metrics are estimates. No field represents GPU time or VRAM.
 

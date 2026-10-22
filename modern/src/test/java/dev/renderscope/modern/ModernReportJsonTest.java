@@ -11,6 +11,22 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModernReportJsonTest {
+    @Test void replacedBlockTypesKeepIndependentCaptureCostsWithoutRawInstanceKeys() {
+        var rows = ModernReportJson.toJson(BlockEntityReplacementTest.captureWithReplacement(), false)
+            .getAsJsonArray("instances");
+        assertEquals(2, rows.size());
+        Set<String> ids = new java.util.HashSet<>();
+        for (var element : rows) {
+            JsonObject row = element.getAsJsonObject();
+            String id = row.get("registryId").getAsString(); ids.add(id);
+            assertEquals(id.startsWith("old_mod:") ? 8.0 / 3 : 1.0 / 3,
+                row.getAsJsonObject("statistics").get("averageMs").getAsDouble());
+            assertFalse(row.has("key")); assertFalse(row.has("identity"));
+            assertFalse(row.has("position")); assertFalse(row.has("dimension"));
+        }
+        assertEquals(Set.of("old_mod:machine", "new_mod:machine"), ids);
+    }
+
     @Test void sharedRendererExportPreservesBothRegistryOwnersWithoutChangingClassIds() {
         var rows = ModernReportJson.toJson(RendererOwnershipTest.captureWithSharedRenderer(), false)
             .getAsJsonArray("renderers");

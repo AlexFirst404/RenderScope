@@ -404,10 +404,16 @@ public final class WorldOverlay {
             }
         } else if (minecraft.hitResult instanceof BlockHitResult hit) {
             BlockPos pos = hit.getBlockPos();
+            BlockEntity current = minecraft.level.getBlockEntity(pos);
+            if (current == null || current.isRemoved()) return null;
+            var type = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(current.getType());
+            if (type == null) return null;
+            String registryId = type.toString();
             for (InstanceMetric metric : snapshot.instances()) {
                 InstanceKey key = metric.context().key();
                 Position location = metric.context().position();
                 if (key.kind() == ObjectKind.BLOCK_ENTITY && key.dimension().equals(dimension)
+                        && registryId.equals(metric.context().registryId())
                         && BlockPos.containing(location.x(), location.y(), location.z()).equals(pos)) return metric;
             }
         }

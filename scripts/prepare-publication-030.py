@@ -88,15 +88,29 @@ def ownership_regressions(target: dict) -> dict:
     core_cases = {"sharedImplementationKeepsIndependentOwnerRowsAndModDetailLookup",
                   "rollingExpiryRemovesOnlyTheExpiredOwnersRendererAndIncludesZeroFrames",
                   "capturePreservesBothOwnersAfterRollingExpiryAndIncludesEmptyFrames"}
+    replacement_cases = {"sampleContextQualifiesLegacyBlockKeysAndLiveLookupUsesTheSameIdentity",
+                         "rollingInstancesAndDiagnosticDrilldownKeepEachActualOwnersCosts",
+                         "capturePreservesReplacedHistoryWhileRollingExpiryAndZeroFramesRemainCorrect",
+                         "differentTypesAtOnePositionInTheSameFrameKeepTheirObjectAndModGroups"}
     modern = target["project"].startswith(("modern", "loader-mapped", "loader26"))
     exporter = "dev.renderscope.modern.ModernReportJsonTest" if modern else "dev.renderscope.client.report.ReportExporterTest"
     export_case = ("sharedRendererExportPreservesBothRegistryOwnersWithoutChangingClassIds" if modern
                    else "sharedRendererExportPreservesSeparateOwnerRowsAndUnchangedClassIds")
+    replacement_export_case = ("replacedBlockTypesKeepIndependentCaptureCostsWithoutRawInstanceKeys" if modern
+                               else "replacedBlockTypesKeepSeparateCapturedInstancesWithoutExposingTheirKeys")
     proofs = []
-    for suite_name, expected in (("dev.renderscope.core.RendererOwnershipTest", core_cases), (exporter, {export_case})):
+
+    def failed(reason: str) -> dict:
+        return {"passed": False, "reason": reason, "suites": proofs,
+                "blockEntityReplacement": {"passed": False, "reason": reason}}
+
+    suites = (("dev.renderscope.core.RendererOwnershipTest", core_cases, ["renderer-owner-isolation"]),
+              ("dev.renderscope.core.BlockEntityReplacementTest", replacement_cases, ["block-entity-replacement"]),
+              (exporter, {export_case, replacement_export_case}, ["renderer-owner-export", "block-entity-replacement-export"]))
+    for suite_name, expected, covers in suites:
         path = ROOT / target["testResults"] / ("TEST-" + suite_name + ".xml")
         if not path.is_file():
-            return {"passed": False, "reason": "Missing current regression suite: " + suite_name, "suites": proofs}
+            return failed("Missing current regression suite: " + suite_name)
         suite = ET.parse(path).getroot()
         cases = suite.findall("testcase")
         names = {case.attrib.get("name", "").removesuffix("()") for case in cases}
@@ -104,12 +118,13 @@ def ownership_regressions(target: dict) -> dict:
                 or any(int(suite.attrib.get(key, 0)) != 0 for key in ("failures", "errors", "skipped"))
                 or not expected.issubset(names)
                 or any(case.find(tag) is not None for case in cases for tag in ("failure", "error", "skipped"))):
-            return {"passed": False, "reason": "Required owner/rolling/capture/export cases did not all pass: " + suite_name,
-                    "suites": proofs}
+            return failed("Required owner/replacement/rolling/capture/export cases did not all pass: " + suite_name)
         proofs.append({"path": path.relative_to(ROOT).as_posix(),
                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-                       "tests": len(cases), "requiredPassedCases": sorted(expected)})
-    return {"passed": True, "suites": proofs}
+                       "tests": len(cases), "requiredPassedCases": sorted(expected), "covers": covers})
+    return {"passed": True, "suites": proofs, "blockEntityReplacement": {"passed": True,
+            "suite": proofs[1]["path"], "exportSuite": proofs[2]["path"],
+            "requiredPassedCases": sorted(replacement_cases), "requiredExporterCase": replacement_export_case}}
 
 
 def git_evidence_files(rows: list[dict], media: list[dict]) -> list[dict]:
@@ -463,12 +478,13 @@ def main() -> None:
               + "- Clearer first-page diagnostics; drill down to a measured instance and highlight it in the world.\n"
               "- F8/Pause UI, heatmap, crosshair inspector, timeline, capture and privacy-safe local JSON.\n"
               "- Shared renderer classes retain separate registry-owner rows; CPU attribution is not a causal FPS prediction.\n\n"
+              "- Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.\n\n"
               f"Measurement scope: {en}\n\nValidation: **{proof['unitTests']} unit tests**; {status_en}\n"
               + "\n".join(f"- [Evidence]({REPO_URL}/blob/main/{row['path']})" for row in evidence)
               + f"\n\nSHA-256: `{proof['sha256']}` ({proof['bytes']} bytes).\n\n---\n\n## Русский\n\n"
               f"Клиентская сборка для **Minecraft {target['minecraft']} / {target['loader']} {target['loaderVersion']} / Java {java}**. На сервер мод не нужен.\n\n"
               + (f"Обязателен Fabric API **{dependency['version']}**.\n\n" if dependency else "")
-              + "Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. CPU-доли не обещают прирост FPS.\n\n"
+              + "Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.\n\n"
               + f"Область измерения: {ru}\n\nПроверено unit-тестов: **{proof['unitTests']}**. {status_ru}\n\n"
               + f"RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия]({REPO_URL}/blob/main/LICENSE).")
         rows.append({**proof, "fileName": source.name, "sha1": hashlib.sha1(source.read_bytes()).hexdigest(),
@@ -492,9 +508,10 @@ def main() -> None:
     world_count = sum(row["worldVerified"] for row in rows)
     package_count = sum(row["packageIndexMatches"] for row in rows)
     regression_count = sum(row["rendererOwnerRegressions"]["passed"] for row in rows)
+    replacement_count = sum(row["rendererOwnerRegressions"]["blockEntityReplacement"]["passed"] for row in rows)
     media = gallery(rows) + archive_media()
     git_identity = git_evidence_identity(git_evidence_files(rows, media))
-    ready = (world_count == 67 and package_count == 67 and regression_count == 67
+    ready = (world_count == 67 and package_count == 67 and regression_count == 67 and replacement_count == 67
              and all(row["rendererOwnerIsolationPresent"] for row in rows) and git_identity["passed"])
     summary = {"schemaVersion": 1, "preparedAt": datetime.now(timezone.utc).isoformat(), "renderscopeVersion": "0.3.0",
         "mode": "local preparation only; no platform writes", "publicReleaseAuthorized": True,
@@ -502,6 +519,7 @@ def main() -> None:
         "minecraftReleaseCount": 23, "artifactCount": 67, "worldVerifiedTargets": world_count,
         "packageIndexMatchedTargets": package_count,
         "rendererOwnerRegressionVerifiedTargets": regression_count,
+        "blockEntityReplacementRegressionVerifiedTargets": replacement_count,
         "gitEvidenceByteIdentity": git_identity,
         "finalGitByteVerification": "After staging generated metadata, run python scripts/prepare-publication-030.py --verify-git-evidence; use --git-ref v0.3.0 after tagging to check the actual public source reference.",
         "remoteStatusAuthority": "distribution/platforms/publication-status.json",
@@ -545,7 +563,7 @@ def main() -> None:
         "Product descriptions contain no preparation status or DRAFT text; readiness stays in the separate release manifest.\n")
     validation = (f"Current snapshot: {world_count}/67 exact artifact hashes have real-world evidence; "
                   f"{package_count}/67 packaged copies match the current audited binaries. "
-                  f"{regression_count}/67 targets have passed the actual owner-isolation, rolling, capture and exporter XML regressions. "
+                  f"{regression_count}/67 targets have passed the actual owner-isolation, block-replacement, rolling, capture and exporter XML regressions. "
                   f"Git/raw byte identity for hashed evidence and media: {'passed' if git_identity['passed'] else 'pending staging or mismatched'}. "
                   "Installed production and development-client scopes are listed per artifact. "
                   + ("All exact targets satisfy the local release gate. Platform publication and moderation status are recorded separately."
@@ -555,11 +573,13 @@ def main() -> None:
         "- Fabric, Forge and NeoForge adapters use their real version-specific rendering APIs.\n"
         "- Clearer diagnostics connect measured CPU work to a mod, type and concrete world instance.\n"
         "- Shared renderer implementations retain independent registry-owner attribution.\n"
+        "- Replaced block types at one position retain separate instance/capture costs; Inspector checks the live registry type.\n"
         "- Native UI, highlight/track, heatmap, Inspector, timeline, capture and private JSON.\n"
         "- Explicit partial measurement scope: unavailable geometry/GPU work is never invented.\n\n"
         + validation + "\n\n[Exact dependencies](DEPENDENCIES.md) · [Per-artifact evidence](release-manifest.json)\n\n"
         "## Русский\n\n67 отдельных клиентских сборок для 23 стабильных версий Minecraft. "
         "Диагностика ведёт от измеренной CPU-работы к конкретному объекту; общие renderer-классы учитываются отдельно для каждого registry owner. "
+        "Замена блока другим типом в той же позиции сохраняет раздельную стоимость экземпляров и историю capture; Inspector проверяет текущий registry-тип. "
         "Сохранены нативный UI, подсветка, tracking, теплокарта, инспектор, timeline, capture и приватный JSON. "
         "Недоступные GPU/geometry-метрики не подменяются оценками.\n\n"
         f"Для текущих хешей есть {world_count}/67 игровых результатов; совпадает {package_count}/67 упакованных JAR. "
@@ -577,7 +597,7 @@ def main() -> None:
         "The JSON manifest contains 67 file-level publication records, exact required Fabric API Modrinth version IDs / CurseForge project relations, "
         "Java requirements, legal identity, changelog paths, hashes and scope-specific evidence. "
         "`publicationReady` stays false until all 67 world results and package hashes match and actual XML confirms "
-        "the three core ownership/rolling/capture cases plus the matching exporter regression without failures/errors/skips. "
+        "the three core ownership/rolling/capture cases, all four block-entity replacement cases, and both matching exporter regressions without failures/errors/skips. "
         "Hashed runtime evidence and media must also match raw Git index blobs, without line-ending conversion. "
         "After staging the generated metadata, run `python scripts/prepare-publication-030.py --verify-git-evidence`; "
         "after tagging, repeat with `--git-ref v0.3.0` to check the exact public reference. "

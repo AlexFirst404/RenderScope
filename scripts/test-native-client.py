@@ -359,6 +359,9 @@ def main() -> None:
     parser.add_argument("--launch", action="store_true")
     parser.add_argument("--timeout", type=int, default=600)
     args = parser.parse_args()
+    pause = ROOT / ".tools/native-world.pause"
+    if args.launch and pause.is_file():
+        raise RuntimeError("Native world queue paused before client launch: " + pause.read_text(encoding="utf-8").strip())
     if platform.system() != "Windows":
         parser.error("Only the verified Windows native rules are implemented")
     if not re.fullmatch(r"[0-9A-Za-z.+-]+", args.minecraft) or not re.fullmatch(r"[0-9A-Za-z.+-]+", args.loader_version):

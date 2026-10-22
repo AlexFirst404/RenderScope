@@ -553,6 +553,25 @@ public final class NativeSmokeTest {
         try {
             ClientRuntime runtime = ClientRuntime.current();
             if (runtime != null) RESULTS.add("failurePerformance", GSON.toJsonTree(runtime.profiler().snapshot().performance()));
+            Minecraft client = Minecraft.getInstance();
+            if (client.level != null) {
+                JsonArray entities = new JsonArray();
+                for (var entity : client.level.entitiesForRendering()) {
+                    JsonObject item = new JsonObject();
+                    item.addProperty("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString());
+                    item.addProperty("x", entity.getX()); item.addProperty("y", entity.getY()); item.addProperty("z", entity.getZ());
+                    entities.add(item);
+                }
+                RESULTS.add("failureSceneEntities", entities);
+                RESULTS.addProperty("failureEntityStatistics", client.levelRenderer.getEntityStatistics());
+                RESULTS.addProperty("failureSectionStatistics", client.levelRenderer.getSectionStatistics());
+                if (client.player != null) {
+                    RESULTS.addProperty("failurePlayerPosition", client.player.position().toString());
+                    RESULTS.addProperty("failurePlayerYaw", client.player.getYRot());
+                    RESULTS.addProperty("failurePlayerPitch", client.player.getXRot());
+                }
+                if (runtime != null) RESULTS.add("failureInstances", GSON.toJsonTree(runtime.profiler().snapshot().instances()));
+            }
             for (Class<?> type : new Class<?>[]{Minecraft.class, net.minecraft.client.renderer.entity.EntityRenderDispatcher.class}) {
                 var injected = java.util.Arrays.stream(type.getDeclaredMethods()).map(java.lang.reflect.Method::getName)
                         .filter(name -> name.contains("renderscope")).toList();

@@ -2,7 +2,7 @@
 
 **Find the render cost. Follow it into your world.**
 
-![RenderScope — live profiling inside Minecraft](distribution/forge/presentation/cover.png)
+![RenderScope](distribution/brand/renderscope-logo-384x384.png)
 
 **RenderScope 0.3.0 · Minecraft 1.20.1–26.3 · Fabric / Forge / NeoForge · Client-side**
 
@@ -19,6 +19,8 @@ Native Sodium / Embeddium / Rubidium counters, Iris / Oculus shadow handling and
 [Features](#follow-the-cost) · [Install](#install) · [Русский](#русский) · [Development](#development)
 
 RenderScope connects measured rendering work to a mod, an object type, and a specific instance in your world. Find a costly renderer, select its entity or block entity, and highlight the object you want to investigate.
+
+The rounded Create screenshots and GIFs below are real footage archived from **RenderScope 0.2.0 / Minecraft 1.20.1**. Current **0.3.0** screenshots, captures and exact tested JAR hashes are linked in the [game-test matrix](docs/compatibility/SUPPORT-MATRIX.md).
 
 ---
 
@@ -83,6 +85,8 @@ Reports stay in your profile's `renderscope-reports` folder. They include versio
 ## Русский
 
 **Найдите конкретный объект, на рендер которого уходит время.** RenderScope связывает измерения с модом, типом объекта и отдельным экземпляром мира.
+
+Скриншоты и GIF с Create и скруглёнными краями — реальные архивные кадры **RenderScope 0.2.0 / Minecraft 1.20.1**. Актуальные кадры **0.3.0**, отчёты и хеши проверенных сборок доступны в [матрице игровых проверок](docs/compatibility/SUPPORT-MATRIX.md).
 
 1. Выберите JAR **строго под свою версию Minecraft и загрузчик** в [загрузках 0.3.0](distribution/0.3.0/README.md). Результаты игровых проверок указаны в [матрице](docs/compatibility/SUPPORT-MATRIX.md). Для Fabric нужен Fabric API. Для Minecraft 26.x нужна Java 25, для предыдущих целей — Java 21. На сервер мод не нужен.
 2. Откройте **F8** или **Esc → RenderScope**. После накопления измерений первая страница показывает мод с самой дорогой наблюдаемой CPU-работой отрисовки и конкретный экземпляр.

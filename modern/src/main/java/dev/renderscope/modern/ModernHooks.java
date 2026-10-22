@@ -120,7 +120,8 @@ public final class ModernHooks {
     }
     public static InstanceKey blockKey(BlockEntity entity) {
         return new InstanceKey(ObjectKind.BLOCK_ENTITY, entity.getLevel().dimension().identifier().toString(),
-            Long.toString(entity.getBlockPos().asLong()));
+            Long.toString(entity.getBlockPos().asLong())).withRegistry(
+                BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(entity.getType()).toString());
     }
     public static long extractionCalls() { return extracted; }
     public static long submissionCalls() { return submitted; }
