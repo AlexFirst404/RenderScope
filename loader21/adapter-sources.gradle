@@ -12,6 +12,8 @@ ext.extractedGui = !pre121 && patch >= 6
 // The game, compiler and runtime remain Java 21; this target's own classes use Java 17 bytecode.
 def legacySponge = project.targetLoader == 'forge' && mcVersion == '1.20.6'
 def adapters = []
+// Keep the font depth workaround isolated to Minecraft 1.21.6.
+if (mcVersion == '1.21.6') adapters.add('../../mc21/src/font1216/java')
 adapters.add("../src/${renderStates ? 'direct-view' : 'shader'}/java")
 if (project.targetLoader == 'forge' && patch >= 3) {
     adapters.add('../src/forge-state/java')
@@ -163,5 +165,15 @@ tasks.named('processSmokeResources') {
     def props = [minecraft_version:mcVersion, loader_major:project.targetLoaderVersion.tokenize('.')[0]]
     inputs.properties props
     filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) { expand props }
+    if (project.targetLoader == 'forge' && patch >= 6) {
+        // Forge 56+ presents missing pack metadata as a loading warning screen.
+        // The isolated QA mod needs its own valid resource pack descriptor too.
+        def smokePackFormats = ['1.21.6':63, '1.21.7':64, '1.21.8':64]
+        inputs.property 'smokePackFormat', smokePackFormats[mcVersion]
+        doLast {
+            def metadata = [pack:[pack_format:smokePackFormats[mcVersion], description:'RenderScope isolated client integration tests']]
+            destinationDir.toPath().resolve('pack.mcmeta').toFile().setText(groovy.json.JsonOutput.toJson(metadata), 'UTF-8')
+        }
+    }
 }
 tasks.register('smokeJar', Jar) { from sourceSets.smoke.output; archiveClassifier = 'smoke-harness' }

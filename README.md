@@ -119,6 +119,8 @@ python scripts/build-all.py --all --java21 /path/to/jdk21 --java25 /path/to/jdk2
 
 With no arguments, the script lists the configured targets. It runs their actual Gradle builds and tests, then audits loader/Minecraft metadata, bytecode, Mixin refmaps and bundled legal notices. `--audit-only --package` copies verified main artifacts to `distribution/0.3.0`; separate test harnesses are excluded. `python scripts/generate-support-matrix.py` regenerates the evidence table without treating an upstream version listing as tested compatibility.
 
+The local publication helper, `python scripts/prepare-publication-030.py`, also requires a manual visual review for every exact target before setting `publicationReady=true`. The review must approve aligned world boxes, readable labels and a visible Inspector, and link the current main JAR, the same successful runtime result, and the actual world/Inspector PNGs by SHA-256. Missing or failed reviews, stale hashes, changed images and mixed optional profiles keep publication blocked. Numerical smoke success alone is insufficient. Reviewed manifests, PNGs and results must also match the exact raw Git bytes used for publication. The helper prepares local files; it does not upload them.
+
 The modules separate shared profiler/diagnostics from loader hooks and Minecraft API families: `fabric/`, `mc20/`, `mc21/`, `modern/`, `forge20/`, `neo20/`, `loader21/`, `loader-mapped/` and `loader26/`. The original 1.20.1 Forge/NeoForge commands remain:
 
 ```powershell

@@ -53,6 +53,13 @@ def release_notes(raw: bytes) -> bytes:
     return text.encode("utf-8")
 
 
+def verify_manual_review(row: dict, current: dict) -> None:
+    """Do not trust a saved ready flag after the reviewed runtime files change."""
+    if (row.get("visuallyVerified") is not True or current.get("passed") is not True
+            or row.get("manualVisualReview") != current):
+        raise RuntimeError("Current manual visual review is missing or differs from the prepared manifest")
+
+
 def local_plan() -> dict:
     builder = load_module("github_build", "scripts/build-all.py")
     support = load_module("github_support", "scripts/generate-support-matrix.py")
@@ -72,7 +79,7 @@ def local_plan() -> dict:
     if (manifest.get("publicationReady") is not True or manifest.get("renderscopeVersion") != "0.3.0"
             or manifest.get("sourceRef") != TAG or manifest.get("releaseChannel") != "release"
             or manifest.get("gitEvidenceByteIdentity", {}).get("passed") is not True
-            or any(manifest.get(key) != 67 for key in ("worldVerifiedTargets", "packageIndexMatchedTargets", "rendererOwnerRegressionVerifiedTargets"))):
+            or any(manifest.get(key) != 67 for key in ("worldVerifiedTargets", "packageIndexMatchedTargets", "rendererOwnerRegressionVerifiedTargets", "manuallyVisuallyVerifiedTargets"))):
         errors.append("The prepared manifest is not release-ready for v0.3.0")
     if run("git", "status", "--porcelain=v1", "--untracked-files=all").strip():
         errors.append("The repository must be clean, including staged and untracked files")
@@ -87,6 +94,8 @@ def local_plan() -> dict:
         errors.append("The exact local release tag v0.3.0 does not exist")
     assets = []
     world_count = 0
+    visual_count = 0
+    visual_reviews = preparer.load_visual_reviews()
     for target in targets:
         identity = target["loader"] + ":" + target["minecraft"]
         try:
@@ -107,6 +116,8 @@ def local_plan() -> dict:
             evidence_keys = lambda values: {(v["path"], v["sha256"], v["environment"]) for v in values}
             if not evidence or evidence_keys(evidence) != evidence_keys(row["runtimeEvidence"]):
                 raise RuntimeError("Current world evidence is missing or differs from the prepared manifest")
+            verify_manual_review(row, preparer.manual_visual_review(target, audit["sha256"], evidence, visual_reviews))
+            visual_count += 1
         except (RuntimeError, KeyError, OSError, ValueError) as error:
             errors.append(identity + ": " + str(error))
     if len({asset["name"] for asset in assets}) != len(assets):
@@ -131,7 +142,7 @@ def local_plan() -> dict:
     assets.append({"name": "SHA256SUMS", "bytes": len(checksums), "sha256": fingerprint(checksums),
                    "kind": "flat release checksums", "content": checksums})
     return {"ready": not errors, "errors": errors, "tag": TAG, "tagCommit": commit,
-            "repository": REPO, "worldVerifiedTargets": world_count, "primaryJarCount": len(assets) - 1,
+            "repository": REPO, "worldVerifiedTargets": world_count, "manuallyVisuallyVerifiedTargets": visual_count, "primaryJarCount": len(assets) - 1,
             "assets": assets, "notes": notes, "manifestSha256": fingerprint(manifest_path.read_bytes()),
             "sourceNotesSha256": fingerprint(source_notes),
             "scopes": sorted({e["environment"] for row in rows for e in row["runtimeEvidence"]})}

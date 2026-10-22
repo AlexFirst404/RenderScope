@@ -117,6 +117,17 @@ def audit(entry: dict) -> dict:
             if (manifest.get("RenderScope-Loader") != entry["loader"]
                     or manifest.get("RenderScope-Loader-Version") != entry["loaderVersion"]):
                 raise RuntimeError("Native manifest loader identity/version differs from the selected target")
+            if entry["project"].startswith("loader-mapped"):
+                # Exact upstream hidden native-pack pattern: individual JSON
+                # supplies SERVER data metadata; native ResourcePackLoader
+                # synthesizes current CLIENT69/75 metadata for the aggregate.
+                # See loader-mapped/validation/native-pack-metadata.json.
+                pack = json.loads(jar.read("pack.mcmeta"))["pack"]
+                server_format = [94, 1] if entry["minecraft"] == "1.21.11" else [88, 0]
+                if (pack.get("min_format") != server_format or pack.get("max_format") != server_format
+                        or "supported_formats" in pack or "pack_format" in pack
+                        or metadata.get("showAsResourcePack", False) is not False):
+                    raise RuntimeError("Native hidden pack requires the exact upstream SERVER range and synthesized CLIENT metadata")
             mixins = [name for name in names if name.endswith("mixins.json") and "/" not in name]
         for config in mixins:
             mixin = json.loads(jar.read(config))

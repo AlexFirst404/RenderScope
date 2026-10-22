@@ -2,7 +2,8 @@
 
 No network writes, Gradle invocation or platform upload is performed. Refresh after
 the package index and gameplay evidence change; publicationReady is deliberately
-false until every exact target has a matching world result and packaged copy.
+false until every exact target has matching world results, manual visual evidence
+and a packaged copy.
 """
 from __future__ import annotations
 import argparse
@@ -10,7 +11,7 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import re
 import subprocess
 import urllib.request
@@ -25,6 +26,12 @@ SOURCE_REF = "v0.3.0"
 LOADER_NAMES = {"fabric": "Fabric", "forge": "Forge", "neoforge": "NeoForge"}
 API_PROJECT = "P7dR8mSH"
 API_URL = f"https://api.modrinth.com/v2/project/{API_PROJECT}/version"
+VISUAL_MANIFESTS = (
+    "distribution/validation/root-world-visual-review.json",
+    "mc21/validation/world-visual-review.json",
+    "loader21/validation/world-visual-review.json",
+    "modern/validation/world-visual-review.json",
+)
 
 
 def module(name: str, relative: str):
@@ -127,6 +134,187 @@ def ownership_regressions(target: dict) -> dict:
             "requiredPassedCases": sorted(replacement_cases), "requiredExporterCase": replacement_export_case}}
 
 
+def repository_file(relative: str) -> Path:
+    if not isinstance(relative, str) or Path(relative).is_absolute() or PureWindowsPath(relative).drive:
+        raise ValueError("Expected a repository-relative evidence path")
+    path = (ROOT / relative).resolve()
+    if not path.is_relative_to(ROOT.resolve()) or not path.is_file():
+        raise ValueError("Evidence file is missing or escapes the repository: " + relative)
+    return path
+
+
+def load_visual_reviews() -> list[dict]:
+    """Normalize only the four explicit, existing manual-review schemas."""
+    reviews = []
+    for relative in VISUAL_MANIFESTS:
+        path = ROOT / relative
+        if not path.is_file():
+            continue
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(document, dict) or document.get("schemaVersion") != 1:
+            continue
+        fingerprint = hashlib.sha256(path.read_bytes()).hexdigest()
+        records = document.get("targets", document.get("profiles", []))
+        if isinstance(records, dict):
+            # mc21's established manifest explicitly describes Fabric targets.
+            if relative != "mc21/validation/world-visual-review.json":
+                continue
+            records = [{**row, "minecraft": minecraft, "loader": "fabric"}
+                       for minecraft, row in records.items() if isinstance(row, dict)]
+        if not isinstance(records, list):
+            continue
+        for original in records:
+            if not isinstance(original, dict):
+                continue
+            row = dict(original)
+            # Explicit aliases in the existing mc21 schema, never prose inference.
+            if relative == "mc21/validation/world-visual-review.json":
+                row.setdefault("worldBoxesAligned", row.get("boundingBoxesVisibleAndAligned"))
+                row.setdefault("inspectorVisible", row.get("inspectorAndTrackingVisible"))
+            row.setdefault("smokeResultSha256", row.get("resultSha256"))
+            row.setdefault("resultFile", row.get("result"))
+            row.setdefault("reviewedAt", document.get("reviewedAt"))
+            row["manifestFile"] = relative
+            row["manifestSha256"] = fingerprint
+            reviews.append(row)
+    return reviews
+
+
+def manual_visual_review(target: dict, primary_sha: str, evidence: list[dict], reviews: list[dict]) -> dict:
+    """Require one complete review of the same current, accepted runtime result.
+
+    Several optional profiles may share an artifact. A review of one profile
+    cannot approve a different result, image set, loader, or Minecraft identity.
+    """
+    rejected = []
+    matching = [row for row in reviews if row.get("minecraft") == target["minecraft"]
+                and isinstance(row.get("loader"), str) and row["loader"].lower() == target["loader"]]
+    for row in matching:
+        try:
+            if row.get("primaryJarSha256") != primary_sha:
+                raise ValueError("Manual review belongs to a different primary JAR")
+            if not all(row.get(key) is True for key in ("worldBoxesAligned", "labelsReadable", "inspectorVisible")):
+                raise ValueError("Aligned boxes, readable labels and visible inspector must all be explicitly true")
+            if not isinstance(row.get("reviewedAt"), str):
+                raise ValueError("Manual review time is missing")
+            datetime.fromisoformat(row["reviewedAt"].replace("Z", "+00:00"))
+            manifest = repository_file(row["manifestFile"])
+            if hashlib.sha256(manifest.read_bytes()).hexdigest() != row["manifestSha256"]:
+                raise ValueError("Manual review manifest changed after it was loaded")
+            linked = None
+            for candidate in evidence:
+                path = repository_file(candidate["path"])
+                if hashlib.sha256(path.read_bytes()).hexdigest() != candidate["sha256"]:
+                    continue
+                record = json.loads(path.read_text(encoding="utf-8"))
+                if not isinstance(record, dict):
+                    continue
+                if record.get("resultFile"):
+                    if (record.get("success") is not True or record.get("minecraftVersion") != target["minecraft"]
+                            or str(record.get("loader", "")).lower() != target["loader"]
+                            or record.get("loaderVersion") != target["loaderVersion"]
+                            or record.get("primaryJarSha256") != primary_sha):
+                        continue
+                    name = record["resultFile"]
+                    if not isinstance(name, str) or Path(name).name != name or "\\" in name:
+                        continue
+                    result_path = repository_file((path.parent / name).relative_to(ROOT.resolve()).as_posix())
+                    result_sha = hashlib.sha256(result_path.read_bytes()).hexdigest()
+                    if record.get("resultSha256") != result_sha:
+                        continue
+                else:
+                    result_path, result_sha = path, candidate["sha256"]
+                if result_sha != row.get("smokeResultSha256"):
+                    continue
+                if row.get("resultFile") and repository_file(row["resultFile"]) != result_path:
+                    continue
+                result = json.loads(result_path.read_text(encoding="utf-8"))
+                if not isinstance(result, dict):
+                    continue
+                if (result.get("success") is not True or result.get("minecraftVersion") != target["minecraft"]
+                        or str(result.get("loader", "")).lower() != target["loader"]
+                        or result.get("loaderVersion") != target["loaderVersion"]
+                        or result.get("primaryJarSha256") != primary_sha
+                        or result.get("environment") != candidate["environment"]):
+                    continue
+                linked = (result_path, result_sha, result)
+                break
+            if linked is None:
+                raise ValueError("Manual review is not linked to this exact accepted runtime result")
+            result_path, result_sha, result = linked
+            allowed_images = set()
+            for name in result.get("screenshots", []):
+                if not isinstance(name, str) or Path(name).is_absolute() or PureWindowsPath(name).is_absolute():
+                    continue
+                for image in (result_path.parent / name, result_path.parent / "gallery" / name):
+                    image = image.resolve()
+                    if image.is_relative_to(result_path.parent) and image.is_file():
+                        allowed_images.add(image)
+            declared = row.get("screenshots")
+            if declared is None and isinstance(row.get("screenshotsSha256"), dict):
+                declared = []
+                for name, sha in row["screenshotsSha256"].items():
+                    choices = [image for image in allowed_images if image.name == name
+                               and hashlib.sha256(image.read_bytes()).hexdigest() == sha]
+                    if len(choices) != 1:
+                        raise ValueError("Reviewed screenshot name/hash is missing or ambiguous")
+                    declared.append({"file": choices[0].relative_to(ROOT.resolve()).as_posix(), "sha256": sha})
+            if not isinstance(declared, list) or len(declared) < 2:
+                raise ValueError("A world/selection image and inspector image must both be manually reviewed")
+            images = []
+            for image in declared:
+                path = repository_file(image["file"])
+                if path not in allowed_images or hashlib.sha256(path.read_bytes()).hexdigest() != image["sha256"]:
+                    raise ValueError("Reviewed image differs from the exact runtime screenshot")
+                images.append({"file": path.relative_to(ROOT.resolve()).as_posix(), "sha256": image["sha256"]})
+            names = {Path(image["file"]).name.lower() for image in images}
+            if (not any("inspector" in name for name in names)
+                    or not any("heatmap" in name or "selected" in name for name in names)):
+                raise ValueError("Reviewed screenshots do not cover both world selection/heatmap and inspector")
+            return {"passed": True, "manifestFile": row["manifestFile"], "manifestSha256": row["manifestSha256"],
+                    "reviewedAt": row["reviewedAt"], "primaryJarSha256": primary_sha,
+                    "resultFile": result_path.relative_to(ROOT.resolve()).as_posix(), "resultSha256": result_sha,
+                    "worldBoxesAligned": True, "labelsReadable": True, "inspectorVisible": True,
+                    "screenshots": images}
+        except (ValueError, KeyError, TypeError, OSError, json.JSONDecodeError) as error:
+            rejected.append({"manifestFile": row.get("manifestFile"), "reason": str(error)})
+    return {"passed": False, "reason": "No complete current-hash manual visual review matches accepted runtime evidence",
+            "rejectedCandidates": rejected}
+
+
+def target_release_fixes(target: dict, artifact: Path, visual: dict) -> tuple[list[str], list[str]]:
+    en, ru = [], []
+    if not visual["passed"]:
+        return en, ru
+    if target["minecraft"] == "1.21.6":
+        with zipfile.ZipFile(artifact) as jar:
+            data = jar.read("dev/renderscope/client/world/WorldOverlay.class")
+        # The inspected target-only adapter adds the boolean foreground pass.
+        if b"WorldOverlay$LabelPlacement;Z)V" in data:
+            en.append("Fixed Minecraft 1.21.6 world-label depth: text stays readable above its background.")
+            ru.append("Исправлена глубина мировых меток Minecraft 1.21.6: текст остаётся читаемым поверх фона.")
+    if target["loader"] in ("forge", "neoforge") and target["minecraft"] in ("1.21.9", "1.21.10", "1.21.11"):
+        en.append("Corrected the native resource-pack metadata for this Minecraft version; verified through an installed-client world.")
+        ru.append("Исправлены нативные метаданные resource pack для этой версии Minecraft; проверено в мире установленного клиента.")
+    return en, ru
+
+
+def publication_ready(rows: list[dict], git_identity: dict) -> bool:
+    return (len(rows) == 67 and len({(row["loader"], row["minecraft"]) for row in rows}) == 67
+            and git_identity.get("passed") is True
+            and all(row.get("worldVerified") is True and row.get("packageIndexMatches") is True
+                    and row.get("rendererOwnerIsolationPresent") is True
+                    and row.get("rendererOwnerRegressions", {}).get("passed") is True
+                    and row.get("rendererOwnerRegressions", {}).get("blockEntityReplacement", {}).get("passed") is True
+                    and row.get("visuallyVerified") is True
+                    and row.get("manualVisualReview", {}).get("passed") is True
+                    and row["manualVisualReview"].get("primaryJarSha256") == row["sha256"]
+                    for row in rows))
+
+
 def git_evidence_files(rows: list[dict], media: list[dict]) -> list[dict]:
     """Published hash-bearing inputs; ignored Gradle XML is checked separately."""
     files = {}
@@ -149,6 +337,12 @@ def git_evidence_files(rows: list[dict], media: list[dict]) -> list[dict]:
             if record.get("resultFile"):
                 result = (path.parent / record["resultFile"]).relative_to(ROOT).as_posix()
                 add(result, record["resultSha256"], "linked runtime result")
+        visual = row.get("manualVisualReview", {})
+        if visual.get("passed"):
+            add(visual["manifestFile"], visual["manifestSha256"], "manual visual review")
+            add(visual["resultFile"], visual["resultSha256"], "visually reviewed runtime result")
+            for screenshot in visual["screenshots"]:
+                add(screenshot["file"], screenshot["sha256"], "manually reviewed screenshot")
     for asset in media:
         add(asset["path"], asset["sha256"], "publication media")
     return sorted(files.values(), key=lambda record: record["path"])
@@ -454,6 +648,7 @@ def main() -> None:
     by_api = {row["minecraft"]: row for row in dependencies}
     package_index = json.loads((ROOT / "distribution/0.3.0/artifacts.json").read_text(encoding="utf-8"))
     packages = {(row["minecraft"], row["loader"]): row for row in package_index["artifacts"]}
+    visual_reviews = load_visual_reviews()
     rows = []
     for target in targets:
         proof = builder.audit(target)
@@ -465,6 +660,8 @@ def main() -> None:
         synchronized = (package.get("sha256") == proof["sha256"] and package.get("bytes") == proof["bytes"]
                         and packaged.is_file() and builder.digest(packaged) == proof["sha256"])
         evidence = support.inspect_runtime(target, proof["sha256"])
+        visual = manual_visual_review(target, proof["sha256"], evidence, visual_reviews)
+        fixes_en, fixes_ru = target_release_fixes(target, source, visual)
         regressions = ownership_regressions(target)
         en, ru = limitations(target["minecraft"])
         dependency = by_api.get(target["minecraft"]) if target["loader"] == "fabric" else None
@@ -479,12 +676,16 @@ def main() -> None:
               "- F8/Pause UI, heatmap, crosshair inspector, timeline, capture and privacy-safe local JSON.\n"
               "- Shared renderer classes retain separate registry-owner rows; CPU attribution is not a causal FPS prediction.\n\n"
               "- Replacing a block with another type at the same position keeps separate instance/capture costs; Inspector checks the live registry type.\n\n"
-              f"Measurement scope: {en}\n\nValidation: **{proof['unitTests']} unit tests**; {status_en}\n"
+              + "".join("- " + fix + "\n" for fix in fixes_en)
+              + ("\n" if fixes_en else "")
+              + f"Measurement scope: {en}\n\nValidation: **{proof['unitTests']} unit tests**; {status_en}\n"
               + "\n".join(f"- [Evidence]({REPO_URL}/blob/main/{row['path']})" for row in evidence)
               + f"\n\nSHA-256: `{proof['sha256']}` ({proof['bytes']} bytes).\n\n---\n\n## Русский\n\n"
               f"Клиентская сборка для **Minecraft {target['minecraft']} / {target['loader']} {target['loaderVersion']} / Java {java}**. На сервер мод не нужен.\n\n"
               + (f"Обязателен Fabric API **{dependency['version']}**.\n\n" if dependency else "")
               + "Первая страница объясняет измерения и ведёт к конкретному экземпляру. Сохранены F8/Pause, таблицы, подсветка, теплокарта, инспектор, timeline, capture и приватный JSON. Общий renderer-класс учитывается отдельно для каждого registry owner. При замене блока другим типом в той же позиции стоимость экземпляров и история capture разделены; Inspector проверяет текущий registry-тип. CPU-доли не обещают прирост FPS.\n\n"
+              + "".join("- " + fix + "\n" for fix in fixes_ru)
+              + ("\n" if fixes_ru else "")
               + f"Область измерения: {ru}\n\nПроверено unit-тестов: **{proof['unitTests']}**. {status_ru}\n\n"
               + f"RenderScope Source-Available License 1.0: изменения и бесплатные проекты разрешены по условиям лицензии; продажи, платные содержащие проекты/модпаки и платный доступ требуют письменного разрешения. [Полная лицензия]({REPO_URL}/blob/main/LICENSE).")
         rows.append({**proof, "fileName": source.name, "sha1": hashlib.sha1(source.read_bytes()).hexdigest(),
@@ -494,7 +695,8 @@ def main() -> None:
             "releaseChannel": args.channel, "packagedArtifact": package.get("packagedArtifact"),
             "packageIndexMatches": synchronized, "rendererOwnerIsolationPresent": owner_isolation,
             "rendererOwnerRegressions": regressions,
-            "runtimeEvidence": evidence, "worldVerified": bool(evidence),
+            "runtimeEvidence": evidence, "worldVerified": bool(evidence), "manualVisualReview": visual,
+            "visuallyVerified": visual["passed"], "verifiedTargetFixes": {"en": fixes_en, "ru": fixes_ru},
             "changelog": "distribution/platforms/0.3.0/" + changelog,
             "measurementScope": {"en": en, "ru": ru}, "fabricApi": dependency,
             "modrinth": {"projectId": "LyIIxCef", "gameVersions": [target["minecraft"]], "loaders": [target["loader"]],
@@ -506,24 +708,25 @@ def main() -> None:
                 "requiredProjects": [] if not dependency else [{"projectId": 306612, "slug": "fabric-api", "relation": "requiredDependency"}]},
             "remoteState": "Not queried by local preparation; canonical platform status is recorded separately"})
     world_count = sum(row["worldVerified"] for row in rows)
+    visual_count = sum(row["visuallyVerified"] for row in rows)
     package_count = sum(row["packageIndexMatches"] for row in rows)
     regression_count = sum(row["rendererOwnerRegressions"]["passed"] for row in rows)
     replacement_count = sum(row["rendererOwnerRegressions"]["blockEntityReplacement"]["passed"] for row in rows)
     media = gallery(rows) + archive_media()
     git_identity = git_evidence_identity(git_evidence_files(rows, media))
-    ready = (world_count == 67 and package_count == 67 and regression_count == 67 and replacement_count == 67
-             and all(row["rendererOwnerIsolationPresent"] for row in rows) and git_identity["passed"])
+    ready = publication_ready(rows, git_identity)
     summary = {"schemaVersion": 1, "preparedAt": datetime.now(timezone.utc).isoformat(), "renderscopeVersion": "0.3.0",
         "mode": "local preparation only; no platform writes", "publicReleaseAuthorized": True,
         "publicationReady": ready, "publicationPerformed": False, "releaseChannel": args.channel,
         "minecraftReleaseCount": 23, "artifactCount": 67, "worldVerifiedTargets": world_count,
+        "manuallyVisuallyVerifiedTargets": visual_count,
         "packageIndexMatchedTargets": package_count,
         "rendererOwnerRegressionVerifiedTargets": regression_count,
         "blockEntityReplacementRegressionVerifiedTargets": replacement_count,
         "gitEvidenceByteIdentity": git_identity,
         "finalGitByteVerification": "After staging generated metadata, run python scripts/prepare-publication-030.py --verify-git-evidence; use --git-ref v0.3.0 after tagging to check the actual public source reference.",
         "remoteStatusAuthority": "distribution/platforms/publication-status.json",
-        "runtimeMeaning": "Installed production and development-client evidence remain distinct. Every accepted result matches this exact primary JAR hash. A vanilla result is not optional-mod or shader evidence.",
+        "runtimeMeaning": "Installed production and development-client evidence remain distinct. Every accepted result matches this exact primary JAR hash. Each target also needs an explicit manual review of aligned boxes, readable labels and visible Inspector, linked to the same accepted result and exact screenshot bytes. A vanilla result is not optional-mod or shader evidence.",
         "license": "LicenseRef-RenderScope-Source-Available-1.0", "sourceUrl": REPO_URL, "sourceRef": SOURCE_REF,
         "licenseUrl": REPO_URL + "/blob/main/LICENSE", "targets": rows}
     write("release-manifest.json", json.dumps(summary, ensure_ascii=False, indent=2))
@@ -562,6 +765,7 @@ def main() -> None:
         "The historical [presentation manifest](../../forge/presentation/presentation-manifest.json) and capture records remain intact. "
         "Product descriptions contain no preparation status or DRAFT text; readiness stays in the separate release manifest.\n")
     validation = (f"Current snapshot: {world_count}/67 exact artifact hashes have real-world evidence; "
+                  f"{visual_count}/67 have matching manual world/Inspector visual reviews; "
                   f"{package_count}/67 packaged copies match the current audited binaries. "
                   f"{regression_count}/67 targets have passed the actual owner-isolation, block-replacement, rolling, capture and exporter XML regressions. "
                   f"Git/raw byte identity for hashed evidence and media: {'passed' if git_identity['passed'] else 'pending staging or mismatched'}. "
@@ -576,13 +780,21 @@ def main() -> None:
         "- Replaced block types at one position retain separate instance/capture costs; Inspector checks the live registry type.\n"
         "- Native UI, highlight/track, heatmap, Inspector, timeline, capture and private JSON.\n"
         "- Explicit partial measurement scope: unavailable geometry/GPU work is never invented.\n\n"
+        + ("- Fixed Minecraft 1.21.6 world-label depth with a version-specific foreground pass.\n\n"
+           if sum(bool(row["verifiedTargetFixes"]["en"]) for row in rows if row["minecraft"] == "1.21.6") == 3 else "")
+        + ("- Corrected Forge/NeoForge 1.21.9–1.21.11 resource-pack metadata; installed-client worlds verified.\n\n"
+           if sum(row["visuallyVerified"] for row in rows if row["minecraft"] in ("1.21.9", "1.21.10", "1.21.11") and row["loader"] != "fabric") == 6 else "")
         + validation + "\n\n[Exact dependencies](DEPENDENCIES.md) · [Per-artifact evidence](release-manifest.json)\n\n"
         "## Русский\n\n67 отдельных клиентских сборок для 23 стабильных версий Minecraft. "
         "Диагностика ведёт от измеренной CPU-работы к конкретному объекту; общие renderer-классы учитываются отдельно для каждого registry owner. "
         "Замена блока другим типом в той же позиции сохраняет раздельную стоимость экземпляров и историю capture; Inspector проверяет текущий registry-тип. "
         "Сохранены нативный UI, подсветка, tracking, теплокарта, инспектор, timeline, capture и приватный JSON. "
         "Недоступные GPU/geometry-метрики не подменяются оценками.\n\n"
-        f"Для текущих хешей есть {world_count}/67 игровых результатов; совпадает {package_count}/67 упакованных JAR. "
+        + ("Исправлена глубина мировых меток Minecraft 1.21.6 отдельным проходом переднего текста.\n\n"
+           if sum(bool(row["verifiedTargetFixes"]["ru"]) for row in rows if row["minecraft"] == "1.21.6") == 3 else "")
+        + ("Исправлены resource-pack метаданные Forge/NeoForge 1.21.9–1.21.11; проверены миры установленных клиентов.\n\n"
+           if sum(row["visuallyVerified"] for row in rows if row["minecraft"] in ("1.21.9", "1.21.10", "1.21.11") and row["loader"] != "fabric") == 6 else "")
+        + f"Для текущих хешей есть {world_count}/67 игровых результатов, {visual_count}/67 ручных визуальных проверок; совпадает {package_count}/67 упакованных JAR. "
         "Установленный клиент и dev-среда различаются в доказательствах. "
         + ("Все цели прошли локальную проверку готовности. Фактическая публикация и модерация платформ учитываются отдельно.\n\n"
            if ready else "ЧЕРНОВИК: это локальная подготовка, а не подтверждение публикации или одобрения платформами.\n\n")
@@ -599,11 +811,15 @@ def main() -> None:
         "`publicationReady` stays false until all 67 world results and package hashes match and actual XML confirms "
         "the three core ownership/rolling/capture cases, all four block-entity replacement cases, and both matching exporter regressions without failures/errors/skips. "
         "Hashed runtime evidence and media must also match raw Git index blobs, without line-ending conversion. "
+        "All 67 identities additionally require a manual review with explicit aligned-box/readable-label/visible-inspector approval, "
+        "the current primary JAR SHA-256, the same accepted runtime-result SHA-256, and the actual world/selection plus Inspector PNG paths and hashes. "
+        "A missing, failed, stale, mixed-profile or changed-image review keeps the gate false. "
         "After staging the generated metadata, run `python scripts/prepare-publication-030.py --verify-git-evidence`; "
         "after tagging, repeat with `--git-ref v0.3.0` to check the exact public reference. "
         "Generated remoteState is not a claim about uploaded files; actual platform state remains in the separate canonical status record.\n")
     print(f"Prepared {len(rows)} exact targets / {len(dependencies)} pinned Fabric API versions; "
           f"worlds {world_count}/67, packages {package_count}/67, Git/raw evidence={git_identity['passed']}, "
+          f"manual visuals {visual_count}/67, "
           f"publicationReady={ready}. No external writes.")
 
 

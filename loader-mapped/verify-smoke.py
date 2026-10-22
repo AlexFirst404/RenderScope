@@ -30,8 +30,10 @@ def main():
             names=set(qa.namelist())
             resource_format=75 if target['minecraft']=='1.21.11' else 69
             pack=json.loads(qa.read('pack.mcmeta'))['pack']
-            require(pack.get('min_format')==[resource_format,0] and pack.get('max_format')==[resource_format,0],
-                'QA resource pack must match the selected vanilla client resource format')
+            metadata_format=[94,1] if target['minecraft']=='1.21.11' else [88,0]
+            require('pack_format' not in pack and 'supported_formats' not in pack and
+                pack.get('min_format')==metadata_format and pack.get('max_format')==metadata_format,
+                'QA native hidden pack metadata must follow the upstream SERVER range, separately from synthetic CLIENT metadata')
             packages=lambda entries:{name.rpartition('/')[0] for name in entries if name.endswith('.class')}
             overlap=packages(main.namelist())&packages(names)
             require(not overlap,'Main/QA Java module packages overlap: '+str(overlap))
@@ -60,6 +62,7 @@ def main():
             'artifact':str(artifact.relative_to(REPO)).replace('\\','/'),'bytes':artifact.stat().st_size,
             'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest(),'packagesDisjointFromMain':True,'runtimeVerified':False})
         rows[-1]['resourcePackFormat']=[resource_format,0]
+        rows[-1]['nativeMetadataServerFormat']=metadata_format
     print(json.dumps({'scope':'Separate native QA JAR compilation, no Fabric dependency, disjoint Java module packages; not a runtime pass.',
         'artifacts':rows},indent=2))
 

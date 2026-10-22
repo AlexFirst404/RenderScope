@@ -124,6 +124,9 @@ public final class ModernClientSmoke implements FabricClientGameTest {
                 context.runOnClient(mc -> { ModernHooks.SETTINGS.heatmap=false; ModernHooks.SETTINGS.inspect=true; ModernHooks.applySettings(); });
                 lookAtChest(context);
                 context.waitFor(mc -> ModernOverlay.inspected().isPresent(),500);
+                // The data predicate may already be true on the settings tick.
+                // Wait for actual HUD extraction/rendering before framebuffer readback.
+                context.waitTicks(2);
                 screenshot(context,"inspector.png");
                 results.addProperty("realCrosshairInspector",true);
 

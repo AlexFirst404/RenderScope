@@ -23,8 +23,10 @@ def main():
         names=set(jar.namelist())
         resource_format=75 if args.minecraft=='1.21.11' else 69
         pack=json.loads(jar.read('pack.mcmeta'))['pack']
-        require(pack.get('min_format')==[resource_format,0] and pack.get('max_format')==[resource_format,0],
-            'Resource pack metadata must match the selected vanilla client resource format')
+        metadata_format=[94,1] if args.minecraft=='1.21.11' else [88,0]
+        require('pack_format' not in pack and 'supported_formats' not in pack and
+            pack.get('min_format')==metadata_format and pack.get('max_format')==metadata_format,
+            'Native hidden pack metadata must follow the exact upstream SERVER range; CLIENT metadata is synthesized by the loader')
         require('fabric.mod.json' not in names,'Fabric metadata leaked into native loader artifact')
         require(not any('/smoke/' in name or 'gametest' in name.lower() or 'NativeSmoke' in name or 'NativeModernSmoke' in name for name in names),'Test harness leaked into artifact')
         require(jar.read('META-INF/LICENSE')==(REPO/'LICENSE').read_bytes(),'Embedded license bytes differ')
@@ -72,6 +74,7 @@ def main():
         'artifact':target['artifact'],'bytes':artifact.stat().st_size,'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest(),
         'tests':counts['tests'],'runtimeVerified':False}
     result['resourcePackFormat']=[resource_format,0]
+    result['nativeMetadataServerFormat']=metadata_format
     if args.require_runtime:
         path=args.runtime_evidence or REPO/f'distribution/{args.loader}/{args.minecraft}/development/smoke-result.json'
         require(path.is_file(),'Selected runtime result is missing')

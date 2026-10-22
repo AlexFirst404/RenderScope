@@ -142,7 +142,11 @@ public final class NativeSmokeContext {
             var server = context.computeOnClient(Minecraft::getSingleplayerServer);
             server.submit(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command)).join();
         }
-        @Override public void close() { context.runOnClient(Minecraft::disconnectWithSavingScreen); }
+        @Override public void close() {
+            // Match PauseScreen's public action: it requests integrated-server
+            // shutdown before entering Minecraft's saving/disconnect loop.
+            context.runOnClient(client -> client.disconnectFromWorld(net.minecraft.client.multiplayer.ClientLevel.DEFAULT_QUIT_MESSAGE));
+        }
     }
     public Path takeScreenshot(String name) throws java.io.IOException {
         Path path = MC.gameDirectory.toPath().resolve("screenshots").resolve(name + ".png");

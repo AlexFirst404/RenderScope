@@ -72,6 +72,20 @@ class FakeGitHub:
 
 
 class PublisherTest(unittest.TestCase):
+    def test_numerical_ready_flag_cannot_replace_a_current_manual_visual_review(self):
+        review = {"passed": True, "manifestSha256": "a" * 64, "screenshots": [{"sha256": "b" * 64}]}
+        row = {"visuallyVerified": True, "manualVisualReview": review}
+        p.verify_manual_review(row, copy.deepcopy(review))
+        for changed in ({"passed": False}, dict(review, manifestSha256="c" * 64),
+                        dict(review, screenshots=[{"sha256": "d" * 64}])):
+            with self.subTest(changed=changed), self.assertRaisesRegex(RuntimeError, "Current manual visual review"):
+                p.verify_manual_review(row, changed)
+
+    def test_saved_review_requires_explicit_visual_approval(self):
+        review = {"passed": True}
+        with self.assertRaisesRegex(RuntimeError, "Current manual visual review"):
+            p.verify_manual_review({"manualVisualReview": review}, review)
+
     def test_same_size_wrong_api_digest_is_rejected_without_fallback(self):
         plan, _ = fixture()
         asset = remote(plan["assets"][0])

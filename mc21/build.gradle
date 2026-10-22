@@ -19,6 +19,8 @@ def renderStates = !pre121 && patch >= 2
 def pipelines = !pre121 && patch >= 5
 def extractedGui = !pre121 && patch >= 6
 def adapterDirs = []
+// Only 1.21.6 has the native font background-depth regression (fixed upstream in 1.21.7).
+if (mcVersion == '1.21.6') adapterDirs.add('src/font1216/java')
 if (extractedGui) adapterDirs.add('src/gui/java')
 if (pipelines) adapterDirs.add('src/pipeline/java')
 if (renderStates) adapterDirs.add('src/state/java')

@@ -29,7 +29,7 @@ The exact Minecraft version is embedded in the filename and Fabric metadata. Bui
 | 1.21.3 | 0.114.1+1.21.3 | `src/state/java` overrides |
 | 1.21.4 | 0.119.4+1.21.4 | `src/state/java` overrides |
 | 1.21.5 | 0.128.2+1.21.5 | `src/pipeline/java` overrides |
-| 1.21.6 | 0.128.2+1.21.6 | `src/gui/java` and pipeline overrides |
+| 1.21.6 | 0.128.2+1.21.6 | `src/font1216/java`, GUI and pipeline overrides |
 | 1.21.7 | 0.129.0+1.21.7 | `src/gui/java` and pipeline overrides |
 | 1.21.8 | 0.136.1+1.21.8 | `src/gui/java` and pipeline overrides |
 
@@ -42,6 +42,7 @@ All use Fabric Loader 0.19.5, official Mojang mappings and Java 21 bytecode. The
 - Starting with 1.21.2, entity renderers prepare a pooled render-state object. The adapter measures the actual extraction and renderer calls separately, associating the state with value-only instance metadata and the captured profiler frame. Exact private overload descriptors identify the dispatcher methods containing those calls; starting in 1.21.5, rendering moves to the overload accepting a render state. Stale frames are rejected by the shared profiler. The association is bounded and uses weak identity keys.
 - Starting with 1.21.5, world outlines use native `RenderPipeline` definitions with depth-aware and through-wall variants. The adapter does not mutate OpenGL state. A narrow access widener exposes Minecraft's existing line-pipeline factory and snippet. The block entity invocation also includes the actual camera-position argument.
 - Starting with 1.21.6, the screen uses native pipeline-based texture drawing and the new tooltip-component API.
+- Only 1.21.6 uses a separate font adapter: its native background/glyph depth separation can hide parts of world-label text. RenderScope flushes its private background batches before drawing opaque foreground text; normal and through-wall labels were checked in the installed client. The 1.21.5/1.21.7/1.21.8 implementations remain unchanged.
 - The screen retains the current beginner overview and all detailed tabs. Its background and scroll signatures, ResourceLocation construction and EditBox lifecycle follow the selected Minecraft API.
 - Custom screen content follows the native `renderBackground` callback. Minecraft 1.20.5–1.21.5 invokes it from `Screen.render`; 1.21.6+ invokes it from `renderWithTooltip`. Native widgets and tooltips retain their own rendering order, and the background blur runs once.
 - `ClientRuntime` adapts the moved key-binding screen class. The Fabric entrypoint handles screen/key/HUD/world events; loader metadata remains behind `PlatformAccess`.
